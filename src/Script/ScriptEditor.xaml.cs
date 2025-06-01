@@ -43,7 +43,7 @@ namespace EmeralEngine.Script
         {
             get => draggingCharaInfo is not null;
         }
-        public ScriptInfo now_script
+        public ScriptInfo? now_script
         {
             get
             {
@@ -51,6 +51,10 @@ namespace EmeralEngine.Script
                 {
                     current_index = parent.now_scene.scripts.Count-1;
                     return parent.now_scene.scripts.Last();
+                }
+                else if (current_index < 0)
+                {
+                    return null;
                 }
                 else
                 {

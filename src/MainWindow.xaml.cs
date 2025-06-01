@@ -286,7 +286,11 @@ namespace EmeralEngine
                 Script.FontSize = window.FontSize;
                 Script.FontFamily = new FontFamily(window.Font);
                 Script.Foreground = Utils.GetBrush(window.TextColor);
-                if (string.IsNullOrWhiteSpace(_ScriptWindow.now_script.speaker))
+                if (_ScriptWindow.now_script is null)
+                {
+
+                }
+                else if (string.IsNullOrWhiteSpace(_ScriptWindow.now_script.speaker))
                 {
                     if (scriptIsAvailable) NamePlate.Visibility = Visibility.Hidden;
                 }
