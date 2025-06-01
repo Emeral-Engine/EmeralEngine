@@ -23,6 +23,6 @@ VisualStudioでデバッグ実行すると、そのままでは失敗します�
 # EmeralEngineのビルド方法
 ```bash
 $ git clone https://github.com/Emeral-Engine/EmeralEngine
-$ cd EmeralEngine
+$ cd EmeralEngine/src
 $ dotnet build
 ```
