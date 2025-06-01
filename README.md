@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="img/EmeralEngine.png" alt="EmeralEngine アイコン"/>
+</p>
+
 # 💎EmeralEngine
 EmeralEngineはWindows向けのノベルゲームエンジンです。
 
