@@ -127,5 +127,5 @@ EmeralEngineはWindows向けのノベルゲームエンジンです。
 特別な操作は必要ありません。EmeralEngine本体を導入するのと同じ手順を踏んでください。
 
 # バグ報告、及び機能要望について
-[Issue]()よりテンプレートに従いお願いします。
+[Issue](https://github.com/Emeral-Engine/EmeralEngine/issues)よりテンプレートに従いお願いします。
 機能改善要望は「future_request」と同じテンプレートを使ってください。
