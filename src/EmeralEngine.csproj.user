@@ -1,0 +1,165 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <_LastSelectedProfileId>C:\Users\midry\source\repos\EmeralEngine\EmeralEngine\Properties\PublishProfiles\FolderProfile.pubxml</_LastSelectedProfileId>
+  </PropertyGroup>
+  <ItemGroup>
+    <ApplicationDefinition Update="App.xaml">
+      <SubType>Designer</SubType>
+    </ApplicationDefinition>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="ErrorNotifyWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="MessageWindow\NamePlateSettingPage.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="MessageWindow\ScriptSettingPage.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="MessageWindow\WindowSettingsPage.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Project\CreateProjectProgress.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Resource\MovieViewer.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Resource\Transition\MonoTransitionPage.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Setting\EditorPage.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Setting\SceneSettingPage.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Story\NewContentWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Story\SelectEpisodeWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Story\StoryEditor.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Resource\Character\CharacterWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Resource\Character\NewCharacter.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Resource\Character\PersonalPage.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Resource\Character\SelectCharacterPage.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Builder\BuildProgressWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Script\ScriptEditor.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="MessageWindow\MessageWindowDesigner.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="MessageWindow\SelectMessageWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Project\NewProjectWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Resource\ResourceWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Scene\SceneWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Project\SelectProjectWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Resource\Transition\TransitionWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Setting\ProjectPage.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Setting\SettingWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Setting\StartupPage.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="TitleScreen\CustomTitlePage.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="TitleScreen\NormalTitlePage.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="TitleScreen\TitleScreenDesigner.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Story\NewContentWindow.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Story\StoryEditor.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Resource\Character\CharacterWindow.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Resource\Character\NewCharacter.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Resource\Character\PersonalPage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Resource\Character\SelectCharacterPage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Builder\BuildProgressWindow.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Script\ScriptEditor.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="MainWindow.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="MessageWindow\MessageWindowDesigner.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="MessageWindow\SelectMessageWindow.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Project\NewProjectWindow.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Resource\ResourceWindow.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Scene\SceneWindow.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Project\SelectProjectWindow.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Resource\Transition\TransitionWindow.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Setting\ProjectPage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Setting\SettingWindow.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Setting\StartupPage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+</Project>

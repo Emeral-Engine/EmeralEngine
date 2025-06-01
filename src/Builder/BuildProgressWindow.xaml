@@ -1,0 +1,25 @@
+﻿<Window x:Class="EmeralEngine.Builder.BuildProgressWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:EmeralEngine"
+        mc:Ignorable="d"
+        Title="ビルド" Height="150" Width="479" ResizeMode="CanMinimize">
+    <Grid x:Name="MainGrid">
+        <ProgressBar x:Name="MainProgress" HorizontalAlignment="Left" Height="24" Margin="43,54,0,0" VerticalAlignment="Top" Width="400" Foreground="#FF34AF4B"/>
+        <Label x:Name="Label" Content="" Margin="0,10,36,0" VerticalAlignment="Top" Height="38" FontSize="18" Width="400" HorizontalAlignment="Right"/>
+        <Expander x:Name="VerboseExpander" IsExpanded="False" HorizontalAlignment="Left" Height="24" Header="詳細" Margin="10,83,0,0" VerticalAlignment="Top" Width="462" Expanded="OnExpanded" Collapsed="OnCollapsed">
+            <Grid Margin="0,0,0,-42" Width="447">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="69*"/>
+                    <ColumnDefinition Width="247*"/>
+                    <ColumnDefinition Width="105*"/>
+                </Grid.ColumnDefinitions>
+                <Label Name="VerbosePercentProgress" HorizontalAlignment="Left" FontSize="20" Content="0%" Width="63"/>
+                <ProgressBar x:Name="VerboseProgress" Maximum="100" Minimum="0" HorizontalAlignment="Left" Height="24" VerticalAlignment="Center" Width="208" Foreground="#FF34AF4B" Margin="2,0,0,0" Grid.Column="1"/>
+                <Label Grid.Column="1" Name="VerboseProgressLabel" FontSize="16" Content="0 / 0" Margin="219,4,-9,5" Grid.ColumnSpan="2"/>
+            </Grid>
+        </Expander>
+    </Grid>
+</Window>

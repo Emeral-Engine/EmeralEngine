@@ -1,0 +1,28 @@
+﻿<Application x:Class="EmeralEngine.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+             xmlns:local="clr-namespace:EmeralEngine"
+             Startup="App_OnStartup"
+             StartupUri="MainWindow.xaml">
+    <Application.Resources>
+        <Style TargetType="Expander">
+             <Setter Property="Foreground" Value="#FFFFFFFF"/>
+         </Style>
+         <Style TargetType="Slider" x:Key="AlphaSlider">
+             <Setter Property="Minimum" Value="0"/>
+             <Setter Property="Maximum" Value="1"/>
+             <Setter Property="Value" Value="0.7"/>
+             <Setter Property="TickFrequency" Value="0.05"/>
+             <Setter Property="IsSnapToTickEnabled" Value="True"/>
+         </Style>
+        <Style TargetType="xctk:IntegerUpDown">
+            <Setter Property="Minimum" Value="0"/>
+            <Setter Property="Value" Value="0"/>
+        </Style>
+        <Style TargetType="xctk:DoubleUpDown">
+            <Setter Property="Minimum" Value="0"/>
+            <Setter Property="Value" Value="0"/>
+        </Style>
+    </Application.Resources>
+</Application>

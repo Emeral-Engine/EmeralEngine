@@ -1,0 +1,29 @@
+﻿<Window x:Class="EmeralEngine.SceneWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:EmeralEngine"
+        mc:Ignorable="d"
+        Title="シーン" Height="600" Width="800" Background="#FF1D2D29" SizeChanged="OnSizeChanged" KeyUp="OnKeyUp">
+    <Window.CommandBindings>
+        <CommandBinding Command="New" Executed="_NewScene"/>
+    </Window.CommandBindings>
+    <Window.InputBindings>
+        <KeyBinding Key="N" Modifiers="Ctrl" Command="New"/>
+    </Window.InputBindings>
+    <DockPanel>
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="操作">
+                <MenuItem Header="シーンを追加(_A)" Click="_NewScene"/>
+            </MenuItem>
+        </Menu>
+        <ScrollViewer  x:Name="ScrollViewer1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Visible" PreviewMouseWheel="OnMouseWheel">
+            <Canvas x:Name="Screens" Height="520" Width="0">
+                <Canvas.LayoutTransform>
+                    <ScaleTransform x:Name="Scale"/>
+                </Canvas.LayoutTransform>
+            </Canvas>
+        </ScrollViewer>
+    </DockPanel>
+</Window>

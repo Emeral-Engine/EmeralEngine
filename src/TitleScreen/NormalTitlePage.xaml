@@ -1,0 +1,61 @@
+﻿<Page x:Class="EmeralEngine.TitleScreen.NormalTitlePage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+      xmlns:local="clr-namespace:EmeralEngine.TitleScreen"
+      mc:Ignorable="d" 
+      d:DesignHeight="450" d:DesignWidth="800"
+      Title="NormalTitlePage">
+    <Page.Resources>
+        <Style TargetType="Label">
+            <Setter Property="FontSize" Value="24"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+    </Page.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Expander Header="スタイル" IsExpanded="True">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Label Content="背景色"/>
+                <xctk:ColorPicker x:Name="BgColor" Grid.Column="1" Height="30" Width="80"/>
+                <Label Grid.Row="1" Content="透明度"/>
+                <Slider x:Name="ButtonAlpha" Grid.Row="1" Grid.Column="1" Style="{DynamicResource AlphaSlider}" VerticalAlignment="Center"/>
+                <Label Name="AlphaLabel" Grid.Row="1" Grid.Column="2"/>
+                <Label Content="枠線の色" Grid.Row="2"/>
+                <xctk:ColorPicker Grid.Row="2" Grid.Column="1" x:Name="BorderColor" Height="30" Width="80"/>
+                <Label Content="透明度" Grid.Row="3"/>
+                <Slider x:Name="BorderAlpha" Grid.Row="4" Grid.Column="1" Style="{DynamicResource AlphaSlider}" VerticalAlignment="Center"/>
+                <Label Grid.Row="4" Grid.Column="2"/>
+            </Grid>
+        </Expander>
+        <Expander Header="その他" Grid.Row="1" IsExpanded="True">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Label Content="BGM"/>
+                <Button Grid.Column="1" Content="参照" FontSize="20" Width="50" Height="30"/>
+            </Grid>
+        </Expander>
+    </Grid>
+</Page>

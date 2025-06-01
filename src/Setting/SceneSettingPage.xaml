@@ -1,0 +1,14 @@
+﻿<Page x:Class="EmeralEngine.Setting.SceneSettingPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:EmeralEngine.Setting"
+      mc:Ignorable="d" 
+      d:DesignHeight="450" d:DesignWidth="800" Background="White"
+      Title="SceneSettingPage">
+
+    <Grid>
+        <CheckBox x:Name="ChangeLatterBg" Content="背景変更を同じエピソード内の以降のシーンにも適用する" FontSize="18" Click="OnChangeLatterBgClicked"/>
+    </Grid>
+</Page>

@@ -1,0 +1,57 @@
+﻿<Page x:Class="EmeralEngine.Setting.ProjectPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+      xmlns:local="clr-namespace:EmeralEngine.Setting"
+      mc:Ignorable="d" 
+      d:DesignHeight="450" d:DesignWidth="666" Background="White"
+      Title="ProjectPage">
+    <Page.Resources>
+        <Style TargetType="Label">
+            <Setter Property="FontSize" Value="18"/>
+        </Style>
+    </Page.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <GroupBox Width="150" HorizontalAlignment="Left" Margin="10,0,0,0" Header="ウィンドウサイズ" FontSize="18">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <Label Grid.Row="0" Content="横"/>
+                <xctk:IntegerUpDown x:Name="GameWidth" Grid.Row="0" Grid.Column="1" Width="70" Height="25" ValueChanged="OnGameWidthValueChanged"/>
+                <Label Grid.Row="1" Content="縦"/>
+                <xctk:IntegerUpDown x:Name="GameHeight" Grid.Row="1" Grid.Column="1" Width="70" Height="25" ValueChanged="OnGameHeightValueChanged"/>
+            </Grid>
+        </GroupBox>
+        <GroupBox Grid.Row="1" Header="SE" Width="400" FontSize="18" Margin="10,20,0,0" HorizontalAlignment="Left">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Label Content="マウス通過時"/>
+                <TextBox Name="MouseOverSE" Width="200" Height="25" Grid.Column="1" IsReadOnly="True"/>
+                <Button Content="参照" Width="50" Height="25" Margin="20,0,0,0" Grid.Column="2" Click="Button_Click"/>
+                <Label Grid.Row="1" Content="マウス押下時"/>
+                <TextBox Grid.Row="1" Name="MouseDownSE" Width="200" Height="25" Grid.Column="1" IsReadOnly="True"/>
+                <Button Content="参照" Width="50" Height="25" Margin="20,0,0,0" Grid.Row="1" Grid.Column="2" Click="Button_Click_1"/>
+            </Grid>
+        </GroupBox>
+    </Grid>
+</Page>

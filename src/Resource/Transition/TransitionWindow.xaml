@@ -1,0 +1,40 @@
+﻿<Window x:Class="EmeralEngine.TransitionWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        xmlns:local="clr-namespace:EmeralEngine"
+        mc:Ignorable="d"
+        Title="トランジション設定" Height="362" Width="314" ResizeMode="NoResize">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="50"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Label Content="タイプ" FontSize="24" VerticalAlignment="Center"/>
+            <ComboBox Grid.Column="1" Name="TransitionType" Width="80" Height="26" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10,0,0,0">
+                <ComboBoxItem Name="TypeNone" Content="なし" IsSelected="True" Selected="OnNoneSelected"/>
+                <ComboBoxItem Name="TypeMono" Content="シンプル" Selected="OnMonoSelected"/>
+            </ComboBox>
+            <Grid Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Label Content="間" FontSize="24"/>
+                <xctk:DoubleUpDown x:Name="Interval" FontSize="16" Value="0" Grid.Column="1" Width="70" Height="25" VerticalAlignment="Top" Margin="0,10,0,0" ValueChanged="OnIntervalChanged"/>
+            </Grid>
+        </Grid>
+        <GroupBox Grid.Row="1" Header="トランジション設定">
+            <Frame Name="TransitionSetting" NavigationUIVisibility="Hidden"/>
+        </GroupBox>
+    </Grid>
+</Window>

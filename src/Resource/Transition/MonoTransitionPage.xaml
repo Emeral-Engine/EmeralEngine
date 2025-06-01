@@ -1,0 +1,36 @@
+﻿<Page x:Class="EmeralEngine.Resource.Transition.MonoTransitionPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+      xmlns:local="clr-namespace:EmeralEngine.Resource.Transition"
+      mc:Ignorable="d" 
+      d:DesignHeight="150" d:DesignWidth="310"
+      Title="MonoTransitionPage">
+
+    <Grid>
+        <Border BorderBrush="Gray" BorderThickness="1">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Label Content="色" FontSize="20" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                <xctk:ColorPicker Grid.Column="1" x:Name="MonochroColor" Width="70" Height="30" SelectedColor="Black" SelectedColorChanged="OnColorChabged"/>
+                <Label Grid.Row="2" Content="フェードイン" FontSize="20" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                <Label Grid.Row="1" Content="フェードアウト" FontSize="20" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                <xctk:DoubleUpDown Grid.Row="2" x:Name="Fadein" Width="70" Height="30"  FontSize="20" Value="5" ValueChanged="OnValueChanged" Grid.ColumnSpan="2" Margin="106,4,0,16"/>
+                <xctk:DoubleUpDown Grid.Row="1" x:Name="Fadeout" Width="70" Height="30"  FontSize="20" Value="5" ValueChanged="OnValueChanged" Grid.ColumnSpan="2" Margin="106,3,0,16"/>
+                <Label Grid.Row="1" Grid.Column="2" FontSize="20" Content="秒"/>
+                <Label Grid.Row="2" Grid.Column="2"  FontSize="20" Content="秒"/>
+            </Grid>
+        </Border>
+    </Grid>
+</Page>

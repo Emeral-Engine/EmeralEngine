@@ -1,0 +1,25 @@
+﻿<Page x:Class="EmeralEngine.Setting.StartupPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:EmeralEngine.Setting"
+      mc:Ignorable="d" 
+      d:DesignHeight="450" d:DesignWidth="800" Background="White"
+      Title="StartupPage">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <GroupBox Width="350" HorizontalAlignment="Left" Header="プロジェクトを開いた時に開くウィンドウ" FontSize="20" Margin="10,0,0,0">
+            <UniformGrid Rows="6">
+                <CheckBox x:Name="EpisodeWindowCheck" Content="ストーリーエディター" Click="EpisodeWindowCheck_Click"/>
+                <CheckBox x:Name="SceneWindowCheck" Content="シーンエディター" Click="SceneWindowCheck_Click"/>
+                <CheckBox x:Name="ScriptWindowCheck" Content="スクリプトエディター" Click="ScriptWindowCheck_Click"/>
+                <CheckBox x:Name="ResourceWindowCheck" Content="リソースマネージャー" Click="ResourceWindowCheck_Click"/>
+                <CheckBox x:Name="CharaWindowCheck" Content="キャラクターマネージャー" Click="CharaWindowCheck_Click"/>
+                <CheckBox x:Name="MessageWindowCheck" Content="メッセージウィンドウマネージャー" Click="MessageWindowCheck_Click"/>
+            </UniformGrid>
+        </GroupBox>
+    </Grid>
+</Page>
