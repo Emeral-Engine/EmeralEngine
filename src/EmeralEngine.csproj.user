@@ -9,7 +9,7 @@
     </ApplicationDefinition>
   </ItemGroup>
   <ItemGroup>
-    <Compile Update="ErrorNotifyWindow.xaml.cs">
+    <Compile Update="Core\ErrorNotifyWindow.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="MessageWindow\NamePlateSettingPage.xaml.cs">

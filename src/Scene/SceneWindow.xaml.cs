@@ -1,4 +1,5 @@
-﻿using EmeralEngine.Scene;
+﻿using EmeralEngine.Core;
+using EmeralEngine.Scene;
 using System.Diagnostics;
 using System.IO;
 using System.Windows;

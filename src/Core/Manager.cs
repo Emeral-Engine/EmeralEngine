@@ -57,5 +57,6 @@ namespace EmeralEngine.Core
         public EpisodeManager EpisodeManager;
         public SceneManager SceneManager;
         public MessageWindowManager MessageWindowManager;
+        public BackupManager BackupManager;
     }
 }

@@ -294,15 +294,11 @@ namespace EmeralEngine.Project
         private const int MAX_BACKUPS = 10;
         private int now_backups;
         private string oldest_backup;
-        private ProjectManager pmanager;
-        private EpisodeManager emanager;
-        private MessageWindowManager mmanager;
-        public BackupManager(ProjectManager p, EpisodeManager e, MessageWindowManager m)
+        private Managers Managers;
+        public BackupManager(Managers m)
         {
-            pmanager = p;
-            emanager = e;
-            mmanager = m;
-            baseDir = Path.Combine(p.ActualProjectDir, "Backups");
+            Managers = m;
+            baseDir = Path.Combine(Managers.ProjectManager.ActualProjectDir, "Backups");
             buildDir = Path.Combine(baseDir, "LastBuild");
             if (!Directory.Exists(baseDir))
             {
@@ -316,23 +312,28 @@ namespace EmeralEngine.Project
 
         public void Backup()
         {
-            string dir;
+            string dest;
             if (MAX_BACKUPS <= now_backups)
             {
-                dir = oldest_backup;
-                Directory.Delete(dir, true);
+                dest = oldest_backup;
+                Directory.Delete(dest, true);
             }
             else
             {
                 now_backups++;
-                dir = Path.Combine(baseDir, now_backups.ToString());
+                dest = Path.Combine(baseDir, now_backups.ToString());
             }
-            var scripts = Path.Combine(dir, "Scripts");
-            Directory.CreateDirectory(dir);
-            Directory.CreateDirectory(scripts);
-            File.WriteAllText(Path.Combine(dir, "project.emeral"), JsonSerializer.Serialize(pmanager.Project));
-            emanager.Dump(scripts);
-            mmanager.Dump(Path.Combine(dir, "msw.json"));
+            Managers.EpisodeManager.Dump();
+            var edir = Path.Combine(dest, "Episodes");
+            Directory.CreateDirectory(edir);
+            FileSystem.CopyDirectory(Managers.ProjectManager.ProjectEpisodesDir, edir);
+            if (File.Exists(Managers.ProjectManager.ProjectTitleScreen))
+            {
+                File.Copy(Managers.ProjectManager.ProjectTitleScreen, Path.Combine(dest, "titlescreen.xaml"), true);
+            }
+            Managers.ProjectManager.ApplyStory(Managers.StoryManager.StoryInfos);
+            Managers.ProjectManager.SaveProject();
+            Managers.MessageWindowManager.Dump(Path.Combine(Managers.ProjectManager.ActualProjectDir, MessageWindowManager.FILENAME));
         }
         public void BackupForBuild()
         {
@@ -340,12 +341,21 @@ namespace EmeralEngine.Project
             {
                 Directory.CreateDirectory(buildDir);
             }
-            var scripts = Path.Combine(buildDir, "Scripts");
-            Directory.CreateDirectory(buildDir);
-            Directory.CreateDirectory(scripts);
-            File.WriteAllText(Path.Combine(buildDir, "project.emeral"), JsonSerializer.Serialize(pmanager.Project));
-            emanager.Dump(scripts);
-            mmanager.Dump(Path.Combine(buildDir, "msw.json"));
+            Managers.EpisodeManager.Dump();
+            var edir = Path.Combine(buildDir, "Episodes");
+            if (Directory.Exists(edir))
+            {
+                Directory.Delete(edir, true);
+            }
+            Directory.CreateDirectory(edir);
+            FileSystem.CopyDirectory(Managers.ProjectManager.ProjectEpisodesDir, edir, true);
+            if (File.Exists(Managers.ProjectManager.ProjectTitleScreen))
+            {
+                File.Copy(Managers.ProjectManager.ProjectTitleScreen, Path.Combine(buildDir, "titlescreen.xaml"), true);
+            }
+            Managers.ProjectManager.ApplyStory(Managers.StoryManager.StoryInfos);
+            Managers.ProjectManager.SaveProject();
+            Managers.MessageWindowManager.Dump(Path.Combine(Managers.ProjectManager.ActualProjectDir, MessageWindowManager.FILENAME));
         }
     }
 
