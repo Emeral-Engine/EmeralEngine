@@ -18,7 +18,7 @@ EmeralEngineはWindows向けのノベルゲームエンジンです。
 # 導入について
 以下の2つを導入する必要があります。
 
-- .NET SDK
+- .NET SDK 9
 - EmeralEngine本体
 
 # .NET SDKの導入
@@ -34,7 +34,7 @@ EmeralEngineはWindows向けのノベルゲームエンジンです。
 4. `dotnet --version`と打ってバージョン情報が出てくることを確認する
 
 もしwingetコマンドが無い場合は、[公式サイト](https://dotnet.microsoft.com/ja-jp/download)よりインストーラーをダウンロード、インストールしてください。
-バージョンはWPFが扱えるなら何でも良いですが、推奨は9です。
+バージョンは9です。
 
 ## EmeralEngineの導入
 1. [リリースページ](https://github.com/Emeral-Engine/EmeralEngine/releases/latest)より`EmeralEngine-dist.zip`をダウンロード
