@@ -42,11 +42,6 @@ namespace EmeralEngine.Builder
             references = refs;
         }
 
-        private string CreateResourcePath(string name)
-        {
-            return Path.Combine("Resources", name);
-        }
-
         public void ExportProject(string dest, BuildProgressWindow progress, FilePackingData data, Action<Action> dispatcher)
         {
             var baseDir = Path.Combine(dest, title);
@@ -887,9 +882,9 @@ namespace EmeralEngine.Builder
             }
         }
 
-        public ScriptState<object>? Run(SceneInfo start)
+        public ScriptState<object> Run(SceneInfo start)
         {
-            File.WriteAllText(Path.Combine(MainWindow.pmanager.ActualProjectDir, "test.cs"), GenerateScriptCode(start));
+            File.WriteAllText(Path.Combine(MainWindow.pmanager.ActualProjectDir, "script.cs"), GenerateScriptCode(start));
             var script = CSharpScript.Create(GenerateScriptCode(start), ScriptOptions.Default
                                                                           .WithReferences(references)
                                                                           .AddImports(
