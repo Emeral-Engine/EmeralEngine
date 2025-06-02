@@ -1,4 +1,5 @@
-﻿using EmeralEngine.MessageWindow;
+﻿using EmeralEngine.Core;
+using EmeralEngine.MessageWindow;
 using System;
 using System.Collections.Generic;
 using System.Linq;

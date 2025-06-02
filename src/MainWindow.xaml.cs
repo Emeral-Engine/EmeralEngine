@@ -40,6 +40,7 @@ namespace EmeralEngine
         public StoryManager story;
         public EpisodeManager emanager;
         private BackupManager bmanager;
+        private Managers Managers;
         private CharacterWindow _CharacterWindow;
         private ScriptEditor _ScriptWindow;
         private SceneWindow _SceneWindow;
@@ -171,7 +172,15 @@ namespace EmeralEngine
             mmanager = new();
             story = new();
             emanager = new();
-            bmanager = new(pmanager, emanager, mmanager);
+            Managers = new()
+            {
+                ProjectManager = pmanager,
+                StoryManager = story,
+                EpisodeManager = emanager,
+                MessageWindowManager = new MessageWindowManager(),
+            };
+            bmanager = new(Managers);
+            Managers.BackupManager = bmanager;
             if (emanager.episodes.Count == 0)
             {
                 now_episode = emanager.New();
@@ -657,7 +666,7 @@ namespace EmeralEngine
                 Directory.Delete(pmanager.ActualProjectEpisodesDir, true);
             }
             Directory.CreateDirectory(pmanager.ActualProjectEpisodesDir);
-            FileSystem.CopyDirectory(pmanager.ProjectEpisodesDir, pmanager.ActualProjectEpisodesDir);
+            FileSystem.CopyDirectory(pmanager.ProjectEpisodesDir, pmanager.ActualProjectEpisodesDir, true);
             if (File.Exists(pmanager.ProjectTitleScreen))
             {
                 File.Copy(pmanager.ProjectTitleScreen, pmanager.ActualProjectTitleScreen, true);
