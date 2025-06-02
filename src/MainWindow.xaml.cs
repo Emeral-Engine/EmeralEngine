@@ -2,8 +2,8 @@
 using EmeralEngine.Project;
 using EmeralEngine.Scene;
 using EmeralEngine.Builder;
-using System.Windows;
 using EmeralEngine.Resource;
+using System.Windows;
 using System.Windows.Media.Imaging;
 using System.Windows.Media;
 using Microsoft.CodeAnalysis;
@@ -17,9 +17,7 @@ using EmeralEngine.Story;
 using EmeralEngine.MessageWindow;
 using System.Windows.Controls;
 using System.Windows.Media.Animation;
-using System.Windows.Media.Media3D;
 using EmeralEngine.TitleScreen;
-using System.Diagnostics;
 using Microsoft.VisualBasic.FileIO;
 using EmeralEngine.Core;
 using EmeralEngine.Notify;
@@ -165,7 +163,7 @@ namespace EmeralEngine
         public void LoadProject(string name)
         {
             pmanager.LoadProject(name);
-            Title = $"EmeralEngine {pmanager.ProjectName} ロード中...";
+            Title = $"{CAPTION} {pmanager.ProjectName} ロード中...";
             Refresh();
             backup_timer.Stop();
             CloseSubWindows();
@@ -210,7 +208,7 @@ namespace EmeralEngine
             if (pmanager.Project.Startup.Msw) OpenMessageDesigner();
             AdjustPreviewSize();
             LoadPreview();
-            Title = $"EmeralEngine {pmanager.ProjectName}";
+            Title = $"{CAPTION} {pmanager.ProjectName}";
             Activate();
             backup_timer.Start();
         }
@@ -643,13 +641,9 @@ namespace EmeralEngine
                 Dispatcher.BeginInvoke(() =>
                 {
                     var res = compiler.Run(now_scene);
-                    if (res is null)
+                    if (res.ReturnValue is not null)
                     {
-                        MessageBox.Show("スクリプトがありません", "EmeralEngine エラー", MessageBoxButton.OK, MessageBoxImage.Error);
-                    }
-                    else if (res.ReturnValue is not null)
-                    {
-                        MessageBox.Show($"エラーが発生しました\n{res.ReturnValue}: {res.Exception.Message}", "EmeralEngine エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                        ErrorNotifyWindow.Show($"{res.ReturnValue}:\n{res.Exception.Message}");
                     }
                     RunButton.IsEnabled = true;
                 });
