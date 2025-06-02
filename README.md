@@ -133,3 +133,6 @@ EmeralEngineはWindows向けのノベルゲームエンジンです。
 # バグ報告、及び機能要望について
 [Issue](https://github.com/Emeral-Engine/EmeralEngine/issues)よりテンプレートに従いお願いします。
 機能改善要望は「Feature request」と同じテンプレートを使ってください。
+
+# ライセンス
+[MIT License](LICENSE)
