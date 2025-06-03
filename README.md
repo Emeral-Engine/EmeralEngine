@@ -21,7 +21,7 @@ EmeralEngineはWindows向けのノベルゲームエンジンです。
 - .NET SDK 9
 - EmeralEngine本体
 
-# .NET SDKの導入
+## .NET SDKの導入
 
 1. Windowsキー+Rキーを同時押し
 2. cmdと入力しエンターキーを押す
