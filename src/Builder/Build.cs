@@ -795,6 +795,10 @@ namespace EmeralEngine.Builder
         public void CreateExe(string dest, BuildProgressWindow progress, FilePackingData data, Action<Action> dispatcher)
         {
             var files = _ExportProject(dest, data, progress, dispatcher);
+            if (files is null)
+            {
+                return;
+            }
             dispatcher(() =>
             {
                 progress.MainProgress.Value += 1;
@@ -805,7 +809,7 @@ namespace EmeralEngine.Builder
                 StartInfo = new ProcessStartInfo()
                 {
                     FileName = "dotnet",
-                    Arguments = $"publish \"{files.csproj}\" -c Release -p:AssemblyName=\"{MainWindow.pmanager.ProjectName}\" -o \"{Path.Combine(dest, MainWindow.pmanager.ProjectName)}\"",
+                    Arguments = $"publish \"{files.csproj}\" -c Release --self-contained true -r win-x64 -p:AssemblyName=\"{MainWindow.pmanager.ProjectName}\" -o \"{Path.Combine(dest, MainWindow.pmanager.ProjectName)}\"",
                     UseShellExecute = false,
                     CreateNoWindow = true,
                     RedirectStandardOutput = true,

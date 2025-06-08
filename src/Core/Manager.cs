@@ -13,7 +13,7 @@ namespace EmeralEngine.Core
 {
     public class Manager<T>
     {
-        private ObservableCollection<T> Information;
+        public ObservableCollection<T> Information;
         private Stack<ObservableCollection<T>> Histories;
         private Stack<ObservableCollection<T>> UndoHistories;
 

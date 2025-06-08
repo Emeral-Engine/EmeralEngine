@@ -6,7 +6,7 @@ using EmeralEngine.Script;
 
 namespace EmeralEngine.Scene
 {
-    public class SceneManager
+    public class SceneManager : Manager<SceneInfo>
     {
         public SortedList<int, SceneInfo> scenes;
         private string episodeDir;

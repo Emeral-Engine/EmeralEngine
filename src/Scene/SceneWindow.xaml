@@ -19,7 +19,7 @@
             </MenuItem>
         </Menu>
         <ScrollViewer  x:Name="ScrollViewer1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Visible" PreviewMouseWheel="OnMouseWheel">
-            <Canvas x:Name="Screens" Height="520" Width="0">
+            <Canvas x:Name="Scenes" Height="520" Width="0">
                 <Canvas.LayoutTransform>
                     <ScaleTransform x:Name="Scale"/>
                 </Canvas.LayoutTransform>

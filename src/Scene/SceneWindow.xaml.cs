@@ -62,9 +62,9 @@ namespace EmeralEngine
         }
         public void Load()
         {
-            Screens.Children.Clear();
+            Scenes.Children.Clear();
             pre_info = null;
-            Screens.Width = 0;
+            Scenes.Width = 0;
             edgeCount = 0;
             panel_x = 0;
             panel_y = ActualHeight / 4;
@@ -96,8 +96,8 @@ namespace EmeralEngine
                 line.ContextMenu = l_ctx;
                 Canvas.SetLeft(line, panel_x);
                 Canvas.SetTop(line, line_y);
-                Screens.Children.Add(line);
-                Screens.Width += line.Width;
+                Scenes.Children.Add(line);
+                Scenes.Width += line.Width;
                 panel_x += line.Width;
             }
             var grid = new Grid();
@@ -190,9 +190,13 @@ namespace EmeralEngine
                 Load();
             };
             ctx.Items.Add(item3);
+            ctx.ContextMenuOpening += (sender, e) =>
+            {
+                item3.IsEnabled = 1 < Scenes.Children.Count;
+            };
             panel.ContextMenu = ctx;
-            Screens.Children.Add(panel);
-            Screens.Width += panel.Width;
+            Scenes.Children.Add(panel);
+            Scenes.Width += panel.Width;
             panel_x += panel.Width;
             pre_info = info;
             return (border, img, info);
