@@ -802,14 +802,14 @@ namespace EmeralEngine.Builder
             dispatcher(() =>
             {
                 progress.MainProgress.Value += 1;
-                progress.Label.Content = $"コンパイル中... {progress.MainProgress.Value} / {progress.MainProgress.Maximum}";
+                progress.Label.Content = $"ビルド中... {progress.MainProgress.Value} / {progress.MainProgress.Maximum}";
             });
             var p = new Process()
             {
                 StartInfo = new ProcessStartInfo()
                 {
                     FileName = "dotnet",
-                    Arguments = $"publish \"{files.csproj}\" -c Release --self-contained true -r win-x64 -p:AssemblyName=\"{MainWindow.pmanager.ProjectName}\" -o \"{Path.Combine(dest, MainWindow.pmanager.ProjectName)}\"",
+                    Arguments = $"publish \"{files.csproj}\" -c Release --self-contained true -r win-x64 -p:ReadyToRun=true -p:AssemblyName=\"{MainWindow.pmanager.ProjectName}\" -o \"{Path.Combine(dest, MainWindow.pmanager.ProjectName)}\"",
                     UseShellExecute = false,
                     CreateNoWindow = true,
                     RedirectStandardOutput = true,
