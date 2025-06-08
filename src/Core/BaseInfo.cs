@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -21,5 +22,11 @@ namespace EmeralEngine.Core
         public double interval { get; set; }
         public double fadein {  get; set; }
         public double fadeout {  get; set; }
+        public string path {  get; set; }
+
+        public void Remove()
+        {
+            File.Delete(path);
+        }
     }
 }
