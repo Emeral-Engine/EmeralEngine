@@ -23,6 +23,7 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <DockPanel x:Name="ProjectPanel" Grid.Row="1" Height="35" Background="#f2f2f2" MouseLeftButtonDown="OnProjectPanelMouseLeftDown">
                 <Label FontSize="20" Content="プロジェクト"/>
@@ -35,6 +36,9 @@
             </DockPanel>
             <DockPanel x:Name="ScenePanel" Grid.Row="4" Height="35">
                 <Label FontSize="20" Content="シーン" MouseLeftButtonDown="OnScenePanelMouseLeftDown"/>
+            </DockPanel>
+            <DockPanel x:Name="CharaPanel" Grid.Row="5" Height="35">
+                <Label FontSize="20" Content="キャラクター" MouseLeftButtonDown="OnCharaPanelMouseLeftDown" />
             </DockPanel>
         </Grid>
         <ScrollViewer Grid.Column="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">

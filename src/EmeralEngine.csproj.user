@@ -30,6 +30,9 @@
     <Compile Update="Resource\Transition\MonoTransitionPage.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Setting\CharaSettingPage.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="Setting\EditorPage.xaml.cs">
       <SubType>Code</SubType>
     </Compile>

@@ -97,19 +97,6 @@ namespace EmeralEngine.Project
             {
                 Title = name,
                 Size = size,
-                Startup = new ProjectStartupWindows()
-                {
-                    Scene = true,
-                    Script = true
-                },
-                EditorSettings = new EditorSettings()
-                {
-                    AddScriptWhenEmpty = false,
-                },
-                SceneSettings = new SceneSettings()
-                {
-                    ChangeLatterBgWhenChanged = true,
-                },
                 Story = new(),
                 Flags = new List<string>()
             };
@@ -370,31 +357,37 @@ namespace EmeralEngine.Project
     public class ProjectConfig
     {
         public string Title { set; get; }
-        public string MouseOverSE {  set; get; }
-        public string MouseDownSE {  set; get; }
+        public string MouseOverSE { set; get; } = "";
+        public string MouseDownSE { set; get; } = "";
         public int[] Size { get; set; }
         public ProjectStartupWindows Startup {  set; get; }
         public EditorSettings EditorSettings { set; get; }
         public SceneSettings SceneSettings { set; get; }
+        public CharacterSettings CharacterSettings { set; get; }
         public List<ContentInfo> Story { set; get; }
         public List<string> Flags { set; get; }
     }
     public class ProjectStartupWindows
     {
-        public bool Story {  set; get; }
-        public bool Scene { set; get; }
-        public bool Script {  set; get; }
-        public bool Resource {  set; get; }
-        public bool Chara {  set; get; }
-        public bool Msw {  set; get; }
+        public bool Story { set; get; } = false;
+        public bool Scene { set; get; } = true;
+        public bool Script { set; get; } = true;
+        public bool Resource { set; get; } = false;
+        public bool Chara { set; get; } = false;
+        public bool Msw { set; get; } = false;
     }
     public class  EditorSettings
     {
-        public bool AddScriptWhenEmpty { get; set; }
+        public bool AddScriptWhenEmpty { get; set; } = false;
     }
 
     public class SceneSettings
     {
-        public bool ChangeLatterBgWhenChanged {  get; set; }
+        public bool ChangeLatterBgWhenChanged { get; set; } = true;
+    }
+
+    public class CharacterSettings
+    {
+        public bool Triming { set; get; } = true;
     }
 }
