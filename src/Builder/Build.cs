@@ -571,6 +571,7 @@ namespace EmeralEngine.Builder
                 using System.Windows.Threading;
                 using System.IO;
                 using System.Reflection;
+                using System.Linq;
                 using System;
 
                 namespace Game
@@ -608,25 +609,18 @@ namespace EmeralEngine.Builder
                 
                         private void SetCharacter(Image chara, double x)
                         {
-                            chara.Opacity = 0;
                             Canvas.SetLeft(chara, x);
                             CharacterPictures.Children.Add(chara);
-                            var b = new DoubleAnimation() {
-                                From = 0.0,
-                                To = 1.0,
-                                Duration = new Duration(TimeSpan.FromMilliseconds(300))
-                            };
-                            chara.BeginAnimation(UIElement.OpacityProperty, b);
                         }
                 
-                        private void RemoveCharas()
+                        private void RemoveCharas(UIElementCollection[] charas)
                         {
-                            foreach (UIElement c in CharacterPictures.Children)
+                            foreach (UIElement c in charas)
                             {
                                 var b = new DoubleAnimation() {
                                     From = 1.0,
                                     To = 0.0,
-                                    Duration = new Duration(TimeSpan.FromMilliseconds(300))
+                                    Duration = new Duration(TimeSpan.FromMilliseconds(200))
                                 };
                                 b.Completed += (sender, e) => {
                                     CharacterPictures.Children.Remove(c);
@@ -893,6 +887,7 @@ namespace EmeralEngine.Builder
                                                                           .WithReferences(references)
                                                                           .AddImports(
                                                                           "System",
+                                                                          "System.Linq",
                                                                           "System.Windows",
                                                                           "System.Windows.Input",
                                                                           "System.Windows.Controls",
@@ -1033,7 +1028,7 @@ namespace EmeralEngine.Builder
                             var charas = new StringBuilder();
                             if (pre_script is null || !Utils.IsEqualList(pre_script.charas, script.charas))
                             {
-                                charas = charas.AppendLine("RemoveCharas();");
+                                charas.AppendLine("var charas = CharacterPictures.Children.Cast<UIElement>().ToArray();");
                                 if (0 < script.charas.Count)
                                 {
                                     var per_x = MainWindow.pmanager.Project.Size[0] / (script.charas.Count * 2);
@@ -1056,6 +1051,7 @@ namespace EmeralEngine.Builder
                                         }
                                     }
                                 }
+                                charas.AppendLine("if (0 < charas.Length) RemoveCharas(charas);");
                             }
                             if (isLastScene && isLastScript)
                             {
@@ -1671,25 +1667,18 @@ namespace EmeralEngine.Builder
 
                     private void SetCharacter(Image chara, double x)
                     {
-                        chara.Opacity = 0;
                         Canvas.SetLeft(chara, x);
                         CharacterPictures.Children.Add(chara);
-                        var b = new DoubleAnimation() {
-                            From = 0.0,
-                            To = 1.0,
-                            Duration = new Duration(TimeSpan.FromMilliseconds(300))
-                        };
-                        chara.BeginAnimation(UIElement.OpacityProperty, b);
                     }
 
-                    private void RemoveCharas()
+                    private void RemoveCharas(UIElement[] charas)
                     {
-                        foreach (UIElement c in CharacterPictures.Children)
+                        foreach (UIElement c in charas)
                         {
                             var b = new DoubleAnimation() {
                                 From = 1.0,
                                 To = 0.0,
-                                Duration = new Duration(TimeSpan.FromMilliseconds(300))
+                                Duration = new Duration(TimeSpan.FromMilliseconds(200))
                             };
                             b.Completed += (sender, e) => {
                                 CharacterPictures.Children.Remove(c);
