@@ -43,7 +43,11 @@ namespace EmeralEngine.Resource.Character
         }
         public void AddPicture(string name, string path)
         {
-            File.Copy(path, Utils.GetUnusedFileName(Path.Combine(baseDir, name, Path.GetFileName(path))));
+            var cropped = ImageUtils.CropTransparentEdges(ImageUtils.LoadImage(path));
+            if (cropped is not null)
+            {
+                ImageUtils.SaveImage(cropped, Utils.GetUnusedFileName(Path.Combine(baseDir, name, Path.GetFileName(path))));
+            }
         }
         public void RemovePicture(string name, string path)
         {

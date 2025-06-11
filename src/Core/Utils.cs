@@ -243,6 +243,72 @@ namespace EmeralEngine.Core
         }
     }
 
+    public static class ImageUtils
+    {
+        public static CroppedBitmap CropTransparentEdges(BitmapSource source)
+        {
+            int width = source.PixelWidth;
+            int height = source.PixelHeight;
+
+            int stride = (width * source.Format.BitsPerPixel + 7) / 8;
+            byte[] pixels = new byte[height * stride];
+            source.CopyPixels(pixels, stride, 0);
+
+            int bytesPerPixel = source.Format.BitsPerPixel / 8;
+            int alphaIndex = bytesPerPixel - 1;
+
+            int minX = width;
+            int minY = height;
+            int maxX = 0;
+            int maxY = 0;
+
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    int index = y * stride + x * bytesPerPixel;
+                    byte alpha = pixels[index + alphaIndex];
+
+                    if (alpha > 0)
+                    {
+                        if (x < minX) minX = x;
+                        if (y < minY) minY = y;
+                        if (x > maxX) maxX = x;
+                        if (y > maxY) maxY = y;
+                    }
+                }
+            }
+
+            if (minX > maxX || minY > maxY)
+            {
+                return null;
+            }
+
+            Int32Rect cropRect = new Int32Rect(minX, minY, maxX - minX + 1, maxY - minY + 1);
+            return new CroppedBitmap(source, cropRect);
+        }
+
+        public static BitmapSource LoadImage(string path)
+        {
+            using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read))
+            {
+                var decoder = new PngBitmapDecoder(stream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad);
+                return decoder.Frames[0];
+            }
+        }
+
+        public static void SaveImage(BitmapSource source, string outputPath)
+        {
+            PngBitmapEncoder encoder = new PngBitmapEncoder();
+            encoder.Frames.Add(BitmapFrame.Create(source));
+
+            using (var stream = new FileStream(outputPath, FileMode.Create))
+            {
+                encoder.Save(stream);
+            }
+        }
+    }
+
     public class TempDirectory : IDisposable
     {
         public string path;
