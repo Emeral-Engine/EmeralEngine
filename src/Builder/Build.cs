@@ -856,16 +856,16 @@ namespace EmeralEngine.Builder
                             <Image Name="Bg" Stretch="Uniform"/>
                             <Canvas Name="CharacterPictures"/>
                             <Canvas Name="MessageWindowCanvas">
-                                <Canvas Name="NamePlate">
-                                    <Image x:Name="NamePlateBgImage" Height="{Binding ActualHeight, ElementName=NamePlate}" Width="{Binding ActualWidth, ElementName=NamePlate}" Stretch="Fill"/>
-                                    <Label Name="Speaker" Content="名前" FontSize="30" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                </Canvas>
                                 <StackPanel Name="MessageWindow" VerticalAlignment="Bottom">
                                     <Canvas>
                                         <Image Name="MessageWindowBg" Stretch="Fill"/>
                                         <TextBlock Name="Script"/>
                                     </Canvas>
                                 </StackPanel>
+                                <Canvas Name="NamePlate">
+                                    <Image x:Name="NamePlateBgImage" Height="{Binding ActualHeight, ElementName=NamePlate}" Width="{Binding ActualWidth, ElementName=NamePlate}" Stretch="Fill"/>
+                                    <Label Name="Speaker" Content="名前" FontSize="30" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Canvas>
                             </Canvas>
                             <MediaElement Name="MoviePlayer" Stretch="Uniform" Height="{{MainWindow.pmanager.Project.Size[1]}}" Width="{{MainWindow.pmanager.Project.Size[0]}}" LoadedBehavior="Manual"/>
                             <Rectangle Name="Transition" Opacity="0"/>

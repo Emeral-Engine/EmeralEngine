@@ -17,16 +17,6 @@
                     <Canvas.LayoutTransform>
                         <ScaleTransform x:Name="WindowSampleScale"/>
                     </Canvas.LayoutTransform>
-                    <Border Name="NamePlateBorder" Canvas.Left="0" Canvas.Bottom="0" Width="300" Height="70" MouseEnter="OnPlateMouseEnter" MouseLeave="OnPlateMouseLeave" MouseLeftButtonDown="OnNamePlateLeftDown" MouseLeftButtonUp="OnNamePlateLeftUp">
-                        <Border.BorderBrush>
-                            <SolidColorBrush Color="#FF2FD3D7" Opacity="0.5"/>
-                        </Border.BorderBrush>
-                        <Canvas>
-                            <Image x:Name="NamePlateBgImage" Stretch="Fill" Height="{Binding ActualHeight, ElementName=NamePlateBorder}" Width="{Binding ActualWidth, ElementName=NamePlateBorder}"/>
-                            <Rectangle Name="NamePlateBg" Fill="DarkGray" Height="{Binding ActualHeight, ElementName=NamePlateBorder}" Width="{Binding ActualWidth, ElementName=NamePlateBorder}"/>
-                            <Label Name="CharaName" Content="名前" FontSize="30" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Canvas>
-                    </Border>
                     <Border Canvas.Bottom="0" Canvas.Left="0" VerticalAlignment="Bottom" x:Name="MessageWindowBorder" Height="180" Width="460" BorderThickness="0" MouseEnter="OnMessageWindowMouseEnter" MouseLeave="OnMessageWindowMouseLeave" MouseLeftButtonDown="OnMessageWindowLeftDown" MouseMove="OnMessageWindowMouseMove">
                         <Border.BorderBrush>
                             <SolidColorBrush Color="#FF2FD3D7" Opacity="0.5"/>
@@ -40,6 +30,16 @@
                                 </Border.BorderBrush>
                                 <TextBlock x:Name="Script"  FontSize="30" TextWrapping="WrapWithOverflow" MouseEnter="OnScriptMouseEnter" MouseLeave="OnScriptMouseLeave" MouseMove="OnScriptMouseMove"/>
                             </Border>
+                        </Canvas>
+                    </Border>
+                    <Border Name="NamePlateBorder" Canvas.Left="0" Canvas.Bottom="0" Width="300" Height="70" MouseEnter="OnPlateMouseEnter" MouseLeave="OnPlateMouseLeave" MouseLeftButtonDown="OnNamePlateLeftDown" MouseLeftButtonUp="OnNamePlateLeftUp">
+                        <Border.BorderBrush>
+                            <SolidColorBrush Color="#FF2FD3D7" Opacity="0.5"/>
+                        </Border.BorderBrush>
+                        <Canvas>
+                            <Image x:Name="NamePlateBgImage" Stretch="Fill" Height="{Binding ActualHeight, ElementName=NamePlateBorder}" Width="{Binding ActualWidth, ElementName=NamePlateBorder}"/>
+                            <Rectangle Name="NamePlateBg" Fill="DarkGray" Height="{Binding ActualHeight, ElementName=NamePlateBorder}" Width="{Binding ActualWidth, ElementName=NamePlateBorder}"/>
+                            <Label Name="CharaName" Content="名前" FontSize="30" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Canvas>
                     </Border>
                 </Canvas>
