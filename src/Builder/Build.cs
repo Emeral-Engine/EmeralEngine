@@ -1033,26 +1033,27 @@ namespace EmeralEngine.Builder
                             var charas = new StringBuilder();
                             if (pre_script is null || !Utils.IsEqualList(pre_script.charas, script.charas))
                             {
-                                var per_x = MainWindow.pmanager.Project.Size[0] / (script.charas.Count + 1);
-                                var j = 1;
-                                charas = charas.Append("""
-                                    BitmapImage c_bmp;
-                                    RemoveCharas();
-                                    """);
-                                foreach (var c in script.charas)
+                                charas = charas.AppendLine("RemoveCharas();");
+                                if (0 < script.charas.Count)
                                 {
-                                    if (!string.IsNullOrEmpty(c))
+                                    var per_x = MainWindow.pmanager.Project.Size[0] / (script.charas.Count * 2);
+                                    var j = 1;
+                                    charas.AppendLine("BitmapImage c_bmp;");
+                                    foreach (var c in script.charas)
                                     {
-                                        var file = ConvertPath(Path.Combine("Characters", c));
-                                        charas.Append($$"""
+                                        if (!string.IsNullOrEmpty(c))
+                                        {
+                                            var file = ConvertPath(Path.Combine("Characters", c));
+                                            charas.AppendLine($$"""
                                         c_bmp = MainWindow.CreateBmp(MainWindow.GetResource(@"{{file}}"));
                                         SetCharacter(new Image() {
                                             Source = c_bmp,
                                             Stretch = Stretch.Uniform,
                                             Height = {{MainWindow.pmanager.Project.Size[1]}}
-                                        }, {{per_x * j}} - c_bmp.Width  / 2);
+                                        }, {{per_x * (j * 2 - 1)}} - c_bmp.Width  / 4);
                                         """);
-                                        j++;
+                                            j++;
+                                        }
                                     }
                                 }
                             }
@@ -1062,7 +1063,7 @@ namespace EmeralEngine.Builder
                         public async void ShowScript{{script_counter}}() {
                             var terminate_scripting = false;
                             Script.Text = "";
-                            CurrentScript = @"{{text}}";
+                            CurrentScript = "{{text}}";
                             CurrentScriptId = {{script_counter}};
                             {{speaker}}
                             MainPanel.MouseLeftButtonDown -= OnMouseLeftDown;
@@ -1104,7 +1105,7 @@ namespace EmeralEngine.Builder
                         public async void ShowScript{{script_counter}}() {
                             var terminate_scripting = false;
                             Script.Text = "";
-                            CurrentScript = @"{{text}}";
+                            CurrentScript = "{{text}}";
                             CurrentScriptId = {{script_counter}};
                             {{speaker}}
                             MainPanel.MouseLeftButtonDown -= OnMouseLeftDown;
@@ -1126,9 +1127,9 @@ namespace EmeralEngine.Builder
                             MessageWindowCanvas.Visibility = Visibility.Visible;
                             IsNowScripting = true;
                             {{charas}}
-                            foreach (var s in @"{{text}}") {
+                            foreach (var s in "{{text}}") {
                                 if (terminate_scripting) {
-                                    Script.Text = @"{{text}}";
+                                    Script.Text = "{{text}}";
                                     terminate_scripting = false;
                                     break;
                                 }
@@ -1145,7 +1146,7 @@ namespace EmeralEngine.Builder
                         public async void ShowScript{{script_counter}}() {
                             var terminate_scripting = false;
                             Script.Text = "";
-                            CurrentScript = @"{{text}}";
+                            CurrentScript = "{{text}}";
                             CurrentScriptId = {{script_counter}};
                             {{speaker}}
                             MainPanel.MouseLeftButtonDown -= OnMouseLeftDown;
@@ -1167,9 +1168,9 @@ namespace EmeralEngine.Builder
                             MessageWindowCanvas.Visibility = Visibility.Visible;
                             IsNowScripting = true;
                             {{charas}}
-                            foreach (var s in @"{{text}}") {
+                            foreach (var s in "{{text}}") {
                                 if (terminate_scripting) {
-                                    Script.Text = @"{{text}}";
+                                    Script.Text = "{{text}}";
                                     terminate_scripting = false;
                                     break;
                                 }

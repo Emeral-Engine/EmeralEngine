@@ -325,10 +325,10 @@ namespace EmeralEngine
                 Canvas.SetLeft(MessageWindow, window.WindowLeftPos);
                 Canvas.SetBottom(MessageWindow, window.WindowBottom);
             }
-            if (charas && scriptIsAvailable)
+            if (charas && scriptIsAvailable && 0 < _ScriptWindow.now_script.charas.Count)
             {
                 CharacterPictures.Children.Clear();
-                var per = pmanager.Project.Size[0] / (_ScriptWindow.now_script.charas.Count + 1);
+                var per = pmanager.Project.Size[0] / (_ScriptWindow.now_script.charas.Count * 2);
                 BitmapImage b;
                 for (int i = 0; i < _ScriptWindow.now_script.charas.Count; i++)
                 {
@@ -337,8 +337,8 @@ namespace EmeralEngine
                     {
                         Source = b,
                         Stretch = Stretch.Uniform,
-                        Height = pmanager.Project.Size[1]
-                    }, per * (i + 1) - b.Width / 2);
+                        Height = pmanager.Project.Size[1],
+                    }, per * ((i+1) * 2 - 1) - b.Width / 4);
                 }
             }
             if (bg)
