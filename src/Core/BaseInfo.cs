@@ -22,7 +22,7 @@ namespace EmeralEngine.Core
         public double interval { get; set; }
         public double fadein {  get; set; }
         public double fadeout {  get; set; }
-        public string path {  get; set; }
+        virtual public string path {  get; set; }
 
         public void Remove()
         {

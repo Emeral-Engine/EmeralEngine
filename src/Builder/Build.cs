@@ -578,6 +578,9 @@ namespace EmeralEngine.Builder
                 {
                     public partial class GamePage : Page
                     {
+                        private const int FADEOUT_SAMPLES = 10;
+                        private const int FADEOUT_MILLISECOND = 1000 / FADEOUT_SAMPLES;
+                        private const float BGM_VOLUME = 0.5f;
                         public int CurrentScriptId, CurrentScene;
                         public string CurrentScript;
                         private WaveOutEvent BgmPlayer;
@@ -594,7 +597,7 @@ namespace EmeralEngine.Builder
                             window = w;
                             _movieFile = new();
                             BgmPlayer = new WaveOutEvent() {
-                                Volume = (float)0.5
+                                Volume = BGM_VOLUME
                             };
                             MainPanel.MouseRightButtonDown += (sender, e) => {
                                 if (!IsHandling) MessageWindowCanvas.Visibility = MessageWindowCanvas.Visibility == Visibility.Visible ? Visibility.Hidden : Visibility.Visible;
@@ -637,6 +640,22 @@ namespace EmeralEngine.Builder
                                 c.BeginAnimation(UIElement.OpacityProperty, b);
                             }
                         }
+
+                        private void RemoveCharas()
+                        {
+                            foreach (UIElement c in CharacterPictures.Children)
+                            {
+                                var b = new DoubleAnimation() {
+                                    From = 1.0,
+                                    To = 0.0,
+                                    Duration = new Duration(TimeSpan.FromMilliseconds(200))
+                                };
+                                b.Completed += (sender, e) => {
+                                    CharacterPictures.Children.Remove(c);
+                                };
+                                c.BeginAnimation(UIElement.OpacityProperty, b);
+                            }
+                        }
                         
                 
                         private void PlayBgm(byte[] b)
@@ -662,12 +681,19 @@ namespace EmeralEngine.Builder
                             BgmPlayer.Play();
                         }
                 
-                        private void FinishBgm()
+                        private async Task FinishBgm()
                         {
+                            float per_vol = BgmPlayer.Volume / FADEOUT_SAMPLES;
+                            for (int _=0; _ < FADEOUT_SAMPLES; _++)
+                            {
+                                await Task.Delay(FADEOUT_MILLISECOND);
+                                BgmPlayer.Volume = Math.Max(0.0f, BgmPlayer.Volume - per_vol);
+                            }
                             BgmPlayer.Stop();
+                            BgmPlayer.Volume = BGM_VOLUME;
                         }
 
-                        public void Clear()
+                        public async Task Clear()
                         {
                             Bg.Source = null;
                             MoviePlayer.Source = null;
@@ -675,15 +701,15 @@ namespace EmeralEngine.Builder
                             {
                                 _movieFile.Dispose();
                             }
-                            FinishBgm();
+                            await FinishBgm();
                             RemoveCharas();
                             Script.Text = "";
                             MessageWindowCanvas.Visibility = Visibility.Hidden;
                         }
 
-                        public void GoTo(int scene, int script)
+                        public async void GoTo(int scene, int script)
                         {
-                            Clear();
+                            await Clear();
                             window.Screen.Navigate(this);
                             var f = GetType().GetMethod($"Scene{scene}", BindingFlags.Instance | BindingFlags.Public);
                             f.Invoke(this, new object[] { script });
@@ -936,8 +962,11 @@ namespace EmeralEngine.Builder
                 var pre_scene = new SceneInfo();
                 if (string.IsNullOrEmpty(t.path))
                 {
-                    episode_counter--;
-                    story_ref--;
+                    stories.Append($$"""
+                        public void Episode{{episode_counter}}() {
+                            {{(isLastEpisode ? end_func : $"Episode{episode_counter + 1}();")}}
+                        }
+                        """);
                 }
                 else if (t.IsScenes())
                 {
@@ -1075,14 +1104,14 @@ namespace EmeralEngine.Builder
                             CurrentScriptId = {{script_counter}};
                             {{speaker}}
                             MainPanel.MouseLeftButtonDown -= OnMouseLeftDown;
-                            OnMouseLeftDown = (sender, e) => {
+                            OnMouseLeftDown = async (sender, e) => {
                                 if (IsHandling) return;
                                 else if (MessageWindowCanvas.Visibility == Visibility.Visible){
                                     if (IsNowScripting) {
                                         terminate_scripting = true;
                                     }
                                     else{
-                                        FinishBgm();
+                                        {{(IsScript ? "" : "await ")}}FinishBgm();
                                         {{(isLastEpisode ? end_func : $"Episode{episode_counter + 1}();")}}
                                     }
                                 }
@@ -1209,13 +1238,9 @@ namespace EmeralEngine.Builder
                                     """;
                             condition = "Bg.ActualWidth == 0";
                         }
-                        if (pre_scene.bgm == s.Value.bgm)
+                        if (string.IsNullOrEmpty(s.Value.bgm))
                         {
-                            bgm = "";
-                        }
-                        else if (string.IsNullOrEmpty(s.Value.bgm))
-                        {
-                            bgm = "FinishBgm();";
+                            bgm = $"{(IsScript ? "" : "await ")}FinishBgm();";
                         }
                         else
                         {
@@ -1263,7 +1288,6 @@ namespace EmeralEngine.Builder
                                     Speaker.FontSize = {window.NameFontSize};
                                     Canvas.SetLeft(MessageWindow, {window.WindowLeftPos});
                                     Canvas.SetBottom(MessageWindow,{window.WindowBottom});
-                                    {interval}
                                 """;
                         if (premsw == s.Value.msw)
                         {
@@ -1275,19 +1299,21 @@ namespace EmeralEngine.Builder
                         if (IsHandling) return;
                         IsHandling = true;
                         MessageWindowCanvas.Visibility = Visibility.Hidden;
-                        {{interval}}
                         Script.Text = "";
                         CurrentScene = {{scene_counter}};
                         {{bg}}
-                        {{bgm}}
-                        IsHandling = false;
                         if (script == -1)
                         {
+                            {{interval}}
+                            {{(pre_scene.bgm == s.Value.bgm ? "" : bgm)}}
+                            IsHandling = false;
                             ShowScript{{start_script_num}}();
                         }
                         else
                         {
                             {{msw}}
+                            {{bgm}}
+                            IsHandling = false;
                             var f = GetType().GetMethod($"ShowScript{script}", BindingFlags.Instance | BindingFlags.Public);
                             f.Invoke(this, null);
                         }
@@ -1337,7 +1363,7 @@ namespace EmeralEngine.Builder
                             Storyboard.SetTargetProperty(fadein, new PropertyPath(UIElement.OpacityProperty));
                             b2.Children.Add(fadein);
                             b2.Completed += async (sender, e) => {
-                                {{bgm}}
+                                {{(pre_scene.bgm == s.Value.bgm ? "" : bgm)}}
                                 IsHandling = false;
                                 ShowScript{{start_script_num}}();
                             };
@@ -1354,7 +1380,6 @@ namespace EmeralEngine.Builder
                                 await Task.Delay(500);
                             }
                             {{msw}}
-                            {{interval}}
                             bg_loaded = true;
                             {{bgm}}
                             IsHandling = false;
@@ -1378,14 +1403,17 @@ namespace EmeralEngine.Builder
                         CurrentScene = {{scene_counter}};
                         MessageWindowCanvas.Visibility = Visibility.Hidden;
                         {{msw}}
-                        {{bgm}}
-                        IsHandling = false;
                         if (script == -1)
                         {
+                            {{interval}}
+                            {{(pre_scene.bgm == s.Value.bgm ? "" : bgm)}}
+                            IsHandling = false;
                             ShowScript{{start_script_num}}();
                         }
                         else
                         {
+                            {{bgm}}
+                            IsHandling = false;
                             var f = GetType().GetMethod($"ShowScript{script}", BindingFlags.Instance | BindingFlags.Public);
                             f.Invoke(this, null);
                         }
@@ -1424,7 +1452,7 @@ namespace EmeralEngine.Builder
                             Storyboard.SetTargetProperty(fadein, new PropertyPath(UIElement.OpacityProperty));
                             b2.Children.Add(fadein);
                             b2.Completed += (sender, e) => {
-                                {{bgm}}
+                                {{(pre_scene.bgm == s.Value.bgm ? "" : bgm)}}
                                 IsHandling = false;
                                 if (script == -1)
                                 {
@@ -1437,6 +1465,7 @@ namespace EmeralEngine.Builder
                             };
                             b1.Completed += async (sender, e) => {
                                 {{msw}}
+                                {{interval}}
                                 b2.Begin();
                             };
                             b1.Begin();
@@ -1728,7 +1757,7 @@ namespace EmeralEngine.Builder
                     {
                         var b = new DoubleAnimation() {
                             To = 0.0,
-                            Duration = new Duration(TimeSpan.FromMilliseconds(500)),
+                            Duration = new Duration(TimeSpan.FromMilliseconds(1000)),
                         };
                         b.Completed += (sender, e) => {
                             BgmPlayer.Stop();

@@ -651,10 +651,16 @@ namespace EmeralEngine
                 var compiler = new GameBuilder(pname, r, mmanager, story, emanager);
                 Dispatcher.BeginInvoke(() =>
                 {
-                    var res = compiler.Run(now_scene);
-                    if (res.ReturnValue is not null)
+                    try
                     {
-                        ErrorNotifyWindow.Show($"{res.ReturnValue}:\n{res.Exception.Message}");
+                        var res = compiler.Run(now_scene);
+                        if (res.ReturnValue is not null)
+                        {
+                            ErrorNotifyWindow.Show($"{res.ReturnValue}:\n{res.Exception.Message}");
+                        }
+                    }catch (Exception e)
+                    {
+                        ErrorNotifyWindow.Show(e.Message);
                     }
                     RunButton.IsEnabled = true;
                 });
