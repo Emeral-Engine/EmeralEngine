@@ -63,12 +63,18 @@ namespace EmeralEngine.Story
     {
         public int id {  get; set; }
         private string _path;
-        public string path
+        override public string path
         {
-            get => _path;
-            set => _path = Path.GetRelativePath(MainWindow.pmanager.ProjectResourceDir, value);
+            get => _path ?? "";
+            set
+            {
+                if (!string.IsNullOrEmpty(value))
+                {
+                    _path = Path.GetRelativePath(MainWindow.pmanager.ProjectResourceDir, value);
+                }
+            }
         }
-        public string name {  get; set; }
+        public string Name {  get; set; }
         public Direction[] direction { get; set; }
         public bool IsScenes()
         {

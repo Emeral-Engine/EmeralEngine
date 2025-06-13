@@ -78,7 +78,7 @@ namespace EmeralEngine.Story
             {
                 if (s.direction is null)
                 {
-                    DrawPanel(s.name ?? " ", s);
+                    DrawPanel(s.Name ?? " ", s);
                 }
                 else
                 {
