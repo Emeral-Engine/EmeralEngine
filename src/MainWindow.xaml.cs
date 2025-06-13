@@ -36,6 +36,7 @@ namespace EmeralEngine
         private double PREVIEW_MAX_DEFAULT_WIDTH = 750;
         private int NowScriptIndex;
         public static ProjectManager pmanager = new();
+        public Logger Log;
         public MessageWindowManager mmanager;
         public StoryManager story;
         public EpisodeManager emanager;
@@ -181,6 +182,7 @@ namespace EmeralEngine
             };
             bmanager = new(Managers);
             Managers.BackupManager = bmanager;
+            Log = new(Managers);
             if (emanager.episodes.Count == 0)
             {
                 now_episode = emanager.New();

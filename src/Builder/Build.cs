@@ -607,13 +607,22 @@ namespace EmeralEngine.Builder
                             };
                         }
                 
-                        private void SetCharacter(Image chara, double x)
+                        private void SetCharacter(Image chara, double x, bool trans)
                         {
                             Canvas.SetLeft(chara, x);
+                            if (trans)
+                            {
+                                var b = new DoubleAnimation() {
+                                    From = 0.0,
+                                    To = 1.0,
+                                    Duration = new Duration(TimeSpan.FromMilliseconds(300))
+                                };
+                                chara.BeginAnimation(UIElement.OpacityProperty, b);
+                            }
                             CharacterPictures.Children.Add(chara);
                         }
                 
-                        private void RemoveCharas(UIElementCollection[] charas)
+                        private void RemoveCharas(UIElement[] charas)
                         {
                             foreach (UIElement c in charas)
                             {
@@ -1033,7 +1042,10 @@ namespace EmeralEngine.Builder
                                 {
                                     var per_x = MainWindow.pmanager.Project.Size[0] / (script.charas.Count * 2);
                                     var j = 1;
-                                    charas.AppendLine("BitmapImage c_bmp;");
+                                    charas.AppendLine($"""
+                                        BitmapImage c_bmp;
+                                        var chara_trans = {(script.charas.Count != pre_script?.charas.Count).ToString().ToLower()};
+                                        """);
                                     foreach (var c in script.charas)
                                     {
                                         if (!string.IsNullOrEmpty(c))
@@ -1045,7 +1057,7 @@ namespace EmeralEngine.Builder
                                             Source = c_bmp,
                                             Stretch = Stretch.Uniform,
                                             Height = {{MainWindow.pmanager.Project.Size[1]}}
-                                        }, {{per_x * (j * 2 - 1)}} - c_bmp.Width  / 4);
+                                        }, {{per_x * (j * 2 - 1)}} - c_bmp.Width  / 4, chara_trans);
                                         """);
                                             j++;
                                         }
@@ -1665,9 +1677,18 @@ namespace EmeralEngine.Builder
                         return false;
                     }
 
-                    private void SetCharacter(Image chara, double x)
+                    private void SetCharacter(Image chara, double x, bool trans)
                     {
                         Canvas.SetLeft(chara, x);
+                        if (trans)
+                        {
+                            var b = new DoubleAnimation() {
+                                From = 0.0,
+                                To = 1.0,
+                                Duration = new Duration(TimeSpan.FromMilliseconds(300))
+                            };
+                            chara.BeginAnimation(UIElement.OpacityProperty, b);
+                        }
                         CharacterPictures.Children.Add(chara);
                     }
 
