@@ -42,7 +42,7 @@ namespace EmeralEngine.Scene
                     if (line_flag)
                     {
                         line_flag = false;
-                        info.AddScript(script.TrimEnd().Replace(@"\:script", ":script"), speaker, charas, false);
+                        info.AddScript(script.TrimEnd().Replace(@"\:script", ":script"), speaker, charas);
                         script = "";
                         charas = new();
                         speaker = "";

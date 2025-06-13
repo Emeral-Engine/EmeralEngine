@@ -34,7 +34,7 @@ namespace EmeralEngine
 
         private void OnNoneSelected(object sender, RoutedEventArgs e)
         {
-            if (IsRendered)
+            if (IsLoaded)
             {
                 TransitionSetting.Content = null;
                 info.trans = TransitionTypes.NONE;
@@ -50,7 +50,7 @@ namespace EmeralEngine
 
         private void OnIntervalChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
-            if (IsRendered)
+            if (IsLoaded)
             {
                 info.interval = Interval.Value ?? 0;
             }

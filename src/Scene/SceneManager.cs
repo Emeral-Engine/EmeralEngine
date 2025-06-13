@@ -65,18 +65,9 @@ namespace EmeralEngine.Scene
     {
         public BitmapImage? thumbnail;
         public string processed_memo;
-        private string _path, _bgm, _bg, _trans_color;
+        private string _path, _bgm, _bg;
         public List<ScriptInfo> scripts;
-        private int _order, _msw, _trans;
-        private double _fadein, _fadeout, _interval;
-        public string path
-        {
-            set
-            {
-                _path = value;
-            }
-            get => _path ?? "";
-        }
+        private int _order, _msw;
         public string memo
         {
             set
@@ -126,22 +117,6 @@ namespace EmeralEngine.Scene
             }
             get => _bg ?? "";
         }
-        public string trans_color
-        {
-            set
-            {
-                _trans_color = value;
-            }
-            get => string.IsNullOrEmpty(_trans_color) ? "#000000" : _trans_color;
-        }
-        public int trans
-        {
-            set
-            {
-                _trans = value;
-            }
-            get => _trans;
-        }
         public int msw
         {
             set
@@ -157,31 +132,6 @@ namespace EmeralEngine.Scene
                 _order = value;
             }
             get => _order;
-        }
-        public double fadein
-        {
-            set
-            {
-                _fadein = value;
-            }
-            get => _fadein;
-        }
-        public double fadeout
-        {
-            set
-            {
-                _fadeout = value;
-            }
-            get => _fadeout;
-        }
-
-        public double interval
-        {
-            set
-            {
-                _interval = value;
-            }
-            get => _interval;
         }
         private string script
         {
@@ -203,7 +153,7 @@ namespace EmeralEngine.Scene
         {
             scripts = new();
         }
-        public void AddScript(string script, string speaker, List<string> charas, bool dump = true)
+        public void AddScript(string script, string speaker, List<string> charas)
         {
             scripts.Add(new ScriptInfo()
             {
@@ -211,7 +161,6 @@ namespace EmeralEngine.Scene
                 script = script,
                 speaker = speaker
             });
-            if (dump) Dump();
         }
         public void AddScript(int idx = -1)
         {
@@ -223,12 +172,11 @@ namespace EmeralEngine.Scene
             {
                 scripts.Insert(idx, new ScriptInfo());
             }
-            Dump();
         }
 
         public void Dump(string to = "")
         {
-            File.WriteAllText(to.Length > 0 ? to : _path, $"""
+            File.WriteAllText(to.Length > 0 ? to : path, $"""
                 order: {order}
                 trans: {trans} {trans_color} {fadeout} {fadein}
                 interval: {interval}

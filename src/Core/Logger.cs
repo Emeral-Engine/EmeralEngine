@@ -9,7 +9,8 @@ namespace EmeralEngine.Core
         public Logger(Managers m)
         {
             file = Path.Combine(m.ProjectManager.ActualProjectDir, "log.txt");
-            Info("Start ----------");
+            Info($"Opened \"{m.ProjectManager.ProjectName}\" ----------");
+            Info($"Temp directory: {m.ProjectManager.Temp.path}");
         }
 
         public void Write(string msg, int level)

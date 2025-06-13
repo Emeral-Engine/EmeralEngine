@@ -90,7 +90,8 @@ namespace EmeralEngine
                 };
                 l_item1.Click += (sender, e) =>
                 {
-                    (new TransitionWindow(this, i)).Show();
+                    var w = new TransitionWindow(this, i);
+                    w.Show();
                 };
                 l_ctx.Items.Add(l_item1);
                 line.ContextMenu = l_ctx;
@@ -140,7 +141,7 @@ namespace EmeralEngine
                     border.Height = img.ActualHeight;
                 };
             }
-            panel.MouseLeftButtonDown += (sender, e) =>
+            panel.MouseDown += (sender, e) =>
             {
                 if (now_scene != info) FocusScene(border, img, info);
             };

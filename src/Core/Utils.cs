@@ -330,7 +330,7 @@ namespace EmeralEngine.Core
                     Directory.Delete(path, true);
                 }
             }
-            catch (Exception ex)
+            catch
             {
             }
         }
