@@ -29,6 +29,7 @@ namespace EmeralEngine.Project
         public string ProjectTitleScreen, ActualProjectTitleScreen;
         public string ProjectEpisodesDir, ActualProjectEpisodesDir;
         public string ProjectResourceDir, ActualProjectResourceDir;
+        public string ProjectMswDir, ActualProjectMswDir;
         public string ProjectName;
         public string ProjectDotNet;
         public TempDirectory Temp;
@@ -48,10 +49,55 @@ namespace EmeralEngine.Project
         public void SaveProject()
         {
             SaveProjectFile();
-            var r = Path.Combine(ActualProjectDir, "Resources");
+            if (Directory.Exists(ActualProjectResourceDir))
+            {
+                Directory.Delete(ActualProjectResourceDir, true);
+            }
+            if (Directory.Exists(ActualProjectEpisodesDir))
+            {
+                Directory.Delete(ActualProjectEpisodesDir, true);
+            }
+            if (Directory.Exists(ActualProjectMswDir))
+            {
+                Directory.Delete(ActualProjectMswDir, true);
+            }
+            Directory.CreateDirectory(ActualProjectEpisodesDir);
+            Directory.CreateDirectory(ActualProjectMswDir);
+            FileSystem.CopyDirectory(ProjectEpisodesDir, ActualProjectEpisodesDir, true);
+            FileSystem.CopyDirectory(ProjectMswDir, ActualProjectMswDir, true);
+            if (File.Exists(ProjectTitleScreen))
+            {
+                File.Copy(ProjectTitleScreen, ActualProjectTitleScreen, true);
+            }
+            FileSystem.CopyDirectory(ProjectResourceDir, ActualProjectResourceDir);
+        }
+
+        public void SaveProject(string dest)
+        {
+            SaveProjectFile(dest);
+            var r = Path.Combine(dest, "Resources");
+            var e = Path.Combine(dest, "Episodes");
+            var m = Path.Combine(dest, "MessageWindows");
+            var t = Path.Combine(dest, "titlescreen.xaml");
             if (Directory.Exists(r))
             {
                 Directory.Delete(r, true);
+            }
+            if (Directory.Exists(e))
+            {
+                Directory.Delete(e, true);
+            }
+            if (Directory.Exists(m))
+            {
+                Directory.Delete(m, true);
+            }
+            Directory.CreateDirectory(e);
+            Directory.CreateDirectory(m);
+            FileSystem.CopyDirectory(ProjectEpisodesDir, e, true);
+            FileSystem.CopyDirectory(ProjectMswDir, m, true);
+            if (File.Exists(ProjectTitleScreen))
+            {
+                File.Copy(ProjectTitleScreen, t, true);
             }
             FileSystem.CopyDirectory(ProjectResourceDir, r);
         }
@@ -59,6 +105,11 @@ namespace EmeralEngine.Project
         public void SaveProjectFile()
         {
             File.WriteAllText(ProjectFile, JsonSerializer.Serialize(Project));
+        }
+
+        public void SaveProjectFile(string dest)
+        {
+            File.WriteAllText(Path.Combine(dest, "project.emeral"), JsonSerializer.Serialize(Project));
         }
         private void Setup(string name)
         {
@@ -77,11 +128,12 @@ namespace EmeralEngine.Project
             ProjectFile = Path.Combine(ActualProjectDir, "project.emeral");
             ProjectTitleScreen = Path.Combine(Temp.path, "titlescreen.xaml");
             ActualProjectTitleScreen = Path.Combine(ActualProjectDir, "titlescreen.xaml");
-            if (!Directory.Exists(ActualProjectDir)) Directory.CreateDirectory(ActualProjectDir);
-            if (!Directory.Exists(ActualProjectResourceDir)) Directory.CreateDirectory(ProjectResourceDir);
-            if (!Directory.Exists(ActualProjectEpisodesDir)) Directory.CreateDirectory(ProjectEpisodesDir);
+            ProjectMswDir = Path.Combine(Temp.path, "MessageWindows");
+            ActualProjectMswDir = Path.Combine(ActualProjectDir, "MessageWindows");
+            Directory.CreateDirectory(ActualProjectDir);
             Directory.CreateDirectory(ProjectResourceDir);
             Directory.CreateDirectory(ProjectEpisodesDir);
+            Directory.CreateDirectory(ProjectMswDir);
             FileSystem.CopyDirectory(ActualProjectDir, Temp.path, true);
             Directory.SetCurrentDirectory(ProjectResourceDir);
         }
@@ -225,6 +277,14 @@ namespace EmeralEngine.Project
                 }
         }
 
+        public string ReadMswXaml(string path)
+        {
+            return GameBuilder.SourceRegex.Replace(File.ReadAllText(path), s =>
+            {
+                return $" Source=\"{Path.Combine(ProjectMswDir, s.Groups[1].Value)}\"";
+            });
+        }
+
         public string GetNormalButtons()
         {
             return $"""
@@ -272,13 +332,45 @@ namespace EmeralEngine.Project
                     </Border>
                 """;
         }
+
+        public string[] GetMessageWindows()
+        {
+            return Directory.GetFiles(ProjectMswDir, "*.xaml", System.IO.SearchOption.TopDirectoryOnly);
+        }
+
+        public string GetNextMswPath()
+        {
+            return Path.Combine(ProjectMswDir, $"{GetMessageWindows().Length}.xaml");
+        }
+
+        public string GetDefaultMsw()
+        {
+            return $$"""
+                 <Canvas xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" Name="WindowSample" Background="Black" ClipToBounds="True">
+                    <Canvas Name="WindowContents" Width="{{Project.Size[0]}}" Height="{{Project.Size[1] * 0.3}}" Canvas.Bottom="0" Canvas.Left="0">
+                        <Canvas.Background>
+                            <SolidColorBrush Color="DarkGray" Opacity="0.7"/>
+                        </Canvas.Background>
+                        <Image Name="MessageWindowBgImage" Stretch="Fill" Height="{Binding ActualHeight, ElementName=WindowContents}" Width="{Binding ActualWidth, ElementName=WindowContents}"/>
+                        <TextBlock Name="Script" FontSize="30" Foreground="White" TextWrapping="WrapWithOverflow"/>
+                    </Canvas>
+                    <Canvas Name="NamePlate" Width="{{Project.Size[0] * 0.2}}" Height="{{Project.Size[1] * 0.1}}" Canvas.Left="0" Canvas.Bottom="0">
+                        <Canvas.Background>
+                            <SolidColorBrush Color="DarkGray" Opacity="0.7"/>
+                        </Canvas.Background>
+                        <Image Name="NamePlateBgImage" Stretch="Fill" Height="{Binding ActualHeight, ElementName=NamePlate}" Width="{Binding ActualWidth, ElementName=NamePlate}"/>
+                        <Label Name="CharaName" Content="名前" FontSize="30" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Canvas>
+                </Canvas>
+                """;
+        }
     }
 
     public class BackupManager
     {
         public string buildDir;
         private string baseDir;
-        private const int MAX_BACKUPS = 10;
+        private const int MAX_BACKUPS = 2;
         private int now_backups;
         private string oldest_backup;
         private Managers Managers;
@@ -310,17 +402,10 @@ namespace EmeralEngine.Project
                 now_backups++;
                 dest = Path.Combine(baseDir, now_backups.ToString());
             }
+            Directory.CreateDirectory(dest);
             Managers.EpisodeManager.Dump();
-            var edir = Path.Combine(dest, "Episodes");
-            Directory.CreateDirectory(edir);
-            FileSystem.CopyDirectory(Managers.ProjectManager.ProjectEpisodesDir, edir);
-            if (File.Exists(Managers.ProjectManager.ProjectTitleScreen))
-            {
-                File.Copy(Managers.ProjectManager.ProjectTitleScreen, Path.Combine(dest, "titlescreen.xaml"), true);
-            }
             Managers.ProjectManager.ApplyStory(Managers.StoryManager.StoryInfos);
-            Managers.ProjectManager.SaveProject();
-            Managers.MessageWindowManager.Dump(Path.Combine(Managers.ProjectManager.ActualProjectDir, MessageWindowManager.FILENAME));
+            Managers.ProjectManager.SaveProject(dest);
         }
         public void BackupForBuild()
         {
@@ -329,20 +414,8 @@ namespace EmeralEngine.Project
                 Directory.CreateDirectory(buildDir);
             }
             Managers.EpisodeManager.Dump();
-            var edir = Path.Combine(buildDir, "Episodes");
-            if (Directory.Exists(edir))
-            {
-                Directory.Delete(edir, true);
-            }
-            Directory.CreateDirectory(edir);
-            FileSystem.CopyDirectory(Managers.ProjectManager.ProjectEpisodesDir, edir, true);
-            if (File.Exists(Managers.ProjectManager.ProjectTitleScreen))
-            {
-                File.Copy(Managers.ProjectManager.ProjectTitleScreen, Path.Combine(buildDir, "titlescreen.xaml"), true);
-            }
             Managers.ProjectManager.ApplyStory(Managers.StoryManager.StoryInfos);
-            Managers.ProjectManager.SaveProject();
-            Managers.MessageWindowManager.Dump(Path.Combine(Managers.ProjectManager.ActualProjectDir, MessageWindowManager.FILENAME));
+            Managers.ProjectManager.SaveProject(buildDir);
         }
     }
 

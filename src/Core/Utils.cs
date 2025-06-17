@@ -484,8 +484,11 @@ namespace EmeralEngine.Core
             };
             element.SizeChanged += (sender, e) =>
             {
-                center.Width = element.ActualWidth - THICK2;
-                center.Height = element.ActualHeight - THICK2;
+                if (THICK2 < element.Width)
+                {
+                    center.Width = element.ActualWidth - THICK2;
+                    center.Height = element.ActualHeight - THICK2;
+                }
             };
             left.DragStarted += (sender, e) =>
             {

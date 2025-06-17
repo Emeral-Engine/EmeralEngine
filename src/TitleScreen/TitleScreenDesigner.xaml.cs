@@ -32,11 +32,8 @@ namespace EmeralEngine.TitleScreen
         private string[] BUTTONS_NAME = new string[] { "StartButton", "LoadButton", "FinishButton"};
         private double ScaleRate;
         private int _currentType;
-        private bool _IsResizing;
         private Image BackgroundImage;
         public DesignerElementManager ElementManager;
-        private Rectangle ResizeHandle;
-        private MouseInformation ResizeMouseInfo;
         public Dictionary<int, int> ButtonFuncs;
         private CustomTitlePage CustomTitlePage;
         private NormalTitlePage NormalTitlePage;

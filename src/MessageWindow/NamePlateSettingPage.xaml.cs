@@ -28,14 +28,14 @@ namespace EmeralEngine.MessageWindow
 
         private void OnSelectColorChanged(object sender, RoutedPropertyChangedEventArgs<Color?> e)
         {
-            window.NamePlateBg.Fill = Utils.GetBrush(BgColor.SelectedColorText);
+            window.NamePlate.Background = Utils.GetBrush(BgColor.SelectedColorText);
         }
 
         private void OnSliderChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             if (IsLoaded)
             {
-                window.NamePlateBg.Opacity = e.NewValue;
+                window.NamePlate.Background.Opacity = e.NewValue;
                 BgColorAlphaText.Value = e.NewValue;
             }
         }
@@ -45,7 +45,7 @@ namespace EmeralEngine.MessageWindow
             if (IsLoaded)
             {
                 var v = (double)e.NewValue;
-                window.NamePlateBg.Opacity = v;
+                window.NamePlate.Background.Opacity = v;
                 BgColorAlpha.Value = v;
             }
         }

@@ -34,7 +34,7 @@ namespace EmeralEngine.MessageWindow
         {
             if (IsLoaded)
             {
-                window.MessageWindowBg.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString(BgColor.SelectedColorText);
+                window.WindowContents.Background = (SolidColorBrush)new BrushConverter().ConvertFromString(BgColor.SelectedColorText);
             }
         }
         private void OnSliderChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -42,7 +42,7 @@ namespace EmeralEngine.MessageWindow
             if (IsLoaded)
             {
                 AlphaText.Text = Utils.CutString(BgColorAlpha.Value.ToString(), 4, false);
-                window.MessageWindowBg.Opacity = BgColorAlpha.Value;
+                window.WindowContents.Background.Opacity = BgColorAlpha.Value;
             }
         }
         private void OnBgSliderChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -107,17 +107,16 @@ namespace EmeralEngine.MessageWindow
 
         private void Button_Click_2(object sender, RoutedEventArgs e)
         {
-            window.MessageWindowBorder.ClearValue(Canvas.RightProperty);
-            Canvas.SetLeft(window.MessageWindowBorder, 0);
+            window.WindowContents.ClearValue(Canvas.RightProperty);
+            Canvas.SetLeft(window.WindowContents, 0);
             MessageWindowWidth.Text = MainWindow.pmanager.Project.Size[0].ToString();
-            window.MessageWindowBorder.Width = MainWindow.pmanager.Project.Size[0];
         }
 
         private void OnWidthTextChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
             if (IsLoaded)
             {
-                window.MessageWindowBorder.Width = (double)MessageWindowWidth.Value;
+                window.WindowContents.Width = (double)MessageWindowWidth.Value;
             }
         }
 
@@ -125,7 +124,7 @@ namespace EmeralEngine.MessageWindow
         {
             if (IsLoaded)
             {
-                window.MessageWindowBorder.Height = (double)MessageWindowHeight.Value;
+                window.WindowContents.Height = (double)MessageWindowHeight.Value;
             }
         }
     }

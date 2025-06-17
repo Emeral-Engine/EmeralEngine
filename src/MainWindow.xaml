@@ -223,11 +223,11 @@
                 <ScaleTransform x:Name="Scale"/>
             </Grid.LayoutTransform>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Name="PreviewColumn" Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Name="PreviewColumn" Width="*"/>
+                <ColumnDefinition x:Name="ToolsColumn" Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <DockPanel Width="600" Background="White">
-                <DockPanel x:Name="Preview" Width="600" Background="Black" SizeChanged="OnGameScreenSizeChanged">
+            <DockPanel x:Name="PreviewBack" Width="600" HorizontalAlignment="Left" Background="White">
+                <DockPanel x:Name="Preview" HorizontalAlignment="Left" Width="600" Background="Black" SizeChanged="OnGameScreenSizeChanged">
                     <DockPanel Name="MainPanel" Background="Black">
                         <Grid Name="MainGrid">
                             <Grid.LayoutTransform>
@@ -251,7 +251,7 @@
                     </DockPanel>
                 </DockPanel>
             </DockPanel>
-            <Expander x:Name="ResourceExpander" Width="205" HorizontalAlignment="Right" Background="#FF1D2D29" Grid.Column="1" ExpandDirection="Right" IsExpanded="True" Collapsed="OnExpanderCollapsed" Expanded="OnExpanded">
+            <Expander x:Name="ToolsExpander" Grid.Column="1" Width="200" HorizontalAlignment="Right" ExpandDirection="Right" IsExpanded="True" Collapsed="OnExpanderCollapsed" Expanded="OnExpanded">
                 <Grid>
                     <DockPanel VerticalAlignment="Top">
                         <Grid>

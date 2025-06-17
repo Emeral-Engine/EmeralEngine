@@ -1080,13 +1080,14 @@ namespace EmeralEngine.Builder
                                         if (!string.IsNullOrEmpty(c))
                                         {
                                             var file = ConvertPath(Path.Combine("Characters", c));
+                                            var bmp = Utils.CreateBmp(MainWindow.pmanager.GetResource("Characters", c));
                                             charas.AppendLine($$"""
                                         c_bmp = MainWindow.CreateBmp(MainWindow.GetResource(@"{{file}}"));
                                         SetCharacter(new Image() {
                                             Source = c_bmp,
                                             Stretch = Stretch.Uniform,
                                             Height = {{MainWindow.pmanager.Project.Size[1]}}
-                                        }, {{per_x * (j * 2 - 1)}} - c_bmp.Width  / 4, chara_trans);
+                                        }, {{per_x * (j * 2 - 1)}} - {{bmp.Width * Math.Min(MainWindow.pmanager.Project.Size[0] / bmp.Width, MainWindow.pmanager.Project.Size[1] / bmp.Height) / 2}}, chara_trans);
                                         """);
                                             j++;
                                         }
