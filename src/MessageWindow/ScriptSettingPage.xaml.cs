@@ -29,15 +29,6 @@ namespace EmeralEngine.MessageWindow
             window = w;
         }
 
-        private void IntervalKeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Enter)
-            {
-                window.text_interval = (int)Interval.Value;
-                Keyboard.ClearFocus();
-            }
-        }
-
         private void OnTextColorChanged(object sender, RoutedPropertyChangedEventArgs<Color?> e)
         {
             window.Script.Foreground = Utils.GetBrush(TextColorPicker.SelectedColorText);
@@ -56,11 +47,6 @@ namespace EmeralEngine.MessageWindow
                     window.Script.FontSize,
                     window.Script.Foreground
                     );
-                window.ScriptBorder.Height = size.Height;
-                if (window.focusing_border == window.ScriptBorder)
-                {
-                    window.ScriptBorder.Width += window.BORDER_THICK.Left * 2;
-                }
             }
         }
     }

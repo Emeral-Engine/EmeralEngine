@@ -25,7 +25,6 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <Label Content="フォント" FontSize="24" />
             <ComboBox Name="FontList" Grid.ColumnSpan="2" Grid.Column="1" HorizontalAlignment="Left" Width="100" Height="30" FontSize="18"/>
@@ -33,9 +32,6 @@
             <xctk:ColorPicker Grid.Row="1" x:Name="TextColorPicker" Grid.Column="1" Height="30" AdvancedTabHeader="ユーザー設定" AvailableColorsHeader="使用可能な色" ShowRecentColors="True" RecentColorsHeader="最近使った色" StandardColorsHeader="標準色" DisplayColorAndName="False" UsingAlphaChannel="True" SelectedColorChanged="OnTextColorChanged"/>
             <Label Grid.Row="2" Content="サイズ" FontSize="24"  Margin="0,5,0,74" Grid.RowSpan="2"/>
             <xctk:IntegerUpDown Grid.Row="2" x:Name="FontSize" Grid.Column="1" FontSize="18" Text="30" Height="30" VerticalAlignment="Top" ValueChanged="OnFontSizeChanged" Minimum="1" Margin="0,11,0,0"/>
-            <Label Grid.Row="4" Content="表示間隔" FontSize="22" />
-            <xctk:IntegerUpDown x:Name="Interval" Grid.Row="3" Grid.Column="1" FontSize="19" KeyDown="IntervalKeyDown" Text="100" Height="30" VerticalAlignment="Top" Minimum="0" Grid.ColumnSpan="2" Margin="1,5,72,0"/>
-            <Label Grid.Row="4" Grid.Column="2" Content="ms" FontSize="24" />
         </Grid>
     </Expander>
 </Page>

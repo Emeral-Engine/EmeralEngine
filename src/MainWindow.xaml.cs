@@ -21,6 +21,7 @@ using EmeralEngine.TitleScreen;
 using Microsoft.VisualBasic.FileIO;
 using EmeralEngine.Core;
 using EmeralEngine.Notify;
+using System.Diagnostics;
 
 namespace EmeralEngine
 {
@@ -33,7 +34,7 @@ namespace EmeralEngine
         private const double DEFAULT_WIDTH = 800;
         private const double DEFAULT_HEIGHT = 450;
         private double PREVIEW_DEFAULT_WIDTH = 600;
-        private double PREVIEW_MAX_DEFAULT_WIDTH = 750;
+        private double PREVIEW_MAX_DEFAULT_WIDTH = 780;
         private int NowScriptIndex;
         public static ProjectManager pmanager = new();
         public Logger Log;
@@ -41,7 +42,7 @@ namespace EmeralEngine
         public StoryManager story;
         public EpisodeManager emanager;
         private BackupManager bmanager;
-        private Managers Managers;
+        public Managers Managers;
         private CharacterWindow _CharacterWindow;
         private ScriptEditor _ScriptWindow;
         private SceneWindow _SceneWindow;
@@ -231,13 +232,13 @@ namespace EmeralEngine
                 var w = pmanager.Project.Size[0];
                 var h = pmanager.Project.Size[1];
                 double r;
-                if (ResourceExpander.IsExpanded)
+                if (ToolsExpander.IsExpanded)
                 {
-                    r = Math.Min(PREVIEW_DEFAULT_WIDTH / w, ResourceExpander.ActualHeight / h);
+                    r = Math.Min(PREVIEW_DEFAULT_WIDTH / w, ToolsExpander.ActualHeight / h);
                 }
                 else
                 {
-                    r = Math.Min(PREVIEW_MAX_DEFAULT_WIDTH / w, ResourceExpander.ActualHeight / h);
+                    r = Math.Min(PREVIEW_MAX_DEFAULT_WIDTH / w, ToolsExpander.ActualHeight / h);
                 }
                 Preview.Width = w * r;
                 Preview.Height = h * r;
@@ -332,15 +333,17 @@ namespace EmeralEngine
                 CharacterPictures.Children.Clear();
                 var per = pmanager.Project.Size[0] / (_ScriptWindow.now_script.charas.Count * 2);
                 BitmapImage b;
+                Image img;
                 for (int i = 0; i < _ScriptWindow.now_script.charas.Count; i++)
                 {
                     b = Utils.CreateBmp(pmanager.GetResource("Characters", _ScriptWindow.now_script.charas[i]));
-                    SetCharacter(new Image()
+                    img = new Image()
                     {
                         Source = b,
                         Stretch = Stretch.Uniform,
                         Height = pmanager.Project.Size[1],
-                    }, per * ((i+1) * 2 - 1) - b.Width / 4);
+                    };
+                    SetCharacter(img, per * (2 * (i + 1) - 1) - b.Width * Math.Min(Preview.Width / b.Width, Preview.Height / b.Height) / 2);
                 }
             }
             if (bg)
@@ -433,11 +436,15 @@ namespace EmeralEngine
 
         private void OnExpanderCollapsed(object sender, RoutedEventArgs e)
         {
+            ToolsExpander.Width = 22;
+            PreviewBack.Width = ActualWidth - ToolsColumn.ActualWidth;
             AdjustPreviewSize();
         }
 
         private void OnExpanded(object sender, RoutedEventArgs e)
         {
+            ToolsExpander.Width = 205;
+            PreviewBack.Width = Width - ToolsColumn.ActualWidth;
             AdjustPreviewSize();
         }
 
@@ -669,19 +676,8 @@ namespace EmeralEngine
         private void Save(bool dialog = true)
         {
             emanager.Dump();
-            if (Directory.Exists(pmanager.ActualProjectEpisodesDir))
-            {
-                Directory.Delete(pmanager.ActualProjectEpisodesDir, true);
-            }
-            Directory.CreateDirectory(pmanager.ActualProjectEpisodesDir);
-            FileSystem.CopyDirectory(pmanager.ProjectEpisodesDir, pmanager.ActualProjectEpisodesDir, true);
-            if (File.Exists(pmanager.ProjectTitleScreen))
-            {
-                File.Copy(pmanager.ProjectTitleScreen, pmanager.ActualProjectTitleScreen, true);
-            }
             pmanager.ApplyStory(story.StoryInfos);
             pmanager.SaveProject();
-            mmanager.Dump(Path.Combine(pmanager.ActualProjectDir, MessageWindowManager.FILENAME));
             if (dialog) MessageBox.Show("保存しました", MainWindow.CAPTION, MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
