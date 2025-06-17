@@ -1,8 +1,8 @@
+# 💎EmeralEngine
 <p align="center">
   <img src="img/EmeralEngine.png" alt="EmeralEngine アイコン"/>
 </p>
 
-# 💎EmeralEngine
 EmeralEngineはWindows向けのノベルゲームエンジンです。
 
 # 特徴
@@ -136,3 +136,8 @@ EmeralEngineはWindows向けのノベルゲームエンジンです。
 
 # ライセンス
 [MIT License](LICENSE)
+
+# 注意点
+現在 __開発版__ であり、機能優先で開発しています。そのため、UI部分は仮置きであり、非常にお粗末なものであることをご了承ください。
+
+また、__破壊的__ な変更をすることもあります。その際は`CHANGELOG.md`にて告知いたします。
