@@ -572,6 +572,7 @@ namespace EmeralEngine.Builder
                 using System.IO;
                 using System.Reflection;
                 using System.Linq;
+                using System.Text;
                 using System;
 
                 namespace Game
@@ -923,6 +924,7 @@ namespace EmeralEngine.Builder
                                                                           .AddImports(
                                                                           "System",
                                                                           "System.Linq",
+                                                                          "System.Text",
                                                                           "System.Windows",
                                                                           "System.Windows.Input",
                                                                           "System.Windows.Controls",
@@ -1056,7 +1058,6 @@ namespace EmeralEngine.Builder
                             script_counter++;
                             var isLastScript = s.Value.scripts.Count <= (script_counter - start_script_num + 1);
                             var i = mmanager.windows[s.Value.msw].Interval;
-                            var text = Utils.GetEscapedString(script.script);
                             var speaker = string.IsNullOrEmpty(script.speaker)
                                           ? "NamePlate.Visibility = Visibility.Hidden;"
                                           : $"""
@@ -1095,13 +1096,15 @@ namespace EmeralEngine.Builder
                                 }
                                 charas.AppendLine("if (0 < charas.Length) RemoveCharas(charas);");
                             }
+                            var var_script = $"var script = Encoding.UTF8.GetString(Convert.FromBase64String(\"{Convert.ToBase64String(Encoding.UTF8.GetBytes(script.script))}\"));";
                             if (isLastScene && isLastScript)
                             {
-                                stories.Append($$"""
+                                stories.AppendLine($$"""
                         public async void ShowScript{{script_counter}}() {
                             var terminate_scripting = false;
                             Script.Text = "";
-                            CurrentScript = "{{text}}";
+                            {{var_script}}
+                            CurrentScript = script;
                             CurrentScriptId = {{script_counter}};
                             {{speaker}}
                             MainPanel.MouseLeftButtonDown -= OnMouseLeftDown;
@@ -1124,9 +1127,9 @@ namespace EmeralEngine.Builder
                             MessageWindowCanvas.Visibility = Visibility.Visible;
                             IsNowScripting = true;
                             {{charas}}
-                            foreach (var s in "{{text}}") {
+                            foreach (var s in script) {
                                 if (terminate_scripting) {
-                                    Script.Text = "{{text}}";
+                                    Script.Text = script;
                                     terminate_scripting = false;
                                     break;
                                 }
@@ -1139,11 +1142,12 @@ namespace EmeralEngine.Builder
                             }
                             else if (isLastScript)
                             {
-                                stories.Append($$"""
+                                stories.AppendLine($$"""
                         public async void ShowScript{{script_counter}}() {
                             var terminate_scripting = false;
                             Script.Text = "";
-                            CurrentScript = "{{text}}";
+                            {{var_script}}
+                            CurrentScript = script;
                             CurrentScriptId = {{script_counter}};
                             {{speaker}}
                             MainPanel.MouseLeftButtonDown -= OnMouseLeftDown;
@@ -1165,9 +1169,9 @@ namespace EmeralEngine.Builder
                             MessageWindowCanvas.Visibility = Visibility.Visible;
                             IsNowScripting = true;
                             {{charas}}
-                            foreach (var s in "{{text}}") {
+                            foreach (var s in script) {
                                 if (terminate_scripting) {
-                                    Script.Text = "{{text}}";
+                                    Script.Text = script;
                                     terminate_scripting = false;
                                     break;
                                 }
@@ -1180,11 +1184,12 @@ namespace EmeralEngine.Builder
                             }
                             else
                             {
-                                stories.Append($$"""
+                                stories.AppendLine($$"""
                         public async void ShowScript{{script_counter}}() {
                             var terminate_scripting = false;
                             Script.Text = "";
-                            CurrentScript = "{{text}}";
+                            {{var_script}}
+                            CurrentScript = script;
                             CurrentScriptId = {{script_counter}};
                             {{speaker}}
                             MainPanel.MouseLeftButtonDown -= OnMouseLeftDown;
@@ -1206,9 +1211,9 @@ namespace EmeralEngine.Builder
                             MessageWindowCanvas.Visibility = Visibility.Visible;
                             IsNowScripting = true;
                             {{charas}}
-                            foreach (var s in "{{text}}") {
+                            foreach (var s in script) {
                                 if (terminate_scripting) {
-                                    Script.Text = "{{text}}";
+                                    Script.Text = script;
                                     terminate_scripting = false;
                                     break;
                                 }
