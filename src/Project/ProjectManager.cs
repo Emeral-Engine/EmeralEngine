@@ -345,16 +345,18 @@ namespace EmeralEngine.Project
 
         public string GetDefaultMsw()
         {
+            var window_h = Project.Size[1] * 0.3;
+            var plate_h = Project.Size[1] * 0.1;
             return $$"""
                  <Canvas xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" Name="WindowSample" Background="Black" ClipToBounds="True">
-                    <Canvas Name="WindowContents" Width="{{Project.Size[0]}}" Height="{{Project.Size[1] * 0.3}}" Canvas.Bottom="0" Canvas.Left="0">
+                    <Canvas Name="WindowContents" Width="{{Project.Size[0]}}" Height="{{window_h}}" Canvas.Top="{{Project.Size[1] - window_h}}" Canvas.Left="0">
                         <Canvas.Background>
                             <SolidColorBrush Color="DarkGray" Opacity="0.7"/>
                         </Canvas.Background>
                         <Image Name="MessageWindowBgImage" Stretch="Fill" Height="{Binding ActualHeight, ElementName=WindowContents}" Width="{Binding ActualWidth, ElementName=WindowContents}"/>
-                        <TextBlock Name="Script" FontSize="30" Foreground="White" TextWrapping="WrapWithOverflow"/>
+                        <TextBlock Name="Script" Width="{{Project.Size[0] * 0.8}}" FontSize="30" Foreground="White" TextWrapping="WrapWithOverflow"/>
                     </Canvas>
-                    <Canvas Name="NamePlate" Width="{{Project.Size[0] * 0.2}}" Height="{{Project.Size[1] * 0.1}}" Canvas.Left="0" Canvas.Bottom="0">
+                    <Canvas Name="NamePlate" Width="{{Project.Size[0] * 0.2}}" Height="{{plate_h}}" Canvas.Left="0" Canvas.Top="{{Project.Size[1] - window_h - plate_h}}">
                         <Canvas.Background>
                             <SolidColorBrush Color="DarkGray" Opacity="0.7"/>
                         </Canvas.Background>

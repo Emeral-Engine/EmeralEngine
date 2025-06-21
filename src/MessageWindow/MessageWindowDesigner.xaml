@@ -13,7 +13,7 @@
                 <ColumnDefinition Width="2*"/>
             </Grid.ColumnDefinitions>
             <ScrollViewer Background="White" Padding="20" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-                <Canvas Name="Preview" Background="Black">
+                <Canvas Name="Preview" Background="Black" Width="500" Height="300">
                     <Canvas.LayoutTransform>
                         <ScaleTransform x:Name="PreviewScale"/>
                     </Canvas.LayoutTransform>

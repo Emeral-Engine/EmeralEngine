@@ -23,23 +23,16 @@ namespace EmeralEngine
     /// </summary>
     public partial class MessageWindowDesigner : Window
     {
-        private const double DELTA = 0.4;
-        private const double ZOOM_MAX_LIMIT = 0.8;
-        private int ERROR_RANGE = 5;
+        private const int SCREEN_WIDTH = 500;
+        private const int SCREEN_HEIGHT = 300;
         public const string SAMPLE_SCRIPT = "このようにテキストが表示されます\nこのようにテキストが表示されます\nこのようにテキストが表示されます";
-        private const int MIN_MESSAGEWINDOW_SIZE = 10;
-        public Thickness BORDER_THICK = new Thickness(3);
-        private Thickness ZERO_THICK = new Thickness(0);
         private string[] xamls;
         private IEnumerator<string> script;
         public Border focusing_border;
         private WindowSettingsPage windowPage;
         private ScriptSettingPage scriptSettingPage;
         private NamePlateSettingPage namePlateSettingPage;
-        private bool isNowPressing, isFromScript, isFromPlate;
-        private bool isOnScript, isOnNamePlate;
         public int text_interval = 100; // ms
-        private double ratio = 0.4;
         public string bg = "";
         private string CurrentMsw;
         private double defaultWidth, defaultHeight;
@@ -55,7 +48,7 @@ namespace EmeralEngine
             Owner = parent;
             Loaded += (sender, e) =>
             {
-                var r = Math.Min(Preview.ActualWidth / Preview.Width, Preview.ActualHeight / Preview.Height);
+                var r = 1/Math.Min(Preview.Width / SCREEN_WIDTH, Preview.Height / SCREEN_HEIGHT);
                 Debug.WriteLine(r);
                 PreviewScale.ScaleX = r;
                 PreviewScale.ScaleY = r;
@@ -158,7 +151,7 @@ namespace EmeralEngine
                         Script = (TextBlock)WindowContents.FindName("Script");
                         MessageWindowBgImage = (Image)WindowContents.FindName("MessageWindowBgImage");
                         WindowContents.Children.Remove(Script);
-                        WindowContents.Children.Add(DragResizeHelper.Make(Preview, Script));
+                        WindowContents.Children.Add(DragResizeHelper.Make(WindowContents, Script));
                         scriptSettingPage.FontList.Text = Script.FontFamily.ToString();
                         scriptSettingPage.TextColorPicker.SelectedColor = ((SolidColorBrush)Script.Foreground).Color;
                         scriptSettingPage.FontSize.Value = (int)Script.FontSize;
