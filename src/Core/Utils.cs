@@ -540,8 +540,8 @@ namespace EmeralEngine.Core
             Panel.SetZIndex(bottom, 1);
             center.DragDelta += (sender, e) =>
             {
-                Canvas.SetLeft(border, Canvas.GetLeft(border) + e.HorizontalChange);
-                Canvas.SetTop(border, Canvas.GetTop(border) + e.VerticalChange);
+                Canvas.SetLeft(border, Math.Min(parent.ActualWidth - element.ActualWidth, Math.Max(0, Canvas.GetLeft(border) + e.HorizontalChange)));
+                Canvas.SetTop(border, Math.Min(parent.ActualHeight - element.ActualHeight, Math.Max(0, Canvas.GetTop(border) + e.VerticalChange)));
             };
             Canvas.SetLeft(center, THICK);
             Canvas.SetTop(center, THICK);
