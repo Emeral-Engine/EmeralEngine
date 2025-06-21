@@ -41,8 +41,8 @@
                         <ColumnDefinition/>
                         <ColumnDefinition/>
                     </Grid.ColumnDefinitions>
-                    <Button Name="OverWriteButton" Grid.Column="0" Width="60" Height="35" Content="上書き" FontSize="14" Margin="-21,-6,21,6" Grid.RowSpan="2"/>
-                    <Button Width="60" Height="35" Content="新規保存" FontSize="14" Grid.ColumnSpan="2" Margin="50,-6,10,6" Grid.RowSpan="2"/>
+                    <Button Name="OverWriteButton" Grid.Column="0" Width="60" Height="35" Content="上書き" FontSize="14" Margin="-21,-6,21,6" Grid.RowSpan="2" Click="OverWriteButton_Click"/>
+                    <Button Width="60" Height="35" Content="新規保存" FontSize="14" Grid.ColumnSpan="2" Margin="50,-6,10,6" Grid.RowSpan="2" Click="Button_Click"/>
                 </Grid>
             </Grid>
         </Grid>

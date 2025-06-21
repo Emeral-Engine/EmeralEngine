@@ -26,7 +26,6 @@ namespace EmeralEngine.Builder
     class GameBuilder
     {
         public const string DOTNET_DIR = "dotnet";
-        public static Regex SourceRegex = new Regex(@" Source\s*=\s*""([^""]+)""");
         private string title;
         private MessageWindowManager mmanager;
         private StoryManager story;
@@ -812,7 +811,7 @@ namespace EmeralEngine.Builder
         private string HandleXaml(string xaml, Dictionary<string, string> d)
         {
             var n = 1;
-            return SourceRegex.Replace(xaml, s =>
+            return XamlHelper.SourceRegex.Replace(xaml, s =>
             {
                 var p = Path.GetRelativePath(MainWindow.pmanager.ActualProjectResourceDir, s.Groups[1].Value);
                 var property = $"Image{n}";

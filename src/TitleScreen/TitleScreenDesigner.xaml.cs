@@ -173,17 +173,14 @@ namespace EmeralEngine.TitleScreen
             {
                 if (element is Image img)
                 {
-                    if (img.Source is BitmapImage bmp)
+                    var path = ImageUtils.GetFileName(img.Source);
+                    if (path == "")
                     {
-                        xaml.AppendLine($"    <Image Name=\"BackgroundImage\" Canvas.ZIndex=\"0\" Width=\"{{Binding Width, ElementName=TitleScreen}}\" Height=\"{{Binding Height, ElementName=TitleScreen}}\" Source=\"{System.IO.Path.GetFileName(bmp.UriSource.LocalPath)}\" Stretch=\"Fill\" />");
-                    }
-                    else if (img.Source is BitmapFrame bmpf)
-                    {
-                        xaml.AppendLine($"    <Image Name=\"BackgroundImage\" Canvas.ZIndex=\"0\" Width=\"{{Binding Width, ElementName=TitleScreen}}\" Height=\"{{Binding Height, ElementName=TitleScreen}}\" Source=\"{System.IO.Path.GetFileName(bmpf.Decoder.ToString())}\" Stretch=\"Fill\" />");
+                        xaml.AppendLine($"    <Image Name=\"BackgroundImage\" Canvas.ZIndex=\"0\" Width=\"{{Binding Width, ElementName=TitleScreen}}\" Height=\"{{Binding Height, ElementName=TitleScreen}}\" Stretch=\"Fill\" />");
                     }
                     else
                     {
-                        xaml.AppendLine($"    <Image Name=\"BackgroundImage\" Canvas.ZIndex=\"0\" Width=\"{{Binding Width, ElementName=TitleScreen}}\" Height=\"{{Binding Height, ElementName=TitleScreen}}\" Stretch=\"Fill\" />");
+                        xaml.AppendLine($"    <Image Name=\"BackgroundImage\" Canvas.ZIndex=\"0\" Width=\"{{Binding Width, ElementName=TitleScreen}}\" Height=\"{{Binding Height, ElementName=TitleScreen}}\" Source=\"{path}\" Stretch=\"Fill\" />");
                     }
                 }
                 else if (element == _ButtonsBorder)
