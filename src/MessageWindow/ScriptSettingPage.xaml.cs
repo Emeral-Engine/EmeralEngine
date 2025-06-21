@@ -39,14 +39,7 @@ namespace EmeralEngine.MessageWindow
             if (IsLoaded)
             {
                 window.Script.FontSize = (int)FontSize.Value;
-                var size = new FormattedText(
-                    MessageWindowDesigner.SAMPLE_SCRIPT,
-                    CultureInfo.CurrentCulture,
-                    FlowDirection = FlowDirection.LeftToRight,
-                    new Typeface(FontList.Text),
-                    window.Script.FontSize,
-                    window.Script.Foreground
-                    );
+                var size = TextHelper.GetTextHeight(MessageWindowDesigner.SAMPLE_SCRIPT, window.Script);
             }
         }
     }

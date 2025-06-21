@@ -135,7 +135,6 @@ namespace EmeralEngine.Project
             Directory.CreateDirectory(ProjectEpisodesDir);
             Directory.CreateDirectory(ProjectMswDir);
             FileSystem.CopyDirectory(ActualProjectDir, Temp.path, true);
-            Directory.SetCurrentDirectory(ProjectResourceDir);
         }
         public void LoadProject(string name)
         {
@@ -259,7 +258,7 @@ namespace EmeralEngine.Project
         {
             if (File.Exists(ProjectTitleScreen))
             {
-                return GameBuilder.SourceRegex.Replace(File.ReadAllText(ProjectTitleScreen), s =>
+                return XamlHelper.SourceRegex.Replace(File.ReadAllText(ProjectTitleScreen), s =>
                 {
                     return $" Source=\"{Path.Combine(dir, s.Groups[1].Value)}\"";
                 });
@@ -275,14 +274,6 @@ namespace EmeralEngine.Project
                 File.WriteAllText(ProjectTitleScreen, xaml);
                 return xaml;
                 }
-        }
-
-        public string ReadMswXaml(string path)
-        {
-            return GameBuilder.SourceRegex.Replace(File.ReadAllText(path), s =>
-            {
-                return $" Source=\"{Path.Combine(ProjectMswDir, s.Groups[1].Value)}\"";
-            });
         }
 
         public string GetNormalButtons()
@@ -335,7 +326,7 @@ namespace EmeralEngine.Project
 
         public string[] GetMessageWindows()
         {
-            return Directory.GetFiles(ProjectMswDir, "*.xaml", System.IO.SearchOption.TopDirectoryOnly);
+            return Directory.GetFiles(ProjectMswDir, "*.xaml", System.IO.SearchOption.TopDirectoryOnly).Order().ToArray();
         }
 
         public string GetNextMswPath()
@@ -345,16 +336,18 @@ namespace EmeralEngine.Project
 
         public string GetDefaultMsw()
         {
+            var window_h = Project.Size[1] * 0.3;
+            var plate_h = Project.Size[1] * 0.1;
             return $$"""
-                 <Canvas xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" Name="WindowSample" Background="Black" ClipToBounds="True">
-                    <Canvas Name="WindowContents" Width="{{Project.Size[0]}}" Height="{{Project.Size[1] * 0.3}}" Canvas.Bottom="0" Canvas.Left="0">
+                 <Canvas xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+                    <Canvas Name="WindowContents" Width="{{Project.Size[0]}}" Height="{{window_h}}" Canvas.Top="{{Project.Size[1] - window_h}}" Canvas.Left="0">
                         <Canvas.Background>
                             <SolidColorBrush Color="DarkGray" Opacity="0.7"/>
                         </Canvas.Background>
                         <Image Name="MessageWindowBgImage" Stretch="Fill" Height="{Binding ActualHeight, ElementName=WindowContents}" Width="{Binding ActualWidth, ElementName=WindowContents}"/>
-                        <TextBlock Name="Script" FontSize="30" Foreground="White" TextWrapping="WrapWithOverflow"/>
                     </Canvas>
-                    <Canvas Name="NamePlate" Width="{{Project.Size[0] * 0.2}}" Height="{{Project.Size[1] * 0.1}}" Canvas.Left="0" Canvas.Bottom="0">
+                    <TextBlock Name="Script" Width="{{Project.Size[0] * 0.9}}" TextAlignment="Left" HorizontalAlignment="Left" VerticalAlignment="Top"  Canvas.Left="0" Canvas.Top="{{Project.Size[1] - window_h}}" FontSize="30" Foreground="White" TextWrapping="WrapWithOverflow"/>
+                    <Canvas Name="NamePlate" Width="{{Project.Size[0] * 0.2}}" Height="{{plate_h}}" Canvas.Left="0" Canvas.Top="{{Project.Size[1] - window_h - plate_h}}">
                         <Canvas.Background>
                             <SolidColorBrush Color="DarkGray" Opacity="0.7"/>
                         </Canvas.Background>

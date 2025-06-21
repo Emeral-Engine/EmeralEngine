@@ -195,7 +195,7 @@
     <DockPanel>
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="ファイル">
-                <MenuItem Header="プロジェクトを開く" Click="OpenSelectProject"/>
+                <MenuItem Header="プロジェクトを開く" Click="OpenSelectedProject"/>
                 <Separator/>
                 <MenuItem Header="プロジェクトを保存" Click="OnSaveButtonClicked"/>
                 <Separator/>

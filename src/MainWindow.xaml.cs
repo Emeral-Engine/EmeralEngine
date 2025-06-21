@@ -83,12 +83,16 @@ namespace EmeralEngine
         {
             references = AppDomain.CurrentDomain.GetAssemblies();
             InitializeComponent();
-            ContentRendered += (sender, e) =>
+            Loaded += (sender, e) =>
             {
                 var r = Math.Min(ActualWidth / DEFAULT_WIDTH, ActualHeight / DEFAULT_HEIGHT);
                 Scale.ScaleX = r;
                 Scale.ScaleY = r;
-                OpenSelectProject();
+                OpenSelectedProject();
+            };
+            Closing += (sender, e) =>
+            {
+                e.Cancel = AskSave();
             };
             App.Current.DispatcherUnhandledException += (sender, e) => {
                 Dispatcher.Invoke(() =>
@@ -107,16 +111,20 @@ namespace EmeralEngine
                 });
                 Environment.Exit(1);
             };
+            Application.Current.Exit += (sender, e) =>
+            {
+                GC.Collect();
+                if (pmanager.Temp is not null)
+                {
+                    pmanager.Temp.Dispose();
+                }
+            };
             TaskScheduler.UnobservedTaskException += (sender, e) => {
                 Dispatcher.Invoke(() =>
                 {
                     ErrorNotifyWindow.Show(e.Exception.Message);
                     AskSave();
                 });
-            };
-            Closing += (sender, e) =>
-            {
-                e.Cancel = AskSave();
             };
             backup_timer = new DispatcherTimer()
             {
@@ -146,10 +154,6 @@ namespace EmeralEngine
                 default:
                     return true;
             }
-            if (pmanager.Temp is not null)
-            {
-                pmanager.Temp.Dispose();
-            }
             return false;
         }
         private void Refresh()
@@ -165,11 +169,11 @@ namespace EmeralEngine
         }
         public void LoadProject(string name)
         {
+            CloseSubWindows();
             pmanager.LoadProject(name);
             Title = $"{CAPTION} {pmanager.ProjectName} ロード中...";
             Refresh();
             backup_timer.Stop();
-            CloseSubWindows();
             NowScriptIndex = -1;
             mmanager = new();
             story = new();
@@ -432,6 +436,7 @@ namespace EmeralEngine
             {
                 if (w is not null) (w as Window).Close();
             }
+            GC.Collect();
         }
 
         private void OnExpanderCollapsed(object sender, RoutedEventArgs e)
@@ -483,7 +488,7 @@ namespace EmeralEngine
             SelectBgButton.IsEnabled = true;
         }
 
-        private void OpenSelectProject(object sender = null, EventArgs e = null)
+        private void OpenSelectedProject(object sender = null, EventArgs e = null)
         {
             if (IsProjectOpened)
             {

@@ -1,5 +1,7 @@
 ﻿using EmeralEngine.Notify;
+using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Windows;
@@ -226,6 +228,12 @@ namespace EmeralEngine.Core
             return (Color)ColorConverter.ConvertFromString(code);
         }
 
+        public static string GetHex(Brush b)
+        {
+            var color = (b as SolidColorBrush).Color;
+            return $"#{color.R:X2}{color.G:X2}{color.B:X2}";
+        }
+
         public static bool RaiseError(Process p)
         {
             if (p.ExitCode == 0)
@@ -245,6 +253,38 @@ namespace EmeralEngine.Core
 
     public static class ImageUtils
     {
+        public static string GetFileName(ImageSource source)
+        {
+            if (source is BitmapImage bmp)
+            {
+                return Path.GetFileName(bmp.UriSource.LocalPath);
+            }
+            else if (source is BitmapFrame bmpf)
+            {
+                return Path.GetFileName(bmpf.Decoder.ToString());
+            }
+            else
+            {
+                return "";
+            }
+        }
+
+        public static string GetFilePath(ImageSource source)
+        {
+            if (source is BitmapImage bmp)
+            {
+                return bmp.UriSource.LocalPath;
+            }
+            else if (source is BitmapFrame bmpf)
+            {
+                return bmpf.Decoder.ToString();
+            }
+            else
+            {
+                return "";
+            }
+        }
+
         public static CroppedBitmap CropTransparentEdges(BitmapSource source)
         {
             int width = source.PixelWidth;
@@ -323,12 +363,13 @@ namespace EmeralEngine.Core
 
         public void Dispose()
         {
+            if (Directory.Exists(path))
+            {
+                Directory.Delete(path, true);
+            }
             try
             {
-                if (Directory.Exists(path))
-                {
-                    Directory.Delete(path, true);
-                }
+
             }
             catch
             {
@@ -381,6 +422,7 @@ namespace EmeralEngine.Core
             MouseEnter += (sender, e) =>
             {
                 BorderThickness = BORDER_THICK;
+                e.Handled = true;
             };
             MouseLeave += (sender, e) =>
             {
@@ -400,18 +442,58 @@ namespace EmeralEngine.Core
         }
     }
 
+    public class TextHelper
+    {
+        public static double GetTextHeight(string text, TextBlock target)
+        {
+            var t = new FormattedText(
+                text,
+                CultureInfo.CurrentCulture,
+                FlowDirection.LeftToRight,
+                new Typeface(target.FontFamily.ToString()),
+                target.FontSize,
+                target.Foreground
+                );
+            return t.Height;
+        }
+    }
+
+    public class XamlHelper
+    {
+        public static Regex SourceRegex = new Regex(@" Source\s*=\s*""([^""]+)""");
+        public static string ConvertSourceToRel(string xaml)
+        {
+            return SourceRegex.Replace(xaml, s =>
+            {
+                return $" Source=\"{Path.GetRelativePath(MainWindow.pmanager.ProjectResourceDir, s.Groups[1].Value)}\"";
+            });
+        }
+
+        public static string ConvertSourceToAbs(string xaml)
+        {
+            return SourceRegex.Replace(xaml, s =>
+            {
+                return $" Source=\"{Path.Combine(MainWindow.pmanager.ProjectResourceDir, s.Groups[1].Value)}\"";
+            });
+        }
+    }
+
     public class DesignerElementManager
     {
+        public bool Handled;
         private ResizableBorder _border;
 
         public void Focus(ResizableBorder b)
         {
-            if (_border is not null)
+            if (!Handled)
             {
-                _border.Release();
+                if (_border is not null)
+                {
+                    _border.Release();
+                }
+                _border = b;
+                _border.Focus();
             }
-            _border = b;
-            _border.Focus();
         }
     }
 
@@ -421,6 +503,7 @@ namespace EmeralEngine.Core
         private const int THICK2 = THICK * 2;
         public static ResizableBorder Make(Canvas parent, FrameworkElement element)
         {
+            var isTextBlock = element is TextBlock;
             var hbind = new Binding("ActualHeight")
             {
                 Source = element
@@ -429,9 +512,13 @@ namespace EmeralEngine.Core
             {
                 Source = element
             };
-            var canvas = new Canvas();
+            var canvas = new Canvas()
+            {
+                VerticalAlignment = VerticalAlignment.Top,
+                HorizontalAlignment = HorizontalAlignment.Left,
+            };
             canvas.SetBinding(FrameworkElement.WidthProperty, wbind);
-            canvas.SetBinding (FrameworkElement.HeightProperty, hbind);
+            canvas.SetBinding(FrameworkElement.HeightProperty, hbind);
             var border = new ResizableBorder()
             {
                 Child = canvas
@@ -458,14 +545,14 @@ namespace EmeralEngine.Core
             var top = new Thumb()
             {
                 Height = THICK,
-                Cursor = Cursors.SizeNS,
+                Cursor = isTextBlock ? Cursors.Arrow : Cursors.SizeNS,
                 Opacity = 0
             };
             top.SetBinding(FrameworkElement.WidthProperty, wbind);
             var bottom = new Thumb()
             {
                 Height = THICK,
-                Cursor = Cursors.SizeNS,
+                Cursor = isTextBlock ? Cursors.Arrow : Cursors.SizeNS,
                 Opacity = 0
             };
             bottom.SetBinding(FrameworkElement.WidthProperty, wbind);
@@ -514,34 +601,37 @@ namespace EmeralEngine.Core
             };
             Canvas.SetRight(right, 0);
             Panel.SetZIndex(right, 1);
-            top.DragStarted += (sender, e) =>
+            if (element is not TextBlock)
             {
-                Canvas.SetBottom(border, Utils.GetBottomPos(parent, border));
-                border.ClearValue(Canvas.TopProperty);
-            };
-            top.DragCompleted += (sender, e) =>
-            {
-                Canvas.SetTop(border, Utils.GetTopPos(parent, border));
-                border.ClearValue(Canvas.BottomProperty);
-            };
-            top.DragDelta += (sender, e) =>
-            {
-                var h = Math.Max(element.ActualHeight - e.VerticalChange, THICK2);
-                element.Height = h;
-            };
+                top.DragStarted += (sender, e) =>
+                {
+                    Canvas.SetBottom(border, Utils.GetBottomPos(parent, border));
+                    border.ClearValue(Canvas.TopProperty);
+                };
+                top.DragCompleted += (sender, e) =>
+                {
+                    Canvas.SetTop(border, Utils.GetTopPos(parent, border));
+                    border.ClearValue(Canvas.BottomProperty);
+                };
+                top.DragDelta += (sender, e) =>
+                {
+                    var h = Math.Max(element.ActualHeight - e.VerticalChange, THICK2);
+                    element.Height = h;
+                };
+                bottom.DragDelta += (sender, e) =>
+                {
+                    var h = Math.Max(element.ActualHeight + e.VerticalChange, THICK2);
+                    element.Height = h;
+                };
+            }
             Canvas.SetTop(top, 0);
             Panel.SetZIndex(top, 1);
-            bottom.DragDelta += (sender, e) =>
-            {
-                var h = Math.Max(element.ActualHeight + e.VerticalChange, THICK2);
-                element.Height = h;
-            };
             Canvas.SetBottom(bottom, 0);
             Panel.SetZIndex(bottom, 1);
             center.DragDelta += (sender, e) =>
             {
-                Canvas.SetLeft(border, Canvas.GetLeft(border) + e.HorizontalChange);
-                Canvas.SetTop(border, Canvas.GetTop(border) + e.VerticalChange);
+                Canvas.SetLeft(border, Math.Min(parent.ActualWidth - element.ActualWidth, Math.Max(0, Canvas.GetLeft(border) + e.HorizontalChange)));
+                Canvas.SetTop(border, Math.Min(parent.ActualHeight - element.ActualHeight, Math.Max(0, Canvas.GetTop(border) + e.VerticalChange)));
             };
             Canvas.SetLeft(center, THICK);
             Canvas.SetTop(center, THICK);
