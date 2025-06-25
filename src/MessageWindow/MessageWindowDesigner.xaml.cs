@@ -28,16 +28,15 @@ namespace EmeralEngine
         private const int SCREEN_WIDTH = 500;
         private const int SCREEN_HEIGHT = 300;
         public const string SAMPLE_SCRIPT = "このようにテキストが表示されます\nこのようにテキストが表示されます\nこのようにテキストが表示されます";
-        private string[] xamls;
         private IEnumerator<string> script;
         private DesignerElementManager elementManager;
         private WindowSettingsPage windowPage;
         private ScriptSettingPage scriptSettingPage;
         private NamePlateSettingPage namePlateSettingPage;
-        public int text_interval = 100; // ms
-        public string bg = "";
+        public string Bg = "";
         private string CurrentMswPath;
         private double defaultWidth, defaultHeight;
+        private MessageWindowManager MessageWindowManager;
         private MainWindow parent;
         public TextBlock Script;
         public Image NamePlateBgImage, MessageWindowBgImage;
@@ -49,6 +48,7 @@ namespace EmeralEngine
             InitializeComponent();
             parent = window;
             Owner = parent;
+            MessageWindowManager = parent.Managers.MessageWindowManager;
             Loaded += (sender, e) =>
             {
                 var r = Math.Min(SCREEN_WIDTH / Preview.Width, SCREEN_HEIGHT / Preview.Height);
@@ -62,14 +62,7 @@ namespace EmeralEngine
             windowPage = new(this);
             scriptSettingPage = new(this);
             namePlateSettingPage = new(this);
-            xamls = parent.Managers.ProjectManager.GetMessageWindows();
-            if (xamls.Length == 0)
-            {
-                var f = parent.Managers.ProjectManager.GetNextMswPath();
-                File.WriteAllText(f, parent.Managers.ProjectManager.GetDefaultMsw());
-                xamls = xamls.Append(f).ToArray();
-            }
-            CurrentMswPath = xamls[0];
+            CurrentMswPath = MessageWindowManager.windows[0];
             Load(CurrentMswPath);
             Preview.Width = parent.Managers.ProjectManager.Project.Size[0];
             Preview.Height = parent.Managers.ProjectManager.Project.Size[1];
@@ -184,16 +177,23 @@ namespace EmeralEngine
                     {
                         Script.Text += script.Current;
                     });
-                    await Task.Delay(text_interval);
+                    await Task.Delay(MainWindow.pmanager.Project.TextInterval);
                 }
                 else
                 {
                     script = GetSampleScript();
                     await Task.Delay(2000);
-                    Dispatcher.Invoke(() =>
+                    try
                     {
-                        Script.Text = "";
-                    });
+                        Dispatcher.Invoke(() =>
+                        {
+                            Script.Text = "";
+                        });
+                    }
+                    catch (TaskCanceledException)
+                    {
+                        break;
+                    }
                 }
                 try
                 {

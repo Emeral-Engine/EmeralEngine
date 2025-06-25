@@ -32,7 +32,7 @@ namespace EmeralEngine.Scene
         {
             foreach (var s in scenes)
             {
-                s.Value.Dump(dir.Length > 0 ? Path.Combine(dir, Path.GetFileName(s.Value.path)) : "");
+                s.Value.Dump(dir.Length > 0 ? Path.Combine(dir, Path.GetFileName(s.Value.Path)) : "");
             }
         }
         public SceneInfo New()
@@ -44,7 +44,7 @@ namespace EmeralEngine.Scene
             }
             var info = new SceneInfo()
             {
-                path = path,
+                Path = path,
                 order = scenes.Count + 1
             };
             info.AddScript();
@@ -65,9 +65,9 @@ namespace EmeralEngine.Scene
     {
         public BitmapImage? thumbnail;
         public string processed_memo;
-        private string _path, _bgm, _bg;
+        private string _bgm, _bg, _msw;
         public List<ScriptInfo> scripts;
-        private int _order, _msw;
+        private int _order;
         public string memo
         {
             set
@@ -117,7 +117,7 @@ namespace EmeralEngine.Scene
             }
             get => _bg ?? "";
         }
-        public int msw
+        public string msw
         {
             set
             {
@@ -176,7 +176,7 @@ namespace EmeralEngine.Scene
 
         public void Dump(string to = "")
         {
-            File.WriteAllText(to.Length > 0 ? to : path, $"""
+            File.WriteAllText(to.Length > 0 ? to : Path, $"""
                 order: {order}
                 trans: {trans} {trans_color} {fadeout} {fadein}
                 interval: {interval}

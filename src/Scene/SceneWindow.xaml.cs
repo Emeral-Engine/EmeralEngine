@@ -24,11 +24,9 @@ namespace EmeralEngine
         private Thickness border_size = new Thickness(5);
         private double panel_x, panel_y, line_y;
         private double defaultWindowWidth, defaultWindowHeight;
-        private int edgeCount;
-        private double heightRate;
         private MainWindow parent;
+        private int _EdgeCount;
         private Border focusing_border;
-        public SceneInfo now_scene;
         private SceneInfo pre_info;
         private RenderTargetBitmap black_image
         {
@@ -65,12 +63,12 @@ namespace EmeralEngine
             Scenes.Children.Clear();
             pre_info = null;
             Scenes.Width = 0;
-            edgeCount = 0;
+            _EdgeCount = 0;
             panel_x = 0;
             panel_y = ActualHeight / 4;
             line_y = ActualHeight / 2.5;
             var n = 1;
-            foreach (var i in parent.now_episode.smanager.scenes)
+            foreach (var i in parent.CurrentEpisode.smanager.scenes)
             {
                 DrawPanel($"シーン{n}", i.Value);
                 n++;
@@ -124,7 +122,7 @@ namespace EmeralEngine
                 Source = 0 < info.bg.Length ? info.thumbnail : black_image,
                 Stretch = Stretch.Fill
             };
-            if (parent.now_scene == info)
+            if (parent.CurrentScene == info)
             {
                 img.Loaded += (sender, e) =>
                 {
@@ -143,7 +141,7 @@ namespace EmeralEngine
             }
             panel.MouseDown += (sender, e) =>
             {
-                if (now_scene != info) FocusScene(border, img, info);
+                if (parent.CurrentScene != info) FocusScene(border, img, info);
             };
             grid.Children.Add(img);
             var text = new Label()
@@ -186,8 +184,8 @@ namespace EmeralEngine
             };
             item3.Click += (sender, e) =>
             {
-                File.Delete(info.path);
-                parent.now_episode.smanager.scenes.Remove(info.order);
+                File.Delete(info.Path);
+                parent.CurrentEpisode.smanager.scenes.Remove(info.order);
                 Load();
             };
             ctx.Items.Add(item3);
@@ -206,7 +204,7 @@ namespace EmeralEngine
         {
             get
             {
-                edgeCount += 1;
+                _EdgeCount += 1;
                 var line = new Rectangle()
                 {
                     Height = LINE_HEIGHT,
@@ -236,7 +234,7 @@ namespace EmeralEngine
         }
         private void NewScene()
         {
-            var info = parent.now_episode.smanager.New();
+            var info = parent.CurrentEpisode.smanager.New();
             var res = DrawPanel($"シーン{info.order}", info);
             res.Item2.Loaded += (sender, e) =>
             {
@@ -253,8 +251,7 @@ namespace EmeralEngine
             focusing_border = border;
             focusing_border.BorderThickness = border_size;
             border.Height = img.ActualHeight + 5;
-            now_scene = info;
-            parent.ChangeScene(now_scene);
+            parent.ChangeScene(info);
         }
         private void OnSizeChanged(object sender, SizeChangedEventArgs e)
         {

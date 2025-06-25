@@ -35,7 +35,7 @@ namespace EmeralEngine
         private const double DEFAULT_HEIGHT = 450;
         private double PREVIEW_DEFAULT_WIDTH = 600;
         private double PREVIEW_MAX_DEFAULT_WIDTH = 780;
-        private int NowScriptIndex;
+        public int CurrentScriptIndex;
         public static ProjectManager pmanager = new();
         public Logger Log;
         public MessageWindowManager mmanager;
@@ -51,12 +51,28 @@ namespace EmeralEngine
         private MessageWindowDesigner _MessageWindowDesigner;
         private TitleScreenDesigner _TitleScreenDesigner;
         private SettingWindow _SettingWindow;
-        public SceneInfo now_scene;
-        public ContentInfo now_content;
-        public EpisodeInfo now_episode;
+        public SceneInfo CurrentScene;
+        public ContentInfo CurrentContent;
+        public EpisodeInfo CurrentEpisode;
         private Assembly[] references;
         private DispatcherTimer backup_timer;
         private DispatcherTimer updateProgressTimer;
+
+        public ScriptInfo CurrentScript
+        {
+            get
+            {
+                if (CurrentScene.scripts.Count <= CurrentScriptIndex)
+                {
+                    CurrentScriptIndex = CurrentScene.scripts.Count - 1;
+                    return CurrentScene.scripts.Last();
+                }
+                else
+                {
+                    return CurrentScene.scripts[CurrentScriptIndex];
+                }
+            }
+        }
         private RenderTargetBitmap black_image
         {
             get
@@ -113,7 +129,6 @@ namespace EmeralEngine
             };
             Application.Current.Exit += (sender, e) =>
             {
-                GC.Collect();
                 if (pmanager.Temp is not null)
                 {
                     pmanager.Temp.Dispose();
@@ -123,7 +138,6 @@ namespace EmeralEngine
                 Dispatcher.Invoke(() =>
                 {
                     ErrorNotifyWindow.Show(e.Exception.Message);
-                    AskSave();
                 });
             };
             backup_timer = new DispatcherTimer()
@@ -174,7 +188,7 @@ namespace EmeralEngine
             Title = $"{CAPTION} {pmanager.ProjectName} ロード中...";
             Refresh();
             backup_timer.Stop();
-            NowScriptIndex = -1;
+            CurrentScriptIndex = -1;
             mmanager = new();
             story = new();
             emanager = new();
@@ -190,35 +204,31 @@ namespace EmeralEngine
             Log = new(Managers);
             if (emanager.episodes.Count == 0)
             {
-                now_episode = emanager.New();
+                CurrentEpisode = emanager.New();
             }
             else
             {
-                now_episode = emanager.episodes.Values.First();
+                CurrentEpisode = emanager.episodes.Values.First();
             }
             if (story.stories.Count == 0)
             {
-                now_content = story.New(now_episode.path);
-                now_content.path = now_episode.path;
-                pmanager.Project.Story.Add(now_content);
+                CurrentContent = story.New(CurrentEpisode.path);
+                CurrentContent.FullPath = CurrentEpisode.path;
+                pmanager.Project.Story.Add(CurrentContent);
                 pmanager.SaveProject();
             }
             else
             {
-                now_content = story.stories.First().Value;
+                CurrentContent = story.stories.First().Value;
             }
-            now_scene = now_episode.smanager.scenes.First().Value;
-            if (0 < now_scene.bg.Length) ChangeBackground(pmanager.GetResource(now_scene.bg));
+            CurrentScene = CurrentEpisode.smanager.scenes.First().Value;
+            if (0 < CurrentScene.bg.Length) ChangeBackground(pmanager.GetResource(CurrentScene.bg));
             else ChangeBackgroundBlack();
-            BgLabel.Content = Utils.CutString(now_scene.bg, 8, lines: 2);
-            BgmLabel.Content = now_scene.bgm;
+            BgLabel.Content = Utils.CutString(CurrentScene.bg, 8, lines: 2);
+            BgmLabel.Content = CurrentScene.bgm;
             if (pmanager.Project.Startup.Story) OpenStoryEditor();
             if (pmanager.Project.Startup.Scene) OpenSceneEditor();
             if (pmanager.Project.Startup.Script) OpenScriptEditor();
-            else
-            {
-                _ScriptWindow = new(this);
-            }
             if (pmanager.Project.Startup.Resource) OpenResourceManager();
             if (pmanager.Project.Startup.Chara) OpenCharacterManager();
             if (pmanager.Project.Startup.Msw) OpenMessageDesigner();
@@ -248,7 +258,6 @@ namespace EmeralEngine
                 Preview.Height = h * r;
                 PreviewScale.ScaleX = r;
                 PreviewScale.ScaleY = r;
-                NowScriptIndex = _ScriptWindow.current_index;
             }
         }
 
@@ -271,76 +280,77 @@ namespace EmeralEngine
         public void LoadPreview(bool script=true, bool msw=true, bool charas=true, bool bg=true)
         {
             var scriptIsAvailable = IsAvailable(_ScriptWindow);
-            if (script && scriptIsAvailable)
+            if (script)
             {
-                NowScriptIndex = _ScriptWindow.current_index;
-                Script.Text = _ScriptWindow.now_script.script;
+                if (scriptIsAvailable)
+                {
+                    Script.Text = CurrentScript?.script;
+                }
+                else
+                {
+                    CurrentScriptIndex = 0;
+                    Script.Text = CurrentScene.scripts[0].script;
+                }
             }
             if (msw)
             {
-                var window = mmanager.windows[now_scene.msw];
-                MessageWindow.Width = window.Width;
-                MessageWindow.Height = window.Height;
-                MessageWindowBg.Width = window.Width;
-                MessageWindowBg.Height = window.Height;
-                MessageWindow.Background = Utils.GetBrush(window.BgColor);
-                MessageWindow.Background.Opacity = window.BgColorAlpha;
-                MessageWindowBg.Opacity = window.BgAlpha;
-                if (string.IsNullOrEmpty(window.Bg))
+                var window = mmanager[CurrentScene.msw];
+                MessageWindow.Width = window.WindowContents.Width;
+                MessageWindow.Height = window.WindowContents.Height;
+                MessageWindowBg.Width = window.WindowContents.Width;
+                MessageWindowBg.Height = window.WindowContents.Height;
+                MessageWindow.Background = window.WindowContents.Background;
+                MessageWindow.Background.Opacity = window.WindowContents.Background.Opacity;
+                MessageWindowBg.Opacity = window.MessageWindowBg.Opacity;
+                if (window.MessageWindowBg.Source is null)
                 {
                     MessageWindowBg.Source = null;
                 }
                 else
                 {
-                    MessageWindowBg.Source = Utils.CreateBmp(MainWindow.pmanager.GetResource(window.Bg));
+                    MessageWindowBg.Source = Utils.CreateBmp(ImageUtils.GetFilePath(window.MessageWindowBg.Source));
                 }
-                Canvas.SetLeft(Script, window.ScriptLeftPos);
-                Canvas.SetTop(Script, window.ScriptTopPos);
-                Script.Width = window.ScriptWidth;
-                Script.FontSize = window.FontSize;
-                Script.FontFamily = new FontFamily(window.Font);
-                Script.Foreground = Utils.GetBrush(window.TextColor);
-                if (_ScriptWindow.now_script is null)
-                {
-
-                }
-                else if (string.IsNullOrWhiteSpace(_ScriptWindow.now_script.speaker))
+                Canvas.SetLeft(Script, Canvas.GetLeft(window.Script));
+                Canvas.SetTop(Script, Canvas.GetTop(window.Script));
+                Script.Width = window.Script.Width;
+                Script.FontSize = window.Script.FontSize;
+                Script.FontFamily = window.Script.FontFamily;
+                Script.Foreground = window.Script.Foreground;
+                if (string.IsNullOrWhiteSpace(CurrentScript.speaker))
                 {
                     if (scriptIsAvailable) NamePlate.Visibility = Visibility.Hidden;
                 }
                 else
                 {
-                    if (scriptIsAvailable) NamePlate.Visibility = Visibility.Visible;
-                    Canvas.SetLeft(NamePlate, window.NamePlateLeftPos);
-                    Canvas.SetBottom(NamePlate, window.NamePlateBottomPos);
-                    MessageWindow.Width = window.Width;
-                    MessageWindow.Height = window.Height;
-                    NamePlate.Width = window.NamePlateWidth;
-                    NamePlate.Height = window.NamePlateHeight;
-                    NamePlate.Background = Utils.GetBrush(window.NamePlateBgColor);
-                    NamePlate.Background.Opacity = window.NamePlateBgColorAlpha;
-                    if (!string.IsNullOrEmpty(window.NamePlateBgImage))
+                    NamePlate.Visibility = Visibility.Visible;
+                    Canvas.SetLeft(NamePlate, Canvas.GetLeft(window.NamePlate));
+                    Canvas.SetTop(NamePlate, Canvas.GetTop(window.NamePlate));
+                    NamePlate.Width = window.NamePlate.Width;
+                    NamePlate.Height = window.NamePlate.Height;
+                    NamePlate.Background = window.NamePlate.Background;
+                    NamePlate.Background.Opacity = window.NamePlate.Background.Opacity;
+                    if (window.NamePlateBg.Source is not null)
                     {
-                        NamePlateBgImage.Source = Utils.CreateBmp(pmanager.GetResource(window.NamePlateBgImage));
+                        NamePlateBgImage.Source = Utils.CreateBmp(ImageUtils.GetFilePath(window.NamePlateBg.Source));
                     }
-                    NamePlateBgImage.Opacity = window.NamePlateBgImageAlpha;
-                    Speaker.Foreground = Utils.GetBrush(window.NameFontColor);
-                    Speaker.FontFamily = new FontFamily(window.NameFont);
-                    Speaker.FontSize = window.NameFontSize;
-                    Speaker.Content = _ScriptWindow.now_script.speaker;
+                    NamePlateBgImage.Opacity = window.NamePlateBg.Opacity;
+                    Speaker.Foreground = window.CharaName.Foreground;
+                    Speaker.FontFamily = window.CharaName.FontFamily;
+                    Speaker.FontSize = window.CharaName.FontSize;
+                    Speaker.Content = CurrentScript.speaker;
                 }
-                Canvas.SetLeft(MessageWindow, window.WindowLeftPos);
-                Canvas.SetBottom(MessageWindow, window.WindowBottom);
+                Canvas.SetLeft(MessageWindow, Canvas.GetLeft(window.WindowContents));
+                Canvas.SetTop(MessageWindow, Canvas.GetTop(window.WindowContents));
             }
-            if (charas && scriptIsAvailable && 0 < _ScriptWindow.now_script.charas.Count)
+            if (charas && 0 < CurrentScript.charas.Count)
             {
                 CharacterPictures.Children.Clear();
-                var per = pmanager.Project.Size[0] / (_ScriptWindow.now_script.charas.Count * 2);
+                var per = pmanager.Project.Size[0] / (CurrentScript.charas.Count * 2);
                 BitmapImage b;
                 Image img;
-                for (int i = 0; i < _ScriptWindow.now_script.charas.Count; i++)
+                for (int i = 0; i < CurrentScript.charas.Count; i++)
                 {
-                    b = Utils.CreateBmp(pmanager.GetResource("Characters", _ScriptWindow.now_script.charas[i]));
+                    b = Utils.CreateBmp(pmanager.GetResource("Characters", CurrentScript.charas[i]));
                     img = new Image()
                     {
                         Source = b,
@@ -352,13 +362,13 @@ namespace EmeralEngine
             }
             if (bg)
             {
-                if (string.IsNullOrEmpty(now_scene.bg))
+                if (string.IsNullOrEmpty(CurrentScene.bg))
                 {
                     Bg.Source = null;
                 }
                 else
                 {
-                    Bg.Source = Utils.CreateBmp(pmanager.GetResource(now_scene.bg));
+                    Bg.Source = Utils.CreateBmp(pmanager.GetResource(CurrentScene.bg));
                 }
             }
         }
@@ -380,7 +390,7 @@ namespace EmeralEngine
         public void ChangeBackground(string path)
         {
             BgLabel.Content = Utils.CutString(Path.GetFileName(path), 8, lines: 2);
-            Bg.Source = Utils.CreateBmp(pmanager.GetResource(now_scene.bg));
+            Bg.Source = Utils.CreateBmp(pmanager.GetResource(CurrentScene.bg));
             ReLoad(script: false);
         }
         public void ChangeBackgroundBlack(bool reload=true, bool story=true)
@@ -393,31 +403,31 @@ namespace EmeralEngine
         }
         public void ChangeScene(SceneInfo info, bool changeBg=true)
         {
-            if (now_scene == info) return;
-            now_scene = info;
+            if (CurrentScene == info) return;
+            CurrentScene = info;
             if (changeBg)
             {
-                if (0 < now_scene.bg.Length)
+                if (0 < CurrentScene.bg.Length)
                 {
-                    ChangeBackground(pmanager.GetResource(now_scene.bg));
+                    ChangeBackground(pmanager.GetResource(CurrentScene.bg));
                 }
                 else
                 {
                     ChangeBackgroundBlack();
                 }
             }
-            BgmLabel.Content = Utils.CutString(Path.GetFileName(now_scene.bgm), 8, lines: 2); ;
+            BgmLabel.Content = Utils.CutString(Path.GetFileName(CurrentScene.bgm), 8, lines: 2); ;
             ReLoad(story: false);
             LoadPreview();
         }
         public void ChangeStoryContent(ContentInfo info, bool refresh = false)
         {
-            if (!refresh && now_content == info) return;
-            now_content = info;
-            if (now_content.IsScenes())
+            if (!refresh && CurrentContent == info) return;
+            CurrentContent = info;
+            if (CurrentContent.IsScenes())
             {
-                now_episode = emanager.GetEpisode(now_content.path);
-                var t = now_episode.GetThumbnail();
+                CurrentEpisode = emanager.GetEpisode(CurrentContent.FullPath);
+                var t = CurrentEpisode.GetThumbnail();
                 if (t is null)
                 {
                     ChangeBackgroundBlack(story: false);
@@ -425,9 +435,9 @@ namespace EmeralEngine
                 else
                 {
                     Bg.Source = t;
-                    BgLabel.Content = Utils.CutString(Path.GetFileName(now_episode.smanager.scenes.First().Value.bg), 8, lines: 2);
+                    BgLabel.Content = Utils.CutString(Path.GetFileName(CurrentEpisode.smanager.scenes.First().Value.bg), 8, lines: 2);
                 }
-                ChangeScene(now_episode.smanager.scenes.First().Value, false);
+                ChangeScene(CurrentEpisode.smanager.scenes.First().Value, false);
             }
         }
         private void CloseSubWindows()
@@ -475,10 +485,10 @@ namespace EmeralEngine
             var bg = ResourceWindow.SelectImage(this);
             if (!string.IsNullOrEmpty(bg))
             {
-                now_scene.bg = bg;
+                CurrentScene.bg = bg;
                 if (pmanager.Project.SceneSettings.ChangeLatterBgWhenChanged)
                 {
-                    foreach (var s in now_episode.smanager.scenes.Where(a => now_scene.order < a.Key))
+                    foreach (var s in CurrentEpisode.smanager.scenes.Where(a => CurrentScene.order < a.Key))
                     {
                         s.Value.bg = bg;
                     }
@@ -526,8 +536,8 @@ namespace EmeralEngine
         {
             if (!IsAvailable(_ScriptWindow))
             {
-                NowScriptIndex = 0;
-                _ScriptWindow = new(this, NowScriptIndex);
+                CurrentScriptIndex = 0;
+                _ScriptWindow = new(this);
                 _ScriptWindow.LoadLog();
                 _ScriptWindow.Show();
             }
@@ -665,7 +675,7 @@ namespace EmeralEngine
                 {
                     try
                     {
-                        var res = compiler.Run(now_scene);
+                        var res = compiler.Run(CurrentScene);
                         if (res.ReturnValue is not null)
                         {
                             ErrorNotifyWindow.Show($"{res.ReturnValue}:\n{res.Exception.Message}");
@@ -795,12 +805,12 @@ namespace EmeralEngine
             var bgm = ResourceWindow.SelectAudio(this);
             if (bgm is not null)
             {
-                now_scene.bgm = bgm;
+                CurrentScene.bgm = bgm;
                 if (pmanager.Project.SceneSettings.ChangeLatterBgWhenChanged)
                 {
-                    foreach (var s in now_episode.smanager.scenes)
+                    foreach (var s in CurrentEpisode.smanager.scenes)
                     {
-                        if (now_scene.order < s.Value.order)
+                        if (CurrentScene.order < s.Value.order)
                         {
                             s.Value.bgm = bgm;
                         }
@@ -813,12 +823,12 @@ namespace EmeralEngine
 
         private void RemoveBgButton_Click(object sender, RoutedEventArgs e)
         {
-            now_scene.bg = "";
+            CurrentScene.bg = "";
             if (pmanager.Project.SceneSettings.ChangeLatterBgWhenChanged)
             {
-                foreach (var s in now_episode.smanager.scenes)
+                foreach (var s in CurrentEpisode.smanager.scenes)
                 {
-                    if (now_scene.order < s.Value.order)
+                    if (CurrentScene.order < s.Value.order)
                     {
                         s.Value.bg = "";
                     }
@@ -829,12 +839,12 @@ namespace EmeralEngine
 
         private void RemoveBgmButton_Click(object sender, RoutedEventArgs e)
         {
-            now_scene.bgm = "";
+            CurrentScene.bgm = "";
             if (pmanager.Project.SceneSettings.ChangeLatterBgWhenChanged)
             {
-                foreach (var s in now_episode.smanager.scenes)
+                foreach (var s in CurrentEpisode.smanager.scenes)
                 {
-                    if (now_scene.order < s.Value.order)
+                    if (CurrentScene.order < s.Value.order)
                     {
                         s.Value.bgm = "";
                     }

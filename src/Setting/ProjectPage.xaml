@@ -17,6 +17,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <GroupBox Width="150" HorizontalAlignment="Left" Margin="10,0,0,0" Header="ウィンドウサイズ" FontSize="18">
             <Grid>
@@ -51,6 +52,18 @@
                 <Label Grid.Row="1" Content="マウス押下時"/>
                 <TextBox Grid.Row="1" Name="MouseDownSE" Width="200" Height="25" Grid.Column="1" IsReadOnly="True"/>
                 <Button Content="参照" Width="50" Height="25" Margin="20,0,0,0" Grid.Row="1" Grid.Column="2" Click="Button_Click_1"/>
+            </Grid>
+        </GroupBox>
+        <GroupBox Grid.Row="2" Header="テキスト" Width="260" HorizontalAlignment="Left">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Label Content="インターバル"/>
+                <xctk:IntegerUpDown Name="TextInterval" Grid.Column="1" Width="100" Height="30" FontSize="20" ValueChanged="OnIntervalValueChanged"/>
+                <Label Grid.Column="2" Content="ミリ秒"/>
             </Grid>
         </GroupBox>
     </Grid>

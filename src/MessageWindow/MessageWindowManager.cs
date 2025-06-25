@@ -1,7 +1,10 @@
 ﻿using EmeralEngine.Core;
 using System.IO;
+using System.Security.Cryptography.X509Certificates;
 using System.Text.Json;
+using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Markup;
 using System.Windows.Media;
 
 namespace EmeralEngine.MessageWindow
@@ -9,71 +12,58 @@ namespace EmeralEngine.MessageWindow
     public class MessageWindowManager
     {
         public const string DEFAULT_FONT = "Yu Gothic UI";
-        public const string FILENAME = "msw.json";
-        private string file;
-        public Dictionary<int, MessageWindowConfig> windows;
+        public const string DIRNAME = "MessageWindows";
+        public List<string> windows;
+        public MessageWindow this[string f]
+        {
+            get => new MessageWindow(LoadWindow(Path.GetFileNameWithoutExtension(f) + ".xaml"));
+        }
 
         public MessageWindowManager()
         {
-            file = Path.Combine(MainWindow.pmanager.Temp.path, FILENAME);
-            if (File.Exists(file))
+            if (Directory.Exists(MainWindow.pmanager.ProjectMswDir))
             {
-                windows = JsonSerializer.Deserialize<Dictionary<int, MessageWindowConfig>>(File.ReadAllText(file));
+                windows = Directory.GetFiles(MainWindow.pmanager.ProjectMswDir).ToList();
             }
             else
             {
-                var msw_w = MainWindow.pmanager.Project.Size[0];
-                var msw_h = MainWindow.pmanager.Project.Size[1] * 0.3;
-                windows = new()
-                {
-                    [0] = new MessageWindowConfig()
-                    {
-                        Width = msw_w,
-                        Height = (int)msw_h,
-                        BgColor = "#FF3D3C3C",
-                        Bg = "",
-                        BgColorAlpha = 0.7,
-                        BgAlpha = 0.5,
-                        TextColor = "#ffffffff",
-                        Interval = 100,
-                        FontSize = 30,
-                        Font = DEFAULT_FONT,
-                        ScriptWidth = msw_w - 10,
-                        WindowLeftPos = 0,
-                        WindowBottom = 0,
-                        ScriptLeftPos = 0,
-                        ScriptTopPos = 0,
-                        NamePlateWidth = (int)(msw_w * 0.2),
-                        NamePlateHeight = (int)(msw_h * 0.3),
-                        NamePlateBgColor = "#FFA9A9A9",
-                        NamePlateBgColorAlpha = 0.7,
-                        NamePlateBgImage = "",
-                        NamePlateBgImageAlpha = 0.5,
-                        NameFont = DEFAULT_FONT,
-                        NameFontColor = "#FFFFFFFF",
-                        NameFontSize = 24,
-                        NamePlateLeftPos = 0,
-                        NamePlateBottomPos = msw_h
-                    }
-                };
-                File.WriteAllText(file, JsonSerializer.Serialize(windows));
+                var f = Path.Combine(MainWindow.pmanager.ProjectMswDir, "0.xaml");
+                File.WriteAllText(f, MainWindow.pmanager.GetDefaultMsw());
+                windows = new() { f};
             }
         }
-        public void Dump(string to = "")
+
+        public IEnumerator<FrameworkElement> GetWindows()
         {
-            File.WriteAllText(to.Length > 0 ? to : file, JsonSerializer.Serialize(windows));
+            foreach (var f in windows)
+            {
+                yield return LoadWindow(f);
+            }
         }
-        public void Add(MessageWindowConfig conf)
+
+        public FrameworkElement LoadWindow(string name)
         {
-            windows.Add(windows.Count, conf);
-            Dump();
-        }
-        public void Replace(int num, MessageWindowConfig conf)
-        {
-            windows[num] = conf;
-            Dump();
+            return XamlReader.Parse(XamlHelper.ConvertSourceToAbs(File.ReadAllText(Path.Combine(MainWindow.pmanager.ProjectMswDir, name)))) as FrameworkElement;
         }
     }
+
+    public struct MessageWindow
+    {
+        public Canvas WindowContents, NamePlate;
+        public Image MessageWindowBg, NamePlateBg;
+        public TextBlock Script;
+        public Label CharaName;
+        public MessageWindow(FrameworkElement element)
+        {
+            WindowContents = element.FindName("WindowContents") as Canvas;
+            MessageWindowBg = element.FindName("MessageWindowBgImage") as Image;
+            Script = element.FindName("Script") as TextBlock;
+            NamePlate = element.FindName("NamePlate") as Canvas;
+            NamePlateBg = element.FindName("NamePlateBgImage") as Image;
+            CharaName = element.FindName("CharaName") as Label;
+        }
+    }
+
     class MessageWindowBuilder
     {
         MessageWindowConfig config;

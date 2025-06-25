@@ -21,17 +21,15 @@ namespace EmeralEngine.Script
         private const int HEADER_LENGTH_LIMIT = 10;
         private const int CHARACTER_WIDTH = 50;
         private const int CHARACTER_SPACE = CHARACTER_WIDTH + 20;
-        private double default_width, default_height;
+        private double DefaultWidth, DefaultHeight;
         private MainWindow parent;
         private CharacterManager cmanager;
-        public int current_index;
         private bool _Handling;
         private bool IsDragged;
-        private bool IsCharaPressing;
         private DraggingScriptInfo? draggingScriptInfo;
         private DraggingCharaInfo? draggingCharaInfo;
-        private DockPanel? current_panel;
-        private Label? current_panel_header;
+        private DockPanel? CurrentPanel;
+        private Label? CurrentPanelHeader;
 
         public ObservableCollection<string> Speakers { get; set; }
 
@@ -43,30 +41,11 @@ namespace EmeralEngine.Script
         {
             get => draggingCharaInfo is not null;
         }
-        public ScriptInfo? now_script
-        {
-            get
-            {
-                if (parent.now_scene.scripts.Count <= current_index)
-                {
-                    current_index = parent.now_scene.scripts.Count-1;
-                    return parent.now_scene.scripts.Last();
-                }
-                else if (current_index < 0)
-                {
-                    return null;
-                }
-                else
-                {
-                    return parent.now_scene.scripts[current_index];
-                }
-            }
-        }
         private bool EmptyScriptExists
         {
             get
             {
-                foreach (var s in parent.now_scene.scripts)
+                foreach (var s in parent.CurrentScene.scripts)
                 {
                     if (string.IsNullOrEmpty(Trim(s)))
                     {
@@ -76,16 +55,15 @@ namespace EmeralEngine.Script
                 return false;
             }
         }
-        public ScriptEditor(MainWindow p, int idx = -1)
+        public ScriptEditor(MainWindow p)
         {
             InitializeComponent();
-            default_width = Width;
-            default_height = Height;
+            DefaultWidth = Width;
+            DefaultHeight = Height;
             parent = p;
             Owner = parent;
             DataContext = this;
             cmanager = new();
-            current_index = idx;
             Speakers = new();
             Speakers.CollectionChanged += (sender, e) =>
             {
@@ -108,39 +86,41 @@ namespace EmeralEngine.Script
         {
             LogGrid.Children.Clear();
             LogGrid.RowDefinitions.Clear();
-            if (parent.now_scene.scripts.Count == 0)
+            if (parent.CurrentScene.scripts.Count == 0)
             {
-                parent.now_scene.AddScript();
+                parent.CurrentScene.AddScript();
                 CreateLogPanel(new ScriptInfo());
                 Script.Text = "";
-                current_index = 0;
             }
             else
             {
-                foreach (var s in parent.now_scene.scripts)
+                for (var i = 0; i < parent.CurrentScene.scripts.Count; i++)
                 {
-                    CreateLogPanel(s);
+                    var p = CreateLogPanel(parent.CurrentScene.scripts[i]);
+                    if (i == parent.CurrentScriptIndex)
+                    {
+                        p.BringIntoView();
+                    }
                 }
-                if (current_index < 0)
+                if (parent.CurrentScriptIndex < 0)
                 {
-                    current_index = parent.now_scene.scripts.Count - 1;
+                    parent.CurrentScriptIndex = parent.CurrentScene.scripts.Count - 1;
                 }
             }
-            LogViewer.ScrollToEnd();
             _Handling = true;
-            Script.Text = Trim(now_script.script);
-            Speaker.Text = now_script.speaker;
-            Memo.Text = parent.now_scene.memo;
+            Script.Text = Trim(parent.CurrentScript.script);
+            Speaker.Text = parent.CurrentScript.speaker;
+            Memo.Text = parent.CurrentScene.memo;
             _Handling = false;
-            DeleteSctiptButton.IsEnabled = parent.now_scene.scripts.Count > 1;
+            DeleteSctiptButton.IsEnabled = parent.CurrentScene.scripts.Count > 1;
             NewScriptButton.IsEnabled = MainWindow.pmanager.Project.EditorSettings.AddScriptWhenEmpty || !EmptyScriptExists;
             UpdateMessageWindows();
-            FocusHeader(current_panel_header);
+            FocusHeader(CurrentPanelHeader);
             LoadCharacterPictures();
             parent.LoadPreview(bg: false);
         }
 
-        void CreateLogPanel(ScriptInfo s)
+        private DockPanel CreateLogPanel(ScriptInfo s)
         {
             var grid = new Grid();
             var sep = new Separator()
@@ -174,9 +154,9 @@ namespace EmeralEngine.Script
                         var is_down = draggingScriptInfo.current_index < draggingScriptInfo.to_index;
                         Grid.SetRow(draggingScriptInfo.drag_source, r);
                         Grid.SetRow(panel, is_down ? r - 2 : r + 2);
-                        Utils.Swap(parent.now_scene.scripts, draggingScriptInfo.current_index, draggingScriptInfo.to_index);
+                        Utils.Swap(parent.CurrentScene.scripts, draggingScriptInfo.current_index, draggingScriptInfo.to_index);
                         draggingScriptInfo.current_index = draggingScriptInfo.to_index;
-                        current_index = to_index;
+                        parent.CurrentScriptIndex = to_index;
                     }
                 }
             };
@@ -195,10 +175,10 @@ namespace EmeralEngine.Script
             {
                 if (!IsDraggingScript)
                 {
-                    current_index = (Grid.GetRow(panel) - 1) / 2;
+                    parent.CurrentScriptIndex = (Grid.GetRow(panel) - 1) / 2;
                     _Handling = true;
-                    Script.Text = Trim(now_script.script);
-                    Speaker.Text = now_script.speaker;
+                    Script.Text = Trim(parent.CurrentScript.script);
+                    Speaker.Text = parent.CurrentScript.speaker;
                     _Handling = false;
                     var for_drag_grid = new Grid();
                     var drag_target = new DockPanel()
@@ -211,12 +191,11 @@ namespace EmeralEngine.Script
                         IsHitTestVisible = false,
                         Visibility = Visibility.Hidden
                     };
-                    var for_drag_header = new Label()
+                    for_drag_grid.Children.Add(new Label()
                     {
                         Content = Utils.CutString(s.script, HEADER_LENGTH_LIMIT),
                         FontSize = 20,
-                    };
-                    for_drag_grid.Children.Add(for_drag_header);
+                    });
                     drag_target.Children.Add(for_drag_grid);
                     ViewerCanvas.Children.Add(drag_target);
                     draggingScriptInfo = new()
@@ -235,13 +214,14 @@ namespace EmeralEngine.Script
             {
                 Height = new GridLength(100)
             });
-            if (current_index < 0 || LogGrid.Children.Count / 2 == current_index)
+            if (parent.CurrentScriptIndex < 0 || LogGrid.Children.Count / 2 == parent.CurrentScriptIndex)
             {
-                current_panel = panel;
-                current_panel_header = header;
+                CurrentPanel = panel;
+                CurrentPanelHeader = header;
             }
             Grid.SetRow(panel, LogGrid.Children.Count);
             LogGrid.Children.Add(panel);
+            return panel;
         }
 
         public string Handle(string s)
@@ -292,39 +272,39 @@ namespace EmeralEngine.Script
         }
         private void FocusPanel(DockPanel panel, Label header)
         {
-            if (current_panel_header is not null)
+            if (CurrentPanelHeader is not null)
             {
                 ReleasePanel();
             }
-            current_panel = panel;
-            current_panel_header = header;
-            current_panel.Opacity = 0.5;
+            CurrentPanel = panel;
+            CurrentPanelHeader = header;
+            CurrentPanel.Opacity = 0.5;
             FocusTextBox();
             parent.LoadPreview(bg: false);
         }
         private void FocusHeader(Label header)
         {
-            if (current_panel_header is not null)
+            if (CurrentPanelHeader is not null)
             {
                 ReleasePanel();
             }
-            current_panel_header = header;
-            current_panel.Opacity = 0.5;
+            CurrentPanelHeader = header;
+            CurrentPanel.Opacity = 0.5;
         }
         private void ReleasePanel()
         {
-            current_panel.Opacity = 1;
+            CurrentPanel.Opacity = 1;
         }
 
         private void Button_Click_1(object sender, RoutedEventArgs e)
         {
-            var pre_charas = now_script.charas;
-            var pre_speaker = now_script.speaker;
-            current_index++;
-            parent.now_scene.AddScript(current_index);
+            var pre_charas = parent.CurrentScript.charas;
+            var pre_speaker = parent.CurrentScript.speaker;
+            parent.CurrentScriptIndex++;
+            parent.CurrentScene.AddScript(parent.CurrentScriptIndex);
             Script.Text = "";
-            now_script.charas = new(pre_charas);
-            now_script.speaker = new(pre_speaker);
+            parent.CurrentScript.charas = new(pre_charas);
+            parent.CurrentScript.speaker = new(pre_speaker);
             LoadLog();
             Script.Focus();
             DeleteSctiptButton.IsEnabled = true;
@@ -337,10 +317,10 @@ namespace EmeralEngine.Script
             var s = Trim(Script.Text);
             if (Script.Text == s)
             {
-                now_script.script = Handle(Script.Text);
-                current_panel_header.Content = Utils.CutString(now_script.script, HEADER_LENGTH_LIMIT);
+                parent.CurrentScript.script = Handle(Script.Text);
+                CurrentPanelHeader.Content = Utils.CutString(parent.CurrentScript.script, HEADER_LENGTH_LIMIT);
                 NewScriptButton.IsEnabled = MainWindow.pmanager.Project.EditorSettings.AddScriptWhenEmpty || !EmptyScriptExists;
-                parent.Script.Text = now_script.script;
+                parent.Script.Text = parent.CurrentScript.script;
             }
             else
             {
@@ -351,14 +331,14 @@ namespace EmeralEngine.Script
 
         private void OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
-            Scale.ScaleX = ActualWidth / default_width;
-            Scale.ScaleY = ActualHeight / default_height;
+            Scale.ScaleX = ActualWidth / DefaultWidth;
+            Scale.ScaleY = ActualHeight / DefaultHeight;
         }
 
         private void Memo_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (_Handling) return;
-            parent.now_scene.memo = Memo.Text;
+            parent.CurrentScene.memo = Memo.Text;
         }
 
         private void OnLogViewerMouseMove(object sender, System.Windows.Input.MouseEventArgs e)
@@ -410,7 +390,7 @@ namespace EmeralEngine.Script
             CharacterPictures.Children.Clear();
             Speakers.Clear();
             CharacterPictures.Width = 0;
-            foreach (var c in now_script.charas)
+            foreach (var c in parent.CurrentScript.charas)
             {
                 if (!string.IsNullOrWhiteSpace(c))
                 {
@@ -428,7 +408,7 @@ namespace EmeralEngine.Script
             {
                 DrawCharacterPicturePanel(pic);
                 var rel = cmanager.Format(pic);
-                now_script.charas.Add(rel);
+                parent.CurrentScript.charas.Add(rel);
                 Speakers.Add(Path.GetDirectoryName(rel));
                 parent.LoadPreview(script: false, msw: false, bg: false);
             }
@@ -509,8 +489,8 @@ namespace EmeralEngine.Script
                             img.Source = bmp;
                         });
                     });
-                    now_script.charas[idx] = cmanager.Format(new_chara);
-                    var new_chara_name = Path.GetDirectoryName(now_script.charas[idx]);
+                    parent.CurrentScript.charas[idx] = cmanager.Format(new_chara);
+                    var new_chara_name = Path.GetDirectoryName(parent.CurrentScript.charas[idx]);
                     if (Speaker.Text == chara)
                     {
                         Speakers.Remove(chara);
@@ -528,7 +508,7 @@ namespace EmeralEngine.Script
             };
             item2.Click += (sender, e) =>
             {
-                now_script.charas.RemoveAt(Grid.GetColumn(panel));
+                parent.CurrentScript.charas.RemoveAt(Grid.GetColumn(panel));
                 Speakers.Remove(chara);
                 LoadCharacterPictures();
                 parent.LoadPreview(script: false, msw: false, bg: false);
@@ -555,10 +535,10 @@ namespace EmeralEngine.Script
 
         private void DeleteScriptButton_Click(object sender, RoutedEventArgs e)
         {
-            parent.now_scene.scripts.RemoveAt(current_index);
-            if (current_index != 0)
+            parent.CurrentScene.scripts.RemoveAt(parent.CurrentScriptIndex);
+            if (parent.CurrentScriptIndex != 0)
             {
-                current_index--;
+                parent.CurrentScriptIndex--;
             }
             LoadLog();
         }
@@ -604,7 +584,7 @@ namespace EmeralEngine.Script
         {
             draggingCharaInfo.drag_source.Visibility = Visibility.Visible;
             CharacterPictureDrag.Children.Clear();
-            Utils.Swap(now_script.charas, draggingCharaInfo.from_index, draggingCharaInfo.current_index);
+            Utils.Swap(parent.CurrentScript.charas, draggingCharaInfo.from_index, draggingCharaInfo.current_index);
             draggingCharaInfo = null;
             parent.LoadPreview(script: false, msw: false, bg: false);
         }
@@ -612,11 +592,11 @@ namespace EmeralEngine.Script
         private void Speaker_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (_Handling) return;
-            if (now_script.speaker == "" || Speaker.Text == "")
+            if (parent.CurrentScript.speaker == "" || Speaker.Text == "")
             {
-                current_panel_header.Content = Utils.CutString(Handle(Script.Text), HEADER_LENGTH_LIMIT);
+                CurrentPanelHeader.Content = Utils.CutString(Handle(Script.Text), HEADER_LENGTH_LIMIT);
             }
-            now_script.speaker = Speaker.Text;
+            parent.CurrentScript.speaker = Speaker.Text;
             parent.LoadPreview(script: false, charas: false, bg: false);
         }
 
@@ -631,17 +611,16 @@ namespace EmeralEngine.Script
             var n = 0;
             foreach (var m in parent.mmanager.windows)
             {
-                n = m.Key;
                 MessageWindowSelection.Items.Add(n);
             }
-            MessageWindowSelection.SelectedItem = parent.now_scene.msw <= n ? parent.now_scene.msw : 0;
+            MessageWindowSelection.SelectedItem = parent.Managers.MessageWindowManager.windows.Contains(parent.CurrentScene.msw) ? parent.CurrentScene.msw : "0";
         }
 
         private void MessageWindowSelection_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (0 <= MessageWindowSelection.SelectedIndex)
             {
-                parent.now_scene.msw = MessageWindowSelection.SelectedIndex;
+                parent.CurrentScene.msw = MessageWindowSelection.Text;
                 parent.LoadPreview(script: false, charas: false, bg: false);
             }
         }

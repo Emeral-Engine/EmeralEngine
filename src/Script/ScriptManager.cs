@@ -1,12 +1,4 @@
-﻿using EmeralEngine.Resource.Character;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-
-namespace EmeralEngine.Script
+﻿namespace EmeralEngine.Script
 {
     public class ScriptInfo
     {
