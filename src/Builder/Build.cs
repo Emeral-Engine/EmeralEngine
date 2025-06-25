@@ -559,6 +559,11 @@ namespace EmeralEngine.Builder
                 }
                 
                 """);
+            string stories = "";
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                stories = GenerateStoryCode();
+            });
             File.WriteAllText(files.gamepage, $$"""
                 using NAudio.Wave;
                 using System.Windows;
@@ -716,7 +721,7 @@ namespace EmeralEngine.Builder
                             f.Invoke(this, new object[] { script });
                         }
 
-                       {{GenerateStoryCode()}}
+                       {{stories}}
                     }
 
                     public class TempFile: IDisposable
@@ -1816,7 +1821,6 @@ namespace EmeralEngine.Builder
 
         private string GenerateCompilationCode()
         {
-            var stories = GenerateStoryCode();
             return $$"""
                 using Game.Core;
                 using NAudio.Wave;
