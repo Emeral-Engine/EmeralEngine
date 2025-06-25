@@ -1,4 +1,5 @@
 ﻿using EmeralEngine.Notify;
+using EmeralEngine.Project;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
@@ -255,18 +256,7 @@ namespace EmeralEngine.Core
     {
         public static string GetFileName(ImageSource source)
         {
-            if (source is BitmapImage bmp)
-            {
-                return Path.GetFileName(bmp.UriSource.LocalPath);
-            }
-            else if (source is BitmapFrame bmpf)
-            {
-                return Path.GetFileName(bmpf.Decoder.ToString());
-            }
-            else
-            {
-                return "";
-            }
+            return Path.GetFileName(GetFilePath(source));
         }
 
         public static string GetFilePath(ImageSource source)
@@ -355,24 +345,25 @@ namespace EmeralEngine.Core
 
         public TempDirectory()
         {
+            var remains = TempFile.Cleanup();
             string tempPath = Path.GetTempPath();
             string dirName = Guid.NewGuid().ToString();
             path = Path.Combine(tempPath, dirName);
             Directory.CreateDirectory(path);
+            remains.remains.Add(path);
+            remains.Write();
         }
 
         public void Dispose()
         {
             if (Directory.Exists(path))
             {
-                Directory.Delete(path, true);
-            }
-            try
-            {
-
-            }
-            catch
-            {
+                GC.Collect();
+                try
+                {
+                    Directory.Delete(path, true);
+                }
+                catch { }
             }
         }
     }
@@ -383,15 +374,62 @@ namespace EmeralEngine.Core
         private  bool _disposed = false;
         public TempFile(string suffix="")
         {
+            var remains = Cleanup();
             path = Path.Combine(Path.GetTempFileName(), Guid.NewGuid().ToString() + suffix);
+            remains.remains.Add(path);
+            remains.Write();
         }
+
+        public static CleanupInfo Cleanup()
+        {
+            var remain = Path.Combine(ProjectManager.BaseDir, "temp_remains.txt");
+            var remains = new List<string>();
+            if (File.Exists(remain))
+            {
+                foreach (var p in File.ReadLines(remain))
+                {
+                    if (Directory.Exists(p))
+                    {
+                        try
+                        {
+                            Directory.Delete(p, true);
+                        }
+                        catch
+                        {
+                            remains.Append(p);
+                        }
+                    }
+                    else if (File.Exists(p))
+                    {
+                        try
+                        {
+                            File.Delete(p);
+                        }
+                        catch
+                        {
+                            remains.Add(p);
+                        }
+                    }
+                }
+            }
+            return new CleanupInfo()
+            {
+                path = remain,
+                remains = remains
+            };
+        }
+
         public void Write(string contents)
         {
             File.WriteAllText(path, contents);
         }
         public void Remove()
         {
-            File.Delete(path);
+            try
+            {
+                File.Delete(path);
+            }
+            catch { }
         }
         public void Dispose()
         {
@@ -407,6 +445,17 @@ namespace EmeralEngine.Core
                 }
                 _disposed = true;
             }
+        }
+    }
+
+    public class CleanupInfo
+    {
+        public string path;
+        public List<string> remains;
+
+        public void Write()
+        {
+            File.WriteAllLines(path, remains);
         }
     }
 

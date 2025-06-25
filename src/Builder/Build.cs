@@ -19,6 +19,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Automation;
+using System.Windows.Controls;
 using Xceed.Wpf.Toolkit.PropertyGrid.Editors;
 
 namespace EmeralEngine.Builder
@@ -868,7 +869,9 @@ namespace EmeralEngine.Builder
 
         private string GenerateGameUIXaml(bool IsScript=true)
         {
-            var for_script = """
+            return $$"""
+                    <DockPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="MainPanel" Background="Black">
+                        {{(IsScript? """
                         <DockPanel.LayoutTransform>
                             <ScaleTransform x:Name="Scale"/>
                         </DockPanel.LayoutTransform>
@@ -877,20 +880,15 @@ namespace EmeralEngine.Builder
                                 <MenuItem Name="MaximizeMenu" Header="最大化" IsCheckable="True" IsChecked="False"/>
                             </MenuItem>
                         </Menu>
-                """;
-            return $$"""
-                    <DockPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="MainPanel" Background="Black">
-                        {{(IsScript? for_script : "")}}
+                """ : "")}}
                         <Grid Name="MainGrid" Height="{{MainWindow.pmanager.Project.Size[1]}}" Width="{{MainWindow.pmanager.Project.Size[0]}}">
                             <Image Name="Bg" Stretch="Uniform"/>
                             <Canvas Name="CharacterPictures"/>
                             <Canvas Name="MessageWindowCanvas">
                                 <StackPanel Name="MessageWindow" VerticalAlignment="Bottom">
-                                    <Canvas>
-                                        <Image Name="MessageWindowBg" Stretch="Fill"/>
-                                        <TextBlock Name="Script"/>
-                                    </Canvas>
+                                    <Image Name="MessageWindowBg" Stretch="Fill"/>
                                 </StackPanel>
+                                <TextBlock Name="Script" TextAlignment="Left" HorizontalAlignment="Left" VerticalAlignment="Top" TextWrapping="WrapWithOverflow"/>
                                 <Canvas Name="NamePlate">
                                     <Image x:Name="NamePlateBgImage" Height="{Binding ActualHeight, ElementName=NamePlate}" Width="{Binding ActualWidth, ElementName=NamePlate}" Stretch="Fill"/>
                                     <Label Name="Speaker" Content="名前" FontSize="30" HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -959,9 +957,9 @@ namespace EmeralEngine.Builder
             {
                 episode_counter++;
                 var isLastEpisode = episode_counter == story_ref;
-                var premsw = -1;
+                var premsw = "";
                 var pre_scene = new SceneInfo();
-                if (string.IsNullOrEmpty(t.path))
+                if (string.IsNullOrEmpty(t.FullPath))
                 {
                     stories.Append($$"""
                         public void Episode{{episode_counter}}() {
@@ -971,7 +969,7 @@ namespace EmeralEngine.Builder
                 }
                 else if (t.IsScenes())
                 {
-                    var episode = emanager.GetEpisode(t.path);
+                    var episode = emanager.GetEpisode(t.FullPath);
                     if (!start_scene_flag && !episode.smanager.scenes.Values.Contains(start_scene))
                     {
                         episode_counter--;
@@ -1056,7 +1054,6 @@ namespace EmeralEngine.Builder
                         {
                             script_counter++;
                             var isLastScript = s.Value.scripts.Count <= (script_counter - start_script_num + 1);
-                            var i = mmanager.windows[s.Value.msw].Interval;
                             var speaker = string.IsNullOrEmpty(script.speaker)
                                           ? "NamePlate.Visibility = Visibility.Hidden;"
                                           : $"""
@@ -1133,7 +1130,7 @@ namespace EmeralEngine.Builder
                                     break;
                                 }
                                 Script.Text += s.ToString();
-                                await Task.Delay({{i}});
+                                await Task.Delay({{MainWindow.pmanager.Project.TextInterval}});
                             }
                             IsNowScripting = false;
                         }
@@ -1175,7 +1172,7 @@ namespace EmeralEngine.Builder
                                     break;
                                 }
                                 Script.Text += s.ToString();
-                                await Task.Delay({{i}});
+                                await Task.Delay({{MainWindow.pmanager.Project.TextInterval}});
                             }
                             IsNowScripting = false;
                         }
@@ -1217,7 +1214,7 @@ namespace EmeralEngine.Builder
                                     break;
                                 }
                                 Script.Text += s.ToString();
-                                await Task.Delay({{i}});
+                                await Task.Delay({{MainWindow.pmanager.Project.TextInterval}});
                             }
                             IsNowScripting = false;
                         }
@@ -1225,11 +1222,7 @@ namespace EmeralEngine.Builder
                             }
                             pre_script = script;
                         }
-                        var width = mmanager.windows[s.Value.msw].Width;
-                        var height = mmanager.windows[s.Value.msw].Height;
-                        var msw_bg_color = mmanager.windows[s.Value.msw].BgColor;
-                        var alpha = mmanager.windows[s.Value.msw].BgColorAlpha;
-                        var bgalpha = mmanager.windows[s.Value.msw].BgAlpha;
+                        var window = mmanager[s.Value.msw];
                         string bg, bgm, condition;
                         bg = "Bg.Source = null;\r\n";
                         if (string.IsNullOrEmpty(s.Value.bg))
@@ -1254,45 +1247,39 @@ namespace EmeralEngine.Builder
                         var interval = 0 < pre_scene.interval ? $"""
                             await Task.Delay({pre_scene.interval * 1000});
                             """ : "";
-                        var window = mmanager.windows[s.Value.msw];
-                        var msw_bg = window.Bg;
+                        var msw_bg = ImageUtils.GetFileName(window.MessageWindowBg.Source);
                         var msw_img = msw_bg.Length > 0 ? $"MessageWindowBg.Source = MainWindow.CreateBmp(MainWindow.GetResource(@\"{ConvertPath(msw_bg)}\"))" : "";
-                        var plate_img = string.IsNullOrEmpty(window.NamePlateBgImage) ? "" : $"NamePlateBgImage.Source = MainWindow.CreateBmp(MainWindow.GetResource(@\"{ConvertPath(window.NamePlateBgImage)}\"));";
-                        var fontsize = window.FontSize;
-                        var font = window.Font;
-                        var textcolor = window.TextColor;
+                        var plate_img = window.NamePlateBg.Source is null ? "" : $"NamePlateBgImage.Source = MainWindow.CreateBmp(MainWindow.GetResource(@\"{ConvertPath(ImageUtils.GetFileName(window.NamePlateBg.Source))}\"));";
                         msw = $"""
                                     Script.Text = "";
                                     {bg}
                                     {msw_img};
-                                    MessageWindow.Width = {width};
-                                    MessageWindow.Height = {height};
-                                    MessageWindowBg.Width = {width};
-                                    MessageWindowBg.Height = {height};
-                                    MessageWindow.Background = MainWindow.GetBrush(@"{msw_bg_color}");
-                                    MessageWindow.Background.Opacity = {alpha};
-                                    MessageWindowBg.Opacity = {bgalpha};
-                                    Canvas.SetLeft(Script, {window.ScriptLeftPos});
-                                    Canvas.SetTop(Script, {window.ScriptTopPos});
-                                    Script.Width = {window.ScriptWidth};
-                                    Script.FontSize = {fontsize};
-                                    Script.FontFamily = new FontFamily(@"{font}");
-                                    Script.Foreground = MainWindow.GetBrush(@"{textcolor}");
-                                    Canvas.SetLeft(NamePlate, {window.NamePlateLeftPos});
-                                    Canvas.SetBottom(NamePlate, {window.NamePlateBottomPos});
-                                    MessageWindow.Width = {window.Width};
-                                    MessageWindow.Height = {window.Height};
-                                    NamePlate.Width = {window.NamePlateWidth};
-                                    NamePlate.Height = {window.NamePlateHeight};
-                                    NamePlate.Background = MainWindow.GetBrush(@"{window.NamePlateBgColor}");
-                                    NamePlate.Background.Opacity = {window.NamePlateBgColorAlpha};
+                                    MessageWindow.Width = {window.WindowContents.Width};
+                                    MessageWindow.Height = {window.WindowContents.Height};
+                                    MessageWindowBg.Width = {window.WindowContents.Width};
+                                    MessageWindowBg.Height = {window.WindowContents.Height};
+                                    MessageWindow.Background = MainWindow.GetBrush(@"{Utils.GetHex(window.WindowContents.Background)}");
+                                    MessageWindow.Background.Opacity = {window.WindowContents.Background.Opacity};
+                                    MessageWindowBg.Opacity = {window.MessageWindowBg.Opacity};
+                                    Canvas.SetLeft(Script, {Canvas.GetLeft(window.Script)});
+                                    Canvas.SetTop(Script, {Canvas.GetTop(window.Script)});
+                                    Script.Width = {window.Script.Width};
+                                    Script.FontSize = {window.Script.FontSize};
+                                    Script.FontFamily = new FontFamily(@"{window.Script.FontFamily}");
+                                    Script.Foreground = MainWindow.GetBrush(@"{Utils.GetHex(window.Script.Foreground)}");
+                                    Canvas.SetLeft(NamePlate, {Canvas.GetLeft(window.NamePlate)});
+                                    Canvas.SetTop(NamePlate, {Canvas.GetTop(window.NamePlate)});
+                                    NamePlate.Width = {window.NamePlate.Width};
+                                    NamePlate.Height = {window.NamePlate.Height};
+                                    NamePlate.Background = MainWindow.GetBrush(@"{Utils.GetHex(window.NamePlate.Background)}");
+                                    NamePlate.Background.Opacity = {window.NamePlate.Background.Opacity};
                                     {plate_img}
-                                    NamePlateBgImage.Opacity = {window.NamePlateBgImageAlpha};
-                                    Speaker.Foreground = MainWindow.GetBrush(@"{window.NameFontColor}");
-                                    Speaker.FontFamily = new FontFamily(@"{window.NameFont}");
-                                    Speaker.FontSize = {window.NameFontSize};
-                                    Canvas.SetLeft(MessageWindow, {window.WindowLeftPos});
-                                    Canvas.SetBottom(MessageWindow,{window.WindowBottom});
+                                    NamePlateBgImage.Opacity = {window.NamePlateBg.Opacity};
+                                    Speaker.Foreground = MainWindow.GetBrush(@"{Utils.GetHex(window.CharaName.Foreground)}");
+                                    Speaker.FontFamily = new FontFamily(@"{window.CharaName.FontFamily}");
+                                    Speaker.FontSize = {window.CharaName.FontSize};
+                                    Canvas.SetLeft(MessageWindow, {Canvas.GetLeft(window.WindowContents)});
+                                    Canvas.SetTop(MessageWindow,{Canvas.GetTop(window.WindowContents)});
                                 """;
                         if (premsw == s.Value.msw)
                         {
@@ -1509,7 +1496,7 @@ namespace EmeralEngine.Builder
                                 IsHandling = true;
                                 MessageWindowCanvas.Visibility = Visibility.Hidden;
                                 MainPanel.MouseLeftButtonDown -= OnMouseLeftDown;
-                                {{(IsScript ? $"MoviePlayer.Source = new Uri(MainWindow.GetResource(@\"{t.GetRelPath()}\"));" : $"    _movieFile = new TempFile(@\"{Path.GetExtension(t.path)}\");\r\n    _movieFile.Write(MainWindow.GetResource(@\"{ConvertPath(t.GetRelPath())}\"));\r\n    MoviePlayer.Source = new Uri(_movieFile.path);")}}
+                                {{(IsScript ? $"MoviePlayer.Source = new Uri(MainWindow.GetResource(@\"{t.GetRelPathToResource()}\"));" : $"    _movieFile = new TempFile(@\"{Path.GetExtension(t.FullPath)}\");\r\n    _movieFile.Write(MainWindow.GetResource(@\"{ConvertPath(t.GetRelPathToResource())}\"));\r\n    MoviePlayer.Source = new Uri(_movieFile.path);")}}
                                 if (MediaEnded is not null) {
                                     MoviePlayer.MediaEnded -= MediaEnded;
                                 }
@@ -1555,7 +1542,7 @@ namespace EmeralEngine.Builder
                                 b2.Children.Add(fadein);
                                 b2.Completed += async (sender, e) => {
                                     MainPanel.MouseLeftButtonDown -= OnMouseLeftDown;
-                                    {{(IsScript ? $"MoviePlayer.Source = new Uri(MainWindow.GetResource(@\"{t.GetRelPath()}\"));" : $"    _movieFile = new TempFile(@\"{Path.GetExtension(t.path)}\");\r\n    _movieFile.Write(MainWindow.GetResource(@\"{ConvertPath(t.GetRelPath())}\"));\r\n    MoviePlayer.Source = new Uri(_movieFile.path);")}}
+                                    {{(IsScript ? $"MoviePlayer.Source = new Uri(MainWindow.GetResource(@\"{t.GetRelPathToResource()}\"));" : $"    _movieFile = new TempFile(@\"{Path.GetExtension(t.FullPath)}\");\r\n    _movieFile.Write(MainWindow.GetResource(@\"{ConvertPath(t.GetRelPathToResource())}\"));\r\n    MoviePlayer.Source = new Uri(_movieFile.path);")}}
                                     if (MediaEnded is not null) {
                                         MoviePlayer.MediaEnded -= MediaEnded;
                                     }

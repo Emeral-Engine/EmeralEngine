@@ -237,14 +237,12 @@
                             <Canvas Name="CharacterPictures"/>
                             <Canvas Name="MessageWindowCanvas">
                                 <StackPanel Name="MessageWindow" VerticalAlignment="Bottom">
-                                    <Canvas>
-                                        <Image Name="MessageWindowBg" Stretch="Fill"/>
-                                        <TextBlock Name="Script"/>
-                                    </Canvas>
+                                    <Image Name="MessageWindowBg" Stretch="Fill"/>
                                 </StackPanel>
+                                <TextBlock Name="Script" TextAlignment="Left" HorizontalAlignment="Left" VerticalAlignment="Top" TextWrapping="WrapWithOverflow"/>
                                 <Canvas Name="NamePlate">
                                     <Image x:Name="NamePlateBgImage" Height="{Binding ActualHeight, ElementName=NamePlate}" Width="{Binding ActualWidth, ElementName=NamePlate}" Stretch="Fill"/>
-                                    <Label Name="Speaker" Content="名前" FontSize="30" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    <Label Name="Speaker" Content="" FontSize="30" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Canvas>
                             </Canvas>
                         </Grid>

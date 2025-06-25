@@ -117,9 +117,9 @@ namespace EmeralEngine.Project
             {
                 Temp.Dispose();
             }
-            Temp = new();
             ProjectName = name;
             ActualProjectDir = Path.Combine(ProjectsDir, ProjectName);
+            Temp = new();
             ProjectResourceDir = Path.Combine(Temp.path, "Resources");
             ActualProjectResourceDir = Path.Combine(ActualProjectDir, "Resources");
             ProjectEpisodesDir = Path.Combine(Temp.path, "Episodes");
@@ -426,6 +426,7 @@ namespace EmeralEngine.Project
         public string MouseOverSE { set; get; } = "";
         public string MouseDownSE { set; get; } = "";
         public int[] Size { get; set; }
+        public int TextInterval { get; set; } = 60; // ms
         public ProjectStartupWindows Startup {  set; get; }
         public EditorSettings EditorSettings { set; get; }
         public SceneSettings SceneSettings { set; get; }

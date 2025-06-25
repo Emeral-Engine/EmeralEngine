@@ -78,15 +78,7 @@ namespace EmeralEngine.Scene
                 }
                 else if (kwd == "msw:")
                 {
-                    var n = GetArg(args);
-                    try
-                    {
-                        info.msw = int.Parse(n);
-                    }
-                    catch (FormatException)
-                    {
-                        RaiseError($"{n}は数字ではありません");
-                    }
+                    info.msw = GetArg(args);
                     if (0 < args.Count)
                     {
                         RaiseError("msw:キーワードの引数が多すぎます");
@@ -213,7 +205,7 @@ namespace EmeralEngine.Scene
         public static SceneInfo FromFile(string file)
         {
             var info = Analyze(File.ReadAllText(file));
-            info.path = file;
+            info.Path = file;
             return info;
         }
     }

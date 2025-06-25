@@ -76,7 +76,7 @@ namespace EmeralEngine.Story
             emanager.Dump();
             foreach (var s in story.StoryInfos)
             {
-                if (s.direction is null)
+                if (s.Directions is null)
                 {
                     DrawPanel(s.Name ?? " ", s);
                 }
@@ -139,7 +139,7 @@ namespace EmeralEngine.Story
                 Source = black_image,
                 Stretch = Stretch.Uniform
             };
-            if (parent.now_content == info)
+            if (parent.CurrentContent == info)
             {
                 img.Loaded += (sender, e) =>
                 {
@@ -148,7 +148,7 @@ namespace EmeralEngine.Story
             }
             panel.MouseLeftButtonDown += (sender, e) =>
             {
-                if (string.IsNullOrEmpty(info.path))
+                if (string.IsNullOrEmpty(info.Path))
                 {
 
                 }
@@ -158,7 +158,7 @@ namespace EmeralEngine.Story
                 }
                 else
                 {
-                    MovieViewer.View(info.path);
+                    MovieViewer.View(info.FullPath);
                 }
             };
             var ctx = new ContextMenu();
@@ -173,7 +173,7 @@ namespace EmeralEngine.Story
             item0.Click += (sender, e) =>
             {
                 var ep = emanager.New();
-                info.path = ep.path;
+                info.FullPath = ep.path;
                 SetThumbnail(img, info);
                 FocusContent(border, img, info);
             };
@@ -188,7 +188,7 @@ namespace EmeralEngine.Story
                 item0.Click += (sender, e) =>
                 {
                     var ep = emanager.New();
-                    info.path = ep.path;
+                    info.FullPath = ep.path;
                     SetThumbnail(img, info);
                     FocusContent(border, img, info);
                 };
@@ -202,7 +202,7 @@ namespace EmeralEngine.Story
                     };
                     item.Click += (sender, e) =>
                     {
-                        info.path = ep.Value.path;
+                        info.FullPath = ep.Value.path;
                         var t = ep.Value.GetThumbnail();
                         if (t is null)
                         {
@@ -229,7 +229,7 @@ namespace EmeralEngine.Story
                 var res = ResourceWindow.SelectMovie(this);
                 if (res is not null)
                 {
-                    info.path = res;
+                    info.FullPath = res;
                     SetThumbnail(img, info);
                 }
             };

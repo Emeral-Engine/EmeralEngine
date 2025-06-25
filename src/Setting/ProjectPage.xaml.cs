@@ -10,7 +10,7 @@ namespace EmeralEngine.Setting
     /// </summary>
     public partial class ProjectPage : Page
     {
-        private bool _selected
+        private bool IsSelected
         {
             get => NavigationService is not null;
         }
@@ -23,17 +23,18 @@ namespace EmeralEngine.Setting
             GameHeight.Value  = MainWindow.pmanager.Project.Size[1];
             MouseOverSE.Text = MainWindow.pmanager.Project.MouseOverSE;
             MouseDownSE.Text = MainWindow.pmanager.Project.MouseDownSE;
+            TextInterval.Value = MainWindow.pmanager.Project.TextInterval;
         }
 
         private void OnGameWidthValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
-            if (!_selected) return;
+            if (!IsSelected) return;
             MainWindow.pmanager.Project.Size[0] = GameWidth.Value ?? 0;
         }
 
         private void OnGameHeightValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
-            if (!_selected) return;
+            if (!IsSelected) return;
             MainWindow.pmanager.Project.Size[1] = GameHeight.Value ?? 0;
         }
 
@@ -56,6 +57,14 @@ namespace EmeralEngine.Setting
                 var p = MainWindow.pmanager.RelToResourcePath(res);
                 MouseDownSE.Text = p;
                 MainWindow.pmanager.Project.MouseDownSE = p;
+            }
+        }
+
+        private void OnIntervalValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+        {
+            if (IsSelected)
+            {
+                MainWindow.pmanager.Project.TextInterval = (int)TextInterval.Value;
             }
         }
     }

@@ -22,11 +22,11 @@ namespace EmeralEngine.Core
         public double interval { get; set; }
         public double fadein {  get; set; }
         public double fadeout {  get; set; }
-        virtual public string path {  get; set; }
+        virtual public string Path {  get; set; }
 
         public void Remove()
         {
-            File.Delete(path);
+            File.Delete(Path);
         }
     }
 }

@@ -91,7 +91,7 @@ namespace EmeralEngine.MessageWindow
             if (res is not null)
             {
                 window.MessageWindowBgImage.Source = Utils.CreateBmp(res);
-                window.bg = Path.GetFileName(res);
+                window.Bg = Path.GetFileName(res);
                 BgAlpha.IsEnabled = true;
                 BgAlphaText.IsEnabled = true;
             }
@@ -100,7 +100,7 @@ namespace EmeralEngine.MessageWindow
         private void Button_Click_1(object sender, RoutedEventArgs e)
         {
             window.MessageWindowBgImage.Source = null;
-            window.bg = "";
+            window.Bg = "";
             BgAlpha.IsEnabled = false;
             BgAlphaText.IsEnabled = false;
         }
