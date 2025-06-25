@@ -16,7 +16,7 @@ namespace EmeralEngine.MessageWindow
         public List<string> windows;
         public MessageWindow this[string f]
         {
-            get => new MessageWindow(LoadWindow(Path.GetFileNameWithoutExtension(f) + ".xaml"));
+            get => LoadWindow(Path.GetFileNameWithoutExtension(f) + ".xaml");
         }
 
         public MessageWindowManager()
@@ -33,7 +33,7 @@ namespace EmeralEngine.MessageWindow
             }
         }
 
-        public IEnumerator<FrameworkElement> GetWindows()
+        public IEnumerator<MessageWindow> GetWindows()
         {
             foreach (var f in windows)
             {
@@ -41,9 +41,9 @@ namespace EmeralEngine.MessageWindow
             }
         }
 
-        public FrameworkElement LoadWindow(string name)
+        public MessageWindow LoadWindow(string name)
         {
-            return XamlReader.Parse(XamlHelper.ConvertSourceToAbs(File.ReadAllText(Path.Combine(MainWindow.pmanager.ProjectMswDir, name)))) as FrameworkElement;
+            return new MessageWindow(XamlReader.Parse(XamlHelper.ConvertSourceToAbs(File.ReadAllText(Path.Combine(MainWindow.pmanager.ProjectMswDir, name)))) as FrameworkElement);
         }
     }
 
