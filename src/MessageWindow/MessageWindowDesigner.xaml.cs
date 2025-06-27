@@ -62,8 +62,7 @@ namespace EmeralEngine
             windowPage = new(this);
             scriptSettingPage = new(this);
             namePlateSettingPage = new(this);
-            CurrentMswPath = MessageWindowManager.windows[0];
-            Load(CurrentMswPath);
+            Load(MessageWindowManager.windows[0]);
             Preview.Width = parent.Managers.ProjectManager.Project.Size[0];
             Preview.Height = parent.Managers.ProjectManager.Project.Size[1];
             var default_font = scriptSettingPage.FontList.FontFamily.ToString();
@@ -113,6 +112,15 @@ namespace EmeralEngine
         private void OverWriteButton_Click(object sender, RoutedEventArgs e)
         {
             File.WriteAllText(CurrentMswPath, GenerateXaml());
+        }
+
+        private void Button_Click_1(object sender, RoutedEventArgs e)
+        {
+            var res = SelectMessageWindow.Select(this);
+            if (0 <= res)
+            {
+                Load(MessageWindowManager.windows[res]);
+            }
         }
 
         private string GenerateXaml()
@@ -219,6 +227,7 @@ namespace EmeralEngine
         private void Load(string path)
         {
             Preview.Children.Clear();
+            CurrentMswPath = path;
             var canvas = (Canvas)XamlReader.Parse(XamlHelper.ConvertSourceToAbs(File.ReadAllText(path)));
             foreach (var element in canvas.Children.Cast<FrameworkElement>().ToArray())
             {
@@ -304,6 +313,7 @@ namespace EmeralEngine
                         break;
                 }
             }
+            script = GetSampleScript();
         }
     }
 }

@@ -14,7 +14,7 @@ namespace EmeralEngine.MessageWindow
         public const string DEFAULT_FONT = "Yu Gothic UI";
         public const string DIRNAME = "MessageWindows";
         public List<string> windows;
-        public MessageWindow this[string f]
+        public MessageWindowData this[string f]
         {
             get => LoadWindow(Path.GetFileNameWithoutExtension(f) + ".xaml");
         }
@@ -33,7 +33,7 @@ namespace EmeralEngine.MessageWindow
             }
         }
 
-        public IEnumerator<MessageWindow> GetWindows()
+        public IEnumerator<MessageWindowData> GetWindows()
         {
             foreach (var f in windows)
             {
@@ -41,19 +41,19 @@ namespace EmeralEngine.MessageWindow
             }
         }
 
-        public MessageWindow LoadWindow(string name)
+        public MessageWindowData LoadWindow(string name)
         {
-            return new MessageWindow(XamlReader.Parse(XamlHelper.ConvertSourceToAbs(File.ReadAllText(Path.Combine(MainWindow.pmanager.ProjectMswDir, name)))) as FrameworkElement);
+            return new MessageWindowData(XamlReader.Parse(XamlHelper.ConvertSourceToAbs(File.ReadAllText(Path.Combine(MainWindow.pmanager.ProjectMswDir, name)))) as FrameworkElement);
         }
     }
 
-    public struct MessageWindow
+    public struct MessageWindowData
     {
         public Canvas WindowContents, NamePlate;
         public Image MessageWindowBg, NamePlateBg;
         public TextBlock Script;
         public Label CharaName;
-        public MessageWindow(FrameworkElement element)
+        public MessageWindowData(FrameworkElement element)
         {
             WindowContents = element.FindName("WindowContents") as Canvas;
             MessageWindowBg = element.FindName("MessageWindowBgImage") as Image;
@@ -66,41 +66,88 @@ namespace EmeralEngine.MessageWindow
 
     class MessageWindowBuilder
     {
-        MessageWindowConfig config;
-        public MessageWindowBuilder(MessageWindowConfig conf)
+        private const int PREVIEW_WIDTH = 300;
+        private const int PREVIEW_HEIGHT = 100;
+        private MessageWindowData window;
+        public MessageWindowBuilder(MessageWindowData w)
         {
-            config = conf;
+            window = w;
         }
         public DockPanel Build()
         {
-            var panel = new DockPanel();
-            var grid = new Grid();
-            var bgi = new Image()
+            var panel = new DockPanel()
             {
-                Width = config.Width,
-                Height = config.Height,
-                Stretch = Stretch.Fill,
-                Opacity = config.BgAlpha
+                Width = PREVIEW_WIDTH,
+                Height = PREVIEW_HEIGHT
             };
-            if (!string.IsNullOrEmpty(config.Bg)) bgi.Source = Utils.CreateBmp(MainWindow.pmanager.GetResource(config.Bg));
-            var bgcr = new System.Windows.Shapes.Rectangle()
+            var canvas = new Canvas();
+            var mainwindow = new Canvas()
             {
-                Width = config.Width,
-                Height = config.Height,
-                Opacity = config.BgColorAlpha,
-                Fill = (SolidColorBrush)new BrushConverter().ConvertFromString(config.BgColor)
+                Width = window.WindowContents.Width,
+                Height = window.WindowContents.Height,
+                Background = window.WindowContents.Background,
             };
-            var text = new Label()
+            mainwindow.Background.Opacity = window.WindowContents.Background.Opacity;
+            canvas.Children.Add(mainwindow);
+            var windowbg = new Image()
             {
-                Content = "サンプル",
-                FontSize = config.FontSize,
-                FontFamily = new FontFamily(config.Font),
-                Foreground = (SolidColorBrush)new BrushConverter().ConvertFromString(config.TextColor)
+                Width = window.WindowContents.Width,
+                Height = window.WindowContents.Height,
+                Opacity = window.MessageWindowBg.Opacity,
+                Stretch = Stretch.Fill
             };
-            grid.Children.Add(bgi);
-            grid.Children.Add(bgcr);
-            grid.Children.Add(text);
-            panel.Children.Add(grid);
+            if (window.MessageWindowBg.Source is not null)
+            {
+                windowbg.Source = Utils.CreateBmp(ImageUtils.GetFilePath(window.MessageWindowBg.Source));
+            }
+            canvas.Children.Add(windowbg);
+            var script = new TextBlock()
+            {
+                Width = window.Script.Width,
+                FontSize = window.Script.FontSize,
+                FontFamily = window.Script.FontFamily,
+                Foreground = window.Script.Foreground,
+                Text = "サンプル"
+            };
+            Canvas.SetLeft(script, Canvas.GetLeft(window.Script) - Canvas.GetLeft(window.NamePlate));
+            Canvas.SetTop(script, Canvas.GetTop(window.Script) - Canvas.GetTop(window.NamePlate));
+            canvas.Children.Add(script);
+            var nameplate = new Canvas()
+            {
+                Width = window.NamePlate.Width,
+                Height = window.NamePlate.Height,
+                Background = window.NamePlate.Background,
+            };
+            nameplate.Background.Opacity = window.NamePlate.Background.Opacity;
+            nameplate.Visibility = Visibility.Visible;
+            Canvas.SetLeft(nameplate, Canvas.GetLeft(window.NamePlate));
+            Canvas.SetTop(nameplate, 0);
+            canvas.Children.Add(nameplate);
+            var nameplatebg = new Image()
+            {
+                Opacity = window.NamePlateBg.Opacity,
+                Stretch = Stretch.Fill
+            };
+            if (window.NamePlateBg.Source is not null)
+            {
+                nameplatebg.Source = Utils.CreateBmp(ImageUtils.GetFilePath(window.NamePlateBg.Source));
+            }
+            canvas.Children.Add(nameplatebg);
+            var speaker = new Label()
+            {
+                Foreground = window.CharaName.Foreground,
+                FontFamily = window.CharaName.FontFamily,
+                FontSize = window.CharaName.FontSize,
+                Content = "名前"
+            };
+            canvas.Children.Add(speaker);
+            var r = Math.Min(PREVIEW_WIDTH / window.WindowContents.Width, PREVIEW_HEIGHT / window.WindowContents.Height);
+            canvas.LayoutTransform = new ScaleTransform()
+            {
+                ScaleX = r,
+                ScaleY = r
+            };
+            panel.Children.Add(canvas);
             return panel;
         }
     }
