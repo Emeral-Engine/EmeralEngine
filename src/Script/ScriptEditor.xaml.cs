@@ -114,7 +114,6 @@ namespace EmeralEngine.Script
             _Handling = false;
             DeleteSctiptButton.IsEnabled = parent.CurrentScene.scripts.Count > 1;
             NewScriptButton.IsEnabled = MainWindow.pmanager.Project.EditorSettings.AddScriptWhenEmpty || !EmptyScriptExists;
-            UpdateMessageWindows();
             FocusHeader(CurrentPanelHeader);
             LoadCharacterPictures();
             parent.LoadPreview(bg: false);
@@ -598,31 +597,6 @@ namespace EmeralEngine.Script
             }
             parent.CurrentScript.speaker = Speaker.Text;
             parent.LoadPreview(script: false, charas: false, bg: false);
-        }
-
-        private void OnWindowsDropDownOpened(object sender, EventArgs e)
-        {
-            UpdateMessageWindows();
-        }
-
-        private void UpdateMessageWindows()
-        {
-            MessageWindowSelection.Items.Clear();
-            var n = 0;
-            foreach (var m in parent.mmanager.windows)
-            {
-                MessageWindowSelection.Items.Add(n);
-            }
-            MessageWindowSelection.SelectedItem = parent.Managers.MessageWindowManager.windows.Contains(parent.CurrentScene.msw) ? parent.CurrentScene.msw : "0";
-        }
-
-        private void MessageWindowSelection_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (0 <= MessageWindowSelection.SelectedIndex)
-            {
-                parent.CurrentScene.msw = MessageWindowSelection.Text;
-                parent.LoadPreview(script: false, charas: false, bg: false);
-            }
         }
 
         private void OnCharactersMouseWheel(object sender, MouseWheelEventArgs e)

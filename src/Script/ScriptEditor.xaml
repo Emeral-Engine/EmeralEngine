@@ -74,13 +74,9 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <Label Content="話者" FontSize="16"/>
                 <ComboBox Grid.Column="1" Name="Speaker" Width="100" Height="20" IsEditable="True" TextBoxBase.TextChanged="Speaker_TextChanged" ItemsSource="{Binding Speakers}"/>
-                <Label Content="メッセージウィンドウ" FontSize="15" Grid.Column="2"/>
-                <ComboBox Name="MessageWindowSelection" Grid.Column="3" Width="60" Height="20" DropDownOpened="OnWindowsDropDownOpened" SelectionChanged="MessageWindowSelection_SelectionChanged"/>
             </Grid>
             <GroupBox Header="スクリプト" Grid.Row="2">
                 <TextBox x:Name="Script" Grid.Row="1" FontSize="36" VerticalAlignment="Top" TextWrapping="Wrap" TextChanged="OnTextChanged" AcceptsReturn="True" Height="260"/>

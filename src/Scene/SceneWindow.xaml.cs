@@ -1,4 +1,5 @@
 ﻿using EmeralEngine.Core;
+using EmeralEngine.MessageWindow;
 using EmeralEngine.Scene;
 using System.Diagnostics;
 using System.IO;
@@ -8,7 +9,6 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace EmeralEngine
 {
@@ -32,7 +32,7 @@ namespace EmeralEngine
         {
             get
             {
-                var rect = new Rectangle()
+                var rect = new System.Windows.Shapes.Rectangle()
                 {
                     Width = PANEL_WIDTH,
                     Height = PANEL_HEIGHT,
@@ -177,6 +177,21 @@ namespace EmeralEngine
                 parent.SelectBgm();
             };
             ctx.Items.Add(item2);
+            var item4 = new MenuItem()
+            {
+                Header = "メッセージウィンドウの変更"
+            };
+            item4.Click += (sender, e) =>
+            {
+                var manager = new MessageWindowManager();
+                var res = SelectMessageWindow.Select(this);
+                if (0 <= res)
+                {
+                    info.msw = Path.GetFileNameWithoutExtension(manager.windows[res]);
+                    parent.LoadPreview(bg: false, script: false, charas: false);
+                }
+            };
+            ctx.Items.Add(item4);
             ctx.Items.Add(new Separator());
             var item3 = new MenuItem()
             {
@@ -200,12 +215,12 @@ namespace EmeralEngine
             pre_info = info;
             return (border, img, info);
         }
-        private Rectangle EdgeLine
+        private System.Windows.Shapes.Rectangle EdgeLine
         {
             get
             {
                 _EdgeCount += 1;
-                var line = new Rectangle()
+                var line = new System.Windows.Shapes.Rectangle()
                 {
                     Height = LINE_HEIGHT,
                     Width = LINE_WIDTH,
