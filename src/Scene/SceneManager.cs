@@ -123,7 +123,7 @@ namespace EmeralEngine.Scene
             {
                 _msw = value;
             }
-            get => _msw;
+            get => _msw ?? "0";
         }
         public int order
         {

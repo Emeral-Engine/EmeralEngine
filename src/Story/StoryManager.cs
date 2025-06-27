@@ -44,7 +44,7 @@ namespace EmeralEngine.Story
             var n = stories.Count + 1;
             var info = new ContentInfo()
             {
-                FullPath = path,
+                Path = path,
                 id = n
             };
             stories.Add(n, info);
