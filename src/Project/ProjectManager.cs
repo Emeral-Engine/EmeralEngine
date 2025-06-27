@@ -145,6 +145,11 @@ namespace EmeralEngine.Project
         {
             Setup(name);
             Project = JsonSerializer.Deserialize<ProjectConfig>(File.ReadAllText(ProjectFile));
+            var default_msw = Path.Combine(ProjectMswDir, "0.xaml");
+            if (!File.Exists(default_msw))
+            {
+                File.WriteAllText(default_msw, GetDefaultMsw());
+            }
         }
         public void NewProject(string name, int[] size)
         {
@@ -154,7 +159,7 @@ namespace EmeralEngine.Project
                 Title = name,
                 Size = size,
                 Story = new(),
-                Flags = new List<string>()
+                Flags = new List<string>(),
             };
             InitDotnet();
             SaveProject();
@@ -354,7 +359,7 @@ namespace EmeralEngine.Project
                     <TextBlock Name="Script" Width="{{Project.Size[0] * 0.9}}" TextAlignment="Left" HorizontalAlignment="Left" VerticalAlignment="Top"  Canvas.Left="0" Canvas.Top="{{Project.Size[1] - window_h}}" FontSize="30" Foreground="White" TextWrapping="WrapWithOverflow"/>
                     <Canvas Name="NamePlate" Width="{{Project.Size[0] * 0.2}}" Height="{{plate_h}}" Canvas.Left="0" Canvas.Top="{{Project.Size[1] - window_h - plate_h}}">
                         <Canvas.Background>
-                            <SolidColorBrush Color="DarkGray" Opacity="0.7"/>
+                            <SolidColorBrush Color="DarkGray" Opacity="0"/>
                         </Canvas.Background>
                         <Image Name="NamePlateBgImage" Stretch="Fill" Height="{Binding ActualHeight, ElementName=NamePlate}" Width="{Binding ActualWidth, ElementName=NamePlate}"/>
                         <Label Name="CharaName" Content="名前" FontSize="30" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -432,10 +437,10 @@ namespace EmeralEngine.Project
         public string MouseDownSE { set; get; } = "";
         public int[] Size { get; set; }
         public int TextInterval { get; set; } = 60; // ms
-        public ProjectStartupWindows Startup {  set; get; }
-        public EditorSettings EditorSettings { set; get; }
-        public SceneSettings SceneSettings { set; get; }
-        public CharacterSettings CharacterSettings { set; get; }
+        public ProjectStartupWindows Startup {  set; get; } = new();
+        public EditorSettings EditorSettings { set; get; } = new();
+        public SceneSettings SceneSettings { set; get; } = new();
+        public CharacterSettings CharacterSettings { set; get; } = new();
         public List<ContentInfo> Story { set; get; }
         public List<string> Flags { set; get; }
     }

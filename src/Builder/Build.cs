@@ -245,12 +245,12 @@ namespace EmeralEngine.Builder
                         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                         xmlns:local="clr-namespace:Game"
                         mc:Ignorable="d"
-                        Title="{{MainWindow.pmanager.Project.Title}}" Height="{{MainWindow.pmanager.Project.Size[1]}}" Width="{{MainWindow.pmanager.Project.Size[0]}}" Background="Black" ResizeMode="CanMinimize" WindowStartupLocation="CenterScreen">
+                        Title="{{MainWindow.pmanager.Project.Title}}" Height="{{MainWindow.pmanager.Project.Size[1]}}" Width="{{MainWindow.pmanager.Project.Size[0]}}" Background="Black" ResizeMode="CanMinimize" WindowStartupLocation="CenterScreen" Name="Main">
                         <DockPanel>
                             <DockPanel.LayoutTransform>
                                 <ScaleTransform x:Name="Scale"/>
                             </DockPanel.LayoutTransform>
-                            <Menu Name="WindowMenu" DockPanel.Dock="Top" IsMainMenu="True" Visibility="Collapsed">
+                            <Menu Name="WindowMenu" DockPanel.Dock="Top" IsMainMenu="True" Visibility="Collapsed" DockPanel.ZIndex="1">
                                 <MenuItem Header="ファイル">
                                     <MenuItem Name="SaveMenu" Header="セーブ" Click="OpenSaveDialog"/>
                                     <MenuItem Name="LoadMenu" Header="ロード" Click="OpenLoadDialog"/>
@@ -259,7 +259,7 @@ namespace EmeralEngine.Builder
                                     <MenuItem Name="MaximizeMenu" Header="最大化" IsCheckable="True" IsChecked="False"/>
                                 </MenuItem>
                             </Menu>
-                            <Canvas>
+                            <Canvas DockPanel.ZIndex="0">
                                 <Frame Name="Screen" Height="{{MainWindow.pmanager.Project.Size[1]}}" Width="{{MainWindow.pmanager.Project.Size[0]}}" NavigationUIVisibility="Hidden"/>
                                 <Rectangle Name="Transition" Height="{{MainWindow.pmanager.Project.Size[1]}}" Width="{{MainWindow.pmanager.Project.Size[0]}}" Opacity="0" IsHitTestVisible="False"/>
                             </Canvas>
@@ -539,6 +539,7 @@ namespace EmeralEngine.Builder
 
                         private void OnDataMouseLeftUp(object sender, MouseButtonEventArgs e)
                         {
+                            if (Game.IsLoading) return;
                             {{(string.IsNullOrEmpty(MainWindow.pmanager.Project.MouseDownSE) ? "" : $"""
                                 MainWindow.PlaySound(@"{hashTable[MainWindow.pmanager.Project.MouseDownSE]}");
                             """)}}
@@ -590,6 +591,7 @@ namespace EmeralEngine.Builder
                         public string CurrentScript;
                         private WaveOutEvent BgmPlayer;
                         private MainWindow window;
+                        public bool IsLoading;
                         private bool IsHandling;
                         private bool IsNowScripting;
                         private MouseButtonEventHandler OnMouseLeftDown = (sender, e) => {};
@@ -714,6 +716,8 @@ namespace EmeralEngine.Builder
 
                         public void GoTo(int scene, int script)
                         {
+                            if (IsLoading) return;
+                            IsLoading = true;
                             window.Transition.Fill = Brushes.Black;
                             var fadeout = new DoubleAnimation()
                             {
@@ -730,6 +734,7 @@ namespace EmeralEngine.Builder
                                 window.Screen.Navigate(this);
                                 var f = GetType().GetMethod($"Scene{scene}", BindingFlags.Instance | BindingFlags.Public);
                                 f.Invoke(this, new object[] { script });
+                                IsLoading = false;
                             };
                             b1.Begin();
                         }
@@ -910,7 +915,7 @@ namespace EmeralEngine.Builder
                                     <Label Name="Speaker" Content="名前" FontSize="30" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Canvas>
                             </Canvas>
-                            <MediaElement Name="MoviePlayer" Stretch="Uniform" Height="{{MainWindow.pmanager.Project.Size[1]}}" Width="{{MainWindow.pmanager.Project.Size[0]}}" LoadedBehavior="Manual"/>
+                            <MediaElement Name="MoviePlayer" Stretch="Uniform" Height="{Binding ActualHeight, ElementName=MainPanel}" Width="{Binding ActualWidth, ElementName=MainPanel}" LoadedBehavior="Manual"/>
                         </Grid>
                     </DockPanel>
                 """;
@@ -930,14 +935,16 @@ namespace EmeralEngine.Builder
 
         public ScriptState<object> Run(SceneInfo start)
         {
-            File.WriteAllText(Path.Combine(MainWindow.pmanager.ActualProjectDir, "script.cs"), GenerateScriptCode(start));
-            var script = CSharpScript.Create(GenerateScriptCode(start), ScriptOptions.Default
+            var src = GenerateScriptCode(start);
+            File.WriteAllText(Path.Combine(MainWindow.pmanager.ActualProjectDir, "script.cs"), src);
+            var script = CSharpScript.Create(src, ScriptOptions.Default
                                                                           .WithReferences(references)
                                                                           .AddImports(
                                                                           "System",
                                                                           "System.Linq",
                                                                           "System.Text",
                                                                           "System.Windows",
+                                                                          "System.Windows.Data",
                                                                           "System.Windows.Input",
                                                                           "System.Windows.Controls",
                                                                           "System.Windows.Media.Imaging",
@@ -962,7 +969,7 @@ namespace EmeralEngine.Builder
                 IsHandling = true;
                 {{(IsScript ? "End();" : "var b = window.End();\nb.Completed += (sender, e) => {\r\n    IsHandling = false;  \r\n};\r\n        MoviePlayer.Source = null;\r\n        _movieFile.Dispose();")}}
                 """;
-            var episode_counter = 0;
+            var content_counter = 0;
             var scene_counter = 0;
             var script_counter = 0;
             var story_ref = story.StoryInfos.Length;
@@ -971,15 +978,15 @@ namespace EmeralEngine.Builder
             var pre_content = new ContentInfo();
             foreach (var t in story.StoryInfos)
             {
-                episode_counter++;
-                var isLastEpisode = episode_counter == story_ref;
+                content_counter++;
+                var isLastEpisode = content_counter == story_ref;
                 var premsw = "";
                 var pre_scene = new SceneInfo();
                 if (string.IsNullOrEmpty(t.FullPath))
                 {
                     stories.AppendLine($$"""
-                        public void Content{{episode_counter}}() {
-                            {{(isLastEpisode ? end_func : $"Content{episode_counter + 1}();")}}
+                        public void Content{{content_counter}}() {
+                            {{(isLastEpisode ? end_func : $"Content{content_counter + 1}();")}}
                         }
                         """);
                 }
@@ -988,7 +995,7 @@ namespace EmeralEngine.Builder
                     var episode = emanager.GetEpisode(t.FullPath);
                     if (!start_scene_flag && !episode.smanager.scenes.Values.Contains(start_scene))
                     {
-                        episode_counter--;
+                        content_counter--;
                         story_ref--;
                         continue;
                     }
@@ -997,7 +1004,7 @@ namespace EmeralEngine.Builder
                     {
                         case TransitionTypes.NONE:
                             stories.AppendLine($$"""
-                            public async void Content{{episode_counter}}() {
+                            public async void Content{{content_counter}}() {
                                 MessageWindowCanvas.Visibility = Visibility.Hidden;
                                 MoviePlayer.Source = null;
                                 await Task.Delay({{pre_content.interval * 1000}});
@@ -1008,7 +1015,7 @@ namespace EmeralEngine.Builder
                             break;
                         case TransitionTypes.SIMPLE:
                             stories.AppendLine($$"""
-                            public async void Content{{episode_counter}}() {
+                            public async void Content{{content_counter}}() {
                                 IsHandling = true;
                                 MessageWindowCanvas.Visibility = Visibility.Hidden;
                                 {{trans}}.Fill = MainWindow.GetBrush(@"{{pre_content.trans_color}}");
@@ -1128,7 +1135,7 @@ namespace EmeralEngine.Builder
                                     }
                                     else{
                                         {{(IsScript ? "" : "await ")}}FinishBgm();
-                                        {{(isLastEpisode ? end_func : $"Content{episode_counter + 1}();")}}
+                                        {{(isLastEpisode ? end_func : $"Content{content_counter + 1}();")}}
                                     }
                                 }
                                 else {
@@ -1329,7 +1336,7 @@ namespace EmeralEngine.Builder
                             Storyboard.SetTarget(fadein, {{trans}});
                             Storyboard.SetTargetProperty(fadein, new PropertyPath(UIElement.OpacityProperty));
                             b1.Children.Add(fadein);
-                            b1.Completed += (sender, e) => {
+                            b1.Completed += async (sender, e) => {
                                 {{msw}}
                                 {{bgm}}
                                 IsHandling = false;
@@ -1457,7 +1464,7 @@ namespace EmeralEngine.Builder
                             Storyboard.SetTarget(fadein, {{trans}});
                             Storyboard.SetTargetProperty(fadein, new PropertyPath(UIElement.OpacityProperty));
                             b1.Children.Add(fadein);
-                            b1.Completed += (sender, e) => {
+                            b1.Completed += async (sender, e) => {
                                 {{bgm}}
                                 IsHandling = false;
                                 var f = GetType().GetMethod($"ShowScript{script}", BindingFlags.Instance | BindingFlags.Public);
@@ -1531,7 +1538,7 @@ namespace EmeralEngine.Builder
                             Storyboard.SetTarget(fadein, {{trans}});
                             Storyboard.SetTargetProperty(fadein, new PropertyPath(UIElement.OpacityProperty));
                             b1.Children.Add(fadein);
-                            b1.Completed += (sender, e) => {
+                            b1.Completed += async (sender, e) => {
                                 {{msw}}
                                 {{bgm}}
                                 IsHandling = false;
@@ -1553,7 +1560,7 @@ namespace EmeralEngine.Builder
                 {
                     if (!start_scene_flag)
                     {
-                        episode_counter--;
+                        content_counter--;
                         story_ref--;
                         continue;
                     }
@@ -1561,7 +1568,7 @@ namespace EmeralEngine.Builder
                     {
                         case TransitionTypes.NONE:
                             stories.AppendLine($$"""
-                            public async void Content{{episode_counter}}() {
+                            public async void Content{{content_counter}}() {
                                 IsHandling = true;
                                 MessageWindowCanvas.Visibility = Visibility.Hidden;
                                 MainPanel.MouseLeftButtonDown -= OnMouseLeftDown;
@@ -1571,7 +1578,7 @@ namespace EmeralEngine.Builder
                                 }
                                 MediaEnded = (sender, e) => {
                                     IsHandling = false;
-                                    {{(isLastEpisode ? end_func : $"Content{episode_counter + 1}();")}}
+                                    {{(isLastEpisode ? end_func : $"Content{content_counter + 1}();")}}
                                 };
                                 Bg.Source = null;
                                 CharacterPictures.Children.Clear();
@@ -1585,7 +1592,7 @@ namespace EmeralEngine.Builder
                             break;
                         case TransitionTypes.SIMPLE:
                             stories.AppendLine($$"""
-                            public async void Content{{episode_counter}}() {
+                            public async void Content{{content_counter}}() {
                                 IsHandling = true;
                                 MessageWindowCanvas.Visibility = Visibility.Hidden;
                                 {{trans}}.Fill = MainWindow.GetBrush(@"{{pre_content.trans_color}}");
@@ -1617,7 +1624,7 @@ namespace EmeralEngine.Builder
                                     }
                                     MediaEnded = (sender, e) => {
                                         IsHandling = false;
-                                        {{(isLastEpisode ? end_func : $"Content{episode_counter + 1}();")}}
+                                        {{(isLastEpisode ? end_func : $"Content{content_counter + 1}();")}}
                                     };
                                     MoviePlayer.MediaEnded += MediaEnded;
                                     MoviePlayer.Play();
@@ -1835,6 +1842,14 @@ namespace EmeralEngine.Builder
                             Opacity = 0,
                             IsHitTestVisible = false
                         };
+                        Transition.SetBinding(FrameworkElement.WidthProperty, new Binding("ActualWidth"){
+                            Source = this,
+                            Mode = BindingMode.OneWay
+                        });
+                        Transition.SetBinding(FrameworkElement.HeightProperty, new Binding("ActualHeight"){
+                            Source = this,
+                            Mode = BindingMode.OneWay
+                        });
                         canvas.Children.Add(Transition);
                         Content = canvas;
                         Scale = (ScaleTransform)xaml.FindName("Scale");

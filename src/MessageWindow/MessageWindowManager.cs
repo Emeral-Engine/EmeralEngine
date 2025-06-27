@@ -13,7 +13,10 @@ namespace EmeralEngine.MessageWindow
     {
         public const string DEFAULT_FONT = "Yu Gothic UI";
         public const string DIRNAME = "MessageWindows";
-        public List<string> windows;
+        public List<string> windows
+        {
+            get => Directory.GetFiles(MainWindow.pmanager.ProjectMswDir).ToList();
+        }
         public MessageWindowData this[string f]
         {
             get => LoadWindow(Path.GetFileNameWithoutExtension(f) + ".xaml");
@@ -21,15 +24,10 @@ namespace EmeralEngine.MessageWindow
 
         public MessageWindowManager()
         {
-            if (Directory.Exists(MainWindow.pmanager.ProjectMswDir))
-            {
-                windows = Directory.GetFiles(MainWindow.pmanager.ProjectMswDir).ToList();
-            }
-            else
+            if (!Directory.Exists(MainWindow.pmanager.ProjectMswDir))
             {
                 var f = Path.Combine(MainWindow.pmanager.ProjectMswDir, "0.xaml");
                 File.WriteAllText(f, MainWindow.pmanager.GetDefaultMsw());
-                windows = new() { f};
             }
         }
 

@@ -173,7 +173,7 @@ namespace EmeralEngine.Story
             item0.Click += (sender, e) =>
             {
                 var ep = emanager.New();
-                info.FullPath = ep.path;
+                info.Path = ep.path;
                 SetThumbnail(img, info);
                 FocusContent(border, img, info);
             };
@@ -188,7 +188,7 @@ namespace EmeralEngine.Story
                 item0.Click += (sender, e) =>
                 {
                     var ep = emanager.New();
-                    info.FullPath = ep.path;
+                    info.Path = ep.path;
                     SetThumbnail(img, info);
                     FocusContent(border, img, info);
                 };
@@ -202,7 +202,7 @@ namespace EmeralEngine.Story
                     };
                     item.Click += (sender, e) =>
                     {
-                        info.FullPath = ep.Value.path;
+                        info.Path = ep.Value.path;
                         var t = ep.Value.GetThumbnail();
                         if (t is null)
                         {
@@ -229,7 +229,7 @@ namespace EmeralEngine.Story
                 var res = ResourceWindow.SelectMovie(this);
                 if (res is not null)
                 {
-                    info.FullPath = res;
+                    info.Path = res;
                     SetThumbnail(img, info);
                 }
             };
