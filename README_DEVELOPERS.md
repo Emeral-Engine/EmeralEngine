@@ -21,8 +21,8 @@ VisualStudioでデバッグ実行すると、そのままでは失敗します�
 汚いですが、弄りたい値は大体コントロールだと思うので、xamlのNameを見てください。
 
 # EmeralEngineのビルド方法
-```bash
-$ git clone https://github.com/Emeral-Engine/EmeralEngine
-$ cd EmeralEngine/src
-$ dotnet build
+```bat
+> git clone https://github.com/Emeral-Engine/EmeralEngine
+> cd EmeralEngine
+> ./build.bat
 ```
