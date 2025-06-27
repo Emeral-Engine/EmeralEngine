@@ -30,7 +30,7 @@ namespace EmeralEngine.MessageWindow
         {
             if (IsLoaded)
             {
-                AlphaText.Text = Utils.CutString(BgColorAlpha.Value.ToString(), 4, false);
+                BgColorAlphaText.Text = Utils.CutString(BgColorAlpha.Value.ToString(), 4, false);
                 window.WindowContents.Background.Opacity = BgColorAlpha.Value;
             }
         }
@@ -47,14 +47,14 @@ namespace EmeralEngine.MessageWindow
         {
             if (IsLoaded)
             {
-                if (string.IsNullOrEmpty(AlphaText.Text))
+                if (string.IsNullOrEmpty(BgColorAlphaText.Text))
                 {
-                    AlphaText.Value = 0;
+                    BgColorAlphaText.Value = 0;
                     BgColorAlpha.Value = 0;
                 }
                 else
                 {
-                    BgColorAlpha.Value = (double)AlphaText.Value;
+                    BgColorAlpha.Value = (double)BgColorAlphaText.Value;
                 }
             }
         }

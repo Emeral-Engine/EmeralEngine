@@ -38,7 +38,7 @@
                 <xctk:ColorPicker Grid.Column="1" Grid.Row="1" x:Name="BgColor" SelectedColor="#FF3D3C3C" AdvancedTabHeader="ユーザー設定" AvailableColorsHeader="使用可能な色" ShowRecentColors="True" RecentColorsHeader="最近使った色" StandardColorsHeader="標準色" DisplayColorAndName="False" UsingAlphaChannel="True" SelectedColorChanged="OnBgColorChanged" Margin="0,10,0,10" Cursor=""/>
                 <Label Grid.Row="2" Content="透明度" FontSize="24" />
                 <Slider x:Name="BgColorAlpha" Grid.Row="2" Grid.Column="1" VerticalAlignment="Center" Minimum="0" Maximum="1" ValueChanged="OnSliderChanged" Value="0.7" TickFrequency="0.05" IsSnapToTickEnabled="True"/>
-                <xctk:DoubleUpDown Name="AlphaText" Grid.Row="2" Grid.Column="2" MaxLength="4" FontSize="20" VerticalAlignment="Center" Width="60" ValueChanged="OnBgAlphaTextChanged" Value="0.7" Maximum="1" Minimum="0" Increment="0.1"/>
+                <xctk:DoubleUpDown Name="BgColorAlphaText" Grid.Row="2" Grid.Column="2" MaxLength="4" FontSize="20" VerticalAlignment="Center" Width="60" ValueChanged="OnBgAlphaTextChanged" Value="0.7" Maximum="1" Minimum="0" Increment="0.1"/>
                 <Label Grid.Row="3" Content="画像" FontSize="24" />
                 <Button x:Name="SelectBgButton" Grid.Row="3" Grid.Column="1" Content="選択" FontSize="24" Margin="0,3,10,5" Click="Button_Click"/>
                 <Button Grid.Row="3" Grid.Column="1" Content="削除" FontSize="24" Margin="65,3,10,5" Grid.ColumnSpan="2" Click="Button_Click_1"/>

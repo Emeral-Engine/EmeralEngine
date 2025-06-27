@@ -342,22 +342,29 @@ namespace EmeralEngine
                 Canvas.SetLeft(MessageWindow, Canvas.GetLeft(window.WindowContents));
                 Canvas.SetTop(MessageWindow, Canvas.GetTop(window.WindowContents));
             }
-            if (charas && 0 < CurrentScript.charas.Count)
+            if (charas)
             {
                 CharacterPictures.Children.Clear();
-                var per = pmanager.Project.Size[0] / (CurrentScript.charas.Count * 2);
-                BitmapImage b;
-                Image img;
-                for (int i = 0; i < CurrentScript.charas.Count; i++)
+                if (0 < CurrentScript.charas.Count)
                 {
-                    b = Utils.CreateBmp(pmanager.GetResource("Characters", CurrentScript.charas[i]));
-                    img = new Image()
+                    var per = pmanager.Project.Size[0] / (CurrentScript.charas.Count * 2);
+                    BitmapImage b;
+                    Image img;
+                    for (int i = 0; i < CurrentScript.charas.Count; i++)
                     {
-                        Source = b,
-                        Stretch = Stretch.Uniform,
-                        Height = pmanager.Project.Size[1],
-                    };
-                    SetCharacter(img, per * (2 * (i + 1) - 1) - b.Width * Math.Min(Preview.Width / b.Width, Preview.Height / b.Height) / 2);
+                        b = Utils.CreateBmp(pmanager.GetResource("Characters", CurrentScript.charas[i]));
+                        img = new Image()
+                        {
+                            Source = b,
+                            Stretch = Stretch.Uniform,
+                            Height = pmanager.Project.Size[1],
+                        };
+                        SetCharacter(img, per * (2 * (i + 1) - 1) - b.Width * Math.Min(Preview.Width / b.Width, Preview.Height / b.Height) / 2);
+                    }
+                }
+                else
+                {
+                    NamePlate.Visibility = Visibility.Hidden;
                 }
             }
             if (bg)
@@ -781,6 +788,10 @@ namespace EmeralEngine
                     try
                     {
                         c.CreateExe(dialog.FolderName, progress, data, Dispatcher.Invoke);
+                    }
+                    catch(Exception e)
+                    {
+                        ErrorNotifyWindow.Show(this, e.Message);
                     }
                     finally
                     {

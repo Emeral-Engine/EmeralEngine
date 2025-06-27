@@ -125,6 +125,11 @@ namespace EmeralEngine.Project
             ProjectEpisodesDir = Path.Combine(Temp.path, "Episodes");
             ActualProjectEpisodesDir = Path.Combine(ActualProjectDir, "Episodes");
             ProjectDotNet = Path.Combine(Temp.path, "dotnet");
+            try
+            {
+                Directory.Delete(ProjectDotNet, true);
+            }
+            catch { }
             ProjectFile = Path.Combine(ActualProjectDir, "project.emeral");
             ProjectTitleScreen = Path.Combine(Temp.path, "titlescreen.xaml");
             ActualProjectTitleScreen = Path.Combine(ActualProjectDir, "titlescreen.xaml");
