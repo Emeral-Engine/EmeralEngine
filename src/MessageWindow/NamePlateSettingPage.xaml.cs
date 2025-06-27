@@ -35,6 +35,7 @@ namespace EmeralEngine.MessageWindow
         {
             if (IsLoaded)
             {
+                window.NamePlate.Background = window.NamePlate.Background.Clone();
                 window.NamePlate.Background.Opacity = e.NewValue;
                 BgColorAlphaText.Value = e.NewValue;
             }

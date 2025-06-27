@@ -259,7 +259,10 @@ namespace EmeralEngine.Builder
                                     <MenuItem Name="MaximizeMenu" Header="最大化" IsCheckable="True" IsChecked="False"/>
                                 </MenuItem>
                             </Menu>
-                            <Frame Name="Screen" NavigationUIVisibility="Hidden"/>
+                            <Canvas>
+                                <Frame Name="Screen" Height="{{MainWindow.pmanager.Project.Size[1]}}" Width="{{MainWindow.pmanager.Project.Size[0]}}" NavigationUIVisibility="Hidden"/>
+                                <Rectangle Name="Transition" Height="{{MainWindow.pmanager.Project.Size[1]}}" Width="{{MainWindow.pmanager.Project.Size[0]}}" Opacity="0" IsHitTestVisible="False"/>
+                            </Canvas>
                         </DockPanel>
                 </Window>
                 """);
@@ -572,13 +575,9 @@ namespace EmeralEngine.Builder
                 using System.Windows.Media.Imaging;
                 using System.Windows.Media;
                 using System.Windows.Media.Animation;
-                using System.Threading.Tasks;
-                using System.Windows.Threading;
                 using System.IO;
                 using System.Reflection;
-                using System.Linq;
                 using System.Text;
-                using System;
 
                 namespace Game
                 {
@@ -713,12 +712,26 @@ namespace EmeralEngine.Builder
                             MessageWindowCanvas.Visibility = Visibility.Hidden;
                         }
 
-                        public async void GoTo(int scene, int script)
+                        public void GoTo(int scene, int script)
                         {
-                            await Clear();
-                            window.Screen.Navigate(this);
-                            var f = GetType().GetMethod($"Scene{scene}", BindingFlags.Instance | BindingFlags.Public);
-                            f.Invoke(this, new object[] { script });
+                            window.Transition.Fill = Brushes.Black;
+                            var fadeout = new DoubleAnimation()
+                            {
+                                From = 0,
+                                To = 1,
+                                Duration = new Duration(TimeSpan.FromSeconds(1))
+                            };
+                            var b1 = new Storyboard();
+                            Storyboard.SetTarget(fadeout, window.Transition);
+                            Storyboard.SetTargetProperty(fadeout, new PropertyPath(UIElement.OpacityProperty));
+                            b1.Children.Add(fadeout);
+                            b1.Completed += async (sender, e) => {
+                                await Clear();
+                                window.Screen.Navigate(this);
+                                var f = GetType().GetMethod($"Scene{scene}", BindingFlags.Instance | BindingFlags.Public);
+                                f.Invoke(this, new object[] { script });
+                            };
+                            b1.Begin();
                         }
 
                        {{stories}}
@@ -898,7 +911,6 @@ namespace EmeralEngine.Builder
                                 </Canvas>
                             </Canvas>
                             <MediaElement Name="MoviePlayer" Stretch="Uniform" Height="{{MainWindow.pmanager.Project.Size[1]}}" Width="{{MainWindow.pmanager.Project.Size[0]}}" LoadedBehavior="Manual"/>
-                            <Rectangle Name="Transition" Opacity="0"/>
                         </Grid>
                     </DockPanel>
                 """;
@@ -955,6 +967,7 @@ namespace EmeralEngine.Builder
             var script_counter = 0;
             var story_ref = story.StoryInfos.Length;
             var msw = "";
+            var trans = IsScript ? "Transition" : "window.Transition";
             var pre_content = new ContentInfo();
             foreach (var t in story.StoryInfos)
             {
@@ -998,7 +1011,7 @@ namespace EmeralEngine.Builder
                             public async void Content{{episode_counter}}() {
                                 IsHandling = true;
                                 MessageWindowCanvas.Visibility = Visibility.Hidden;
-                                Transition.Fill = MainWindow.GetBrush(@"{{pre_content.trans_color}}");
+                                {{trans}}.Fill = MainWindow.GetBrush(@"{{pre_content.trans_color}}");
                                 var fadeout = new DoubleAnimation()
                                 {
                                     From = 0,
@@ -1006,7 +1019,7 @@ namespace EmeralEngine.Builder
                                     Duration = new Duration(TimeSpan.FromSeconds({{pre_content.fadeout}}))
                                 };
                                 var b1 = new Storyboard();
-                                Storyboard.SetTarget(fadeout, Transition);
+                                Storyboard.SetTarget(fadeout, {{trans}});
                                 Storyboard.SetTargetProperty(fadeout, new PropertyPath(UIElement.OpacityProperty));
                                 b1.Children.Add(fadeout);
                                 var fadein = new DoubleAnimation()
@@ -1016,7 +1029,7 @@ namespace EmeralEngine.Builder
                                     Duration = new Duration(TimeSpan.FromSeconds({{pre_content.fadein}}))
                                 };
                                 var b2 = new Storyboard();
-                                Storyboard.SetTarget(fadein, Transition);
+                                Storyboard.SetTarget(fadein, {{trans}});
                                 Storyboard.SetTargetProperty(fadein, new PropertyPath(UIElement.OpacityProperty));
                                 b2.Children.Add(fadein);
                                 b1.Completed += async (sender, e) => {
@@ -1306,11 +1319,24 @@ namespace EmeralEngine.Builder
                         }
                         else
                         {
-                            {{msw}}
-                            {{bgm}}
-                            IsHandling = false;
-                            var f = GetType().GetMethod($"ShowScript{script}", BindingFlags.Instance | BindingFlags.Public);
-                            f.Invoke(this, null);
+                            var fadein = new DoubleAnimation()
+                            {
+                                From = 1,
+                                To = 0,
+                                Duration = new Duration(TimeSpan.FromSeconds(0.5))
+                            };
+                            var b1 = new Storyboard();
+                            Storyboard.SetTarget(fadein, {{trans}});
+                            Storyboard.SetTargetProperty(fadein, new PropertyPath(UIElement.OpacityProperty));
+                            b1.Children.Add(fadein);
+                            b1.Completed += (sender, e) => {
+                                {{msw}}
+                                {{bgm}}
+                                IsHandling = false;
+                                var f = GetType().GetMethod($"ShowScript{script}", BindingFlags.Instance | BindingFlags.Public);
+                                f.Invoke(this, null);
+                            };
+                            b1.Begin();
                         }
                     }
                     """);
@@ -1326,7 +1352,7 @@ namespace EmeralEngine.Builder
                         CurrentScene = {{scene_counter}};
                         if (script == -1)
                         {
-                            Transition.Fill = MainWindow.GetBrush(@"{{pre_scene.trans_color}}");
+                           {{trans}}.Fill = MainWindow.GetBrush(@"{{pre_scene.trans_color}}");
                             var fadeout = new DoubleAnimation()
                             {
                                 From = 0,
@@ -1334,7 +1360,7 @@ namespace EmeralEngine.Builder
                                 Duration = new Duration(TimeSpan.FromSeconds({{pre_scene.fadeout}}))
                             };
                             var b1 = new Storyboard();
-                            Storyboard.SetTarget(fadeout, Transition);
+                            Storyboard.SetTarget(fadeout, {{trans}});
                             Storyboard.SetTargetProperty(fadeout, new PropertyPath(UIElement.OpacityProperty));
                             b1.Children.Add(fadeout);
                             b1.Completed += async (sender, e) => {
@@ -1354,7 +1380,7 @@ namespace EmeralEngine.Builder
                                 Duration = new Duration(TimeSpan.FromSeconds({{pre_scene.fadein}}))
                             };
                             var b2 = new Storyboard();
-                            Storyboard.SetTarget(fadein, Transition);
+                            Storyboard.SetTarget(fadein, {{trans}});
                             Storyboard.SetTargetProperty(fadein, new PropertyPath(UIElement.OpacityProperty));
                             b2.Children.Add(fadein);
                             b2.Completed += async (sender, e) => {
@@ -1369,17 +1395,30 @@ namespace EmeralEngine.Builder
                         }
                         else
                         {
-                            {{bg}}
-                            CharacterPictures.Children.Clear();
-                            while ({{condition}}) {
-                                await Task.Delay(500);
-                            }
-                            {{msw}}
-                            bg_loaded = true;
-                            {{bgm}}
-                            IsHandling = false;
-                            var f = GetType().GetMethod($"ShowScript{script}", BindingFlags.Instance | BindingFlags.Public);
-                            f.Invoke(this, null);
+                            var fadein = new DoubleAnimation()
+                            {
+                                From = 1,
+                                To = 0,
+                                Duration = new Duration(TimeSpan.FromSeconds(0.5))
+                            };
+                            var b1 = new Storyboard();
+                            Storyboard.SetTarget(fadein, {{trans}});
+                            Storyboard.SetTargetProperty(fadein, new PropertyPath(UIElement.OpacityProperty));
+                            b1.Children.Add(fadein);
+                            b1.Completed += async (sender, e) => {
+                                {{bg}}
+                                CharacterPictures.Children.Clear();
+                                while ({{condition}}) {
+                                    await Task.Delay(500);
+                                }
+                                {{msw}}
+                                bg_loaded = true;
+                                {{bgm}}
+                                IsHandling = false;
+                                var f = GetType().GetMethod($"ShowScript{script}", BindingFlags.Instance | BindingFlags.Public);
+                                f.Invoke(this, null);
+                            };
+                            b1.Begin();
                         }
                     }
                     """);
@@ -1408,10 +1447,23 @@ namespace EmeralEngine.Builder
                         }
                         else
                         {
-                            {{bgm}}
-                            IsHandling = false;
-                            var f = GetType().GetMethod($"ShowScript{script}", BindingFlags.Instance | BindingFlags.Public);
-                            f.Invoke(this, null);
+                            var fadein = new DoubleAnimation()
+                            {
+                                From = 1,
+                                To = 0,
+                                Duration = new Duration(TimeSpan.FromSeconds(0.5))
+                            };
+                            var b1 = new Storyboard();
+                            Storyboard.SetTarget(fadein, {{trans}});
+                            Storyboard.SetTargetProperty(fadein, new PropertyPath(UIElement.OpacityProperty));
+                            b1.Children.Add(fadein);
+                            b1.Completed += (sender, e) => {
+                                {{bgm}}
+                                IsHandling = false;
+                                var f = GetType().GetMethod($"ShowScript{script}", BindingFlags.Instance | BindingFlags.Public);
+                                f.Invoke(this, null);
+                            };
+                            b1.Begin();
                         }
                     }
                     """);
@@ -1426,7 +1478,7 @@ namespace EmeralEngine.Builder
                         CurrentScene = {{scene_counter}};
                         if (script == -1)
                         {
-                            Transition.Fill = MainWindow.GetBrush(@"{{pre_scene.trans_color}}");
+                            {{trans}}.Fill = MainWindow.GetBrush(@"{{pre_scene.trans_color}}");
                             var fadeout = new DoubleAnimation()
                             {
                                 From = 0,
@@ -1434,7 +1486,7 @@ namespace EmeralEngine.Builder
                                 Duration = new Duration(TimeSpan.FromSeconds({{pre_scene.fadeout}}))
                             };
                             var b1 = new Storyboard();
-                            Storyboard.SetTarget(fadeout, Transition);
+                            Storyboard.SetTarget(fadeout, {{trans}});
                             Storyboard.SetTargetProperty(fadeout, new PropertyPath(UIElement.OpacityProperty));
                             b1.Children.Add(fadeout);
                             var fadein = new DoubleAnimation()
@@ -1444,7 +1496,7 @@ namespace EmeralEngine.Builder
                                 Duration = new Duration(TimeSpan.FromSeconds({{pre_scene.fadein}}))
                             };
                             var b2 = new Storyboard();
-                            Storyboard.SetTarget(fadein, Transition);
+                            Storyboard.SetTarget(fadein, {{trans}});
                             Storyboard.SetTargetProperty(fadein, new PropertyPath(UIElement.OpacityProperty));
                             b2.Children.Add(fadein);
                             b2.Completed += (sender, e) => {
@@ -1469,11 +1521,24 @@ namespace EmeralEngine.Builder
                         }
                         else
                         {
-                            {{msw}}
-                            {{bgm}}
-                            IsHandling = false;
-                            var f = GetType().GetMethod($"ShowScript{script}", BindingFlags.Instance | BindingFlags.Public);
-                            f.Invoke(this, null);
+                            var fadein = new DoubleAnimation()
+                            {
+                                From = 1,
+                                To = 0,
+                                Duration = new Duration(TimeSpan.FromSeconds(0.5))
+                            };
+                            var b1 = new Storyboard();
+                            Storyboard.SetTarget(fadein, {{trans}});
+                            Storyboard.SetTargetProperty(fadein, new PropertyPath(UIElement.OpacityProperty));
+                            b1.Children.Add(fadein);
+                            b1.Completed += (sender, e) => {
+                                {{msw}}
+                                {{bgm}}
+                                IsHandling = false;
+                                var f = GetType().GetMethod($"ShowScript{script}", BindingFlags.Instance | BindingFlags.Public);
+                                f.Invoke(this, null);
+                            };
+                            b1.Begin();
                         }
                     }
                     """);
@@ -1523,7 +1588,7 @@ namespace EmeralEngine.Builder
                             public async void Content{{episode_counter}}() {
                                 IsHandling = true;
                                 MessageWindowCanvas.Visibility = Visibility.Hidden;
-                                Transition.Fill = MainWindow.GetBrush(@"{{pre_content.trans_color}}");
+                                {{trans}}.Fill = MainWindow.GetBrush(@"{{pre_content.trans_color}}");
                                 var fadeout = new DoubleAnimation()
                                 {
                                     From = 0,
@@ -1531,7 +1596,7 @@ namespace EmeralEngine.Builder
                                     Duration = new Duration(TimeSpan.FromSeconds({{pre_content.fadeout}}))
                                 };
                                 var b1 = new Storyboard();
-                                Storyboard.SetTarget(fadeout, Transition);
+                                Storyboard.SetTarget(fadeout, {{trans}});
                                 Storyboard.SetTargetProperty(fadeout, new PropertyPath(UIElement.OpacityProperty));
                                 b1.Children.Add(fadeout);
                                 var fadein = new DoubleAnimation()
@@ -1541,7 +1606,7 @@ namespace EmeralEngine.Builder
                                     Duration = new Duration(TimeSpan.FromSeconds({{pre_content.fadein}}))
                                 };
                                 var b2 = new Storyboard();
-                                Storyboard.SetTarget(fadein, Transition);
+                                Storyboard.SetTarget(fadein, {{trans}});
                                 Storyboard.SetTargetProperty(fadein, new PropertyPath(UIElement.OpacityProperty));
                                 b2.Children.Add(fadein);
                                 b2.Completed += async (sender, e) => {
@@ -1762,7 +1827,16 @@ namespace EmeralEngine.Builder
                 
                     public void Start() {
                         var xaml = (FrameworkElement)XamlReader.Parse({{$"\"\"\"\n{GenerateGameUIXaml()}\n\"\"\""}});
-                        Content = xaml;
+                        var canvas = new Canvas();
+                        canvas.Children.Add(xaml);
+                        Transition = new System.Windows.Shapes.Rectangle(){
+                            Width = {{MainWindow.pmanager.Project.Size[0]}},
+                            Height = {{MainWindow.pmanager.Project.Size[1]}},
+                            Opacity = 0,
+                            IsHitTestVisible = false
+                        };
+                        canvas.Children.Add(Transition);
+                        Content = canvas;
                         Scale = (ScaleTransform)xaml.FindName("Scale");
                         WindowMenu = (Menu)xaml.FindName("WindowMenu");
                         MaximizeMenu = (MenuItem)xaml.FindName("MaximizeMenu");
@@ -1790,7 +1864,6 @@ namespace EmeralEngine.Builder
                         MessageWindowBg = (Image)xaml.FindName("MessageWindowBg");
                         Script = (TextBlock)xaml.FindName("Script");
                         MoviePlayer = (MediaElement)xaml.FindName("MoviePlayer");
-                        Transition = (System.Windows.Shapes.Rectangle)xaml.FindName("Transition");
                         MainPanel.MouseRightButtonDown += (sender, e) => {
                             if (!IsHandling) MessageWindowCanvas.Visibility = MessageWindowCanvas.Visibility == Visibility.Visible ? Visibility.Hidden : Visibility.Visible;
                         };

@@ -235,6 +235,7 @@ namespace EmeralEngine
                 {
                     case "NamePlate":
                         NamePlate = element as Canvas;
+                        var opacity = NamePlate.Background.Opacity;
                         CharaName = (Label)NamePlate.FindName("CharaName");
                         NamePlateBgImage = (Image)NamePlate.FindName("NamePlateBgImage");
                         if (NamePlateBgImage.Source is not null)
@@ -250,8 +251,12 @@ namespace EmeralEngine
                         namePlateSettingPage.NameColor.SelectedColor = ((SolidColorBrush)CharaName.Foreground).Color;
                         namePlateSettingPage.FontSize.Value = (int)CharaName.FontSize;
                         namePlateSettingPage.BgColor.SelectedColor = ((SolidColorBrush)NamePlate.Background).Color;
-                        namePlateSettingPage.BgColorAlpha.Value = NamePlate.Background.Opacity;
+                        NamePlate.Background = NamePlate.Background.Clone();
+                        NamePlate.Background.Opacity = opacity;
+                        namePlateSettingPage.BgColorAlpha.Value = opacity;
+                        namePlateSettingPage.BgColorAlphaText.Value = opacity;
                         namePlateSettingPage.BgImageAlpha.Value = NamePlateBgImage.Opacity;
+                        namePlateSettingPage.BgImageAlphaText.Value = NamePlateBgImage.Opacity;
                         NamePlateBorder.PreviewMouseLeftButtonDown += (sender, e) =>
                         {
                             SettingFrame.Navigate(namePlateSettingPage);
@@ -300,6 +305,7 @@ namespace EmeralEngine
                         Preview.Children.Add(WindowBorder);
                         windowPage.BgColor.SelectedColor = ((SolidColorBrush)WindowContents.Background).Color;
                         windowPage.BgColorAlpha.Value = WindowContents.Background.Opacity;
+                        windowPage.BgColorAlphaText.Value = WindowContents.Background.Opacity;
                         windowPage.BgAlpha.Value = MessageWindowBgImage.Opacity;
                         windowPage.BgAlphaText.Value = MessageWindowBgImage.Opacity;
                         windowPage.MessageWindowWidth.Value = (int)WindowContents.Width;
