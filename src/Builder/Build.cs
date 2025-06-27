@@ -964,9 +964,9 @@ namespace EmeralEngine.Builder
                 var pre_scene = new SceneInfo();
                 if (string.IsNullOrEmpty(t.FullPath))
                 {
-                    stories.Append($$"""
-                        public void Episode{{episode_counter}}() {
-                            {{(isLastEpisode ? end_func : $"Episode{episode_counter + 1}();")}}
+                    stories.AppendLine($$"""
+                        public void Content{{episode_counter}}() {
+                            {{(isLastEpisode ? end_func : $"Content{episode_counter + 1}();")}}
                         }
                         """);
                 }
@@ -983,8 +983,8 @@ namespace EmeralEngine.Builder
                     switch (pre_content.trans)
                     {
                         case TransitionTypes.NONE:
-                            stories.Append($$"""
-                            public async void Episode{{episode_counter}}() {
+                            stories.AppendLine($$"""
+                            public async void Content{{episode_counter}}() {
                                 MessageWindowCanvas.Visibility = Visibility.Hidden;
                                 MoviePlayer.Source = null;
                                 await Task.Delay({{pre_content.interval * 1000}});
@@ -994,8 +994,8 @@ namespace EmeralEngine.Builder
                             """);
                             break;
                         case TransitionTypes.SIMPLE:
-                            stories.Append($$"""
-                            public async void Episode{{episode_counter}}() {
+                            stories.AppendLine($$"""
+                            public async void Content{{episode_counter}}() {
                                 IsHandling = true;
                                 MessageWindowCanvas.Visibility = Visibility.Hidden;
                                 Transition.Fill = MainWindow.GetBrush(@"{{pre_content.trans_color}}");
@@ -1092,8 +1092,8 @@ namespace EmeralEngine.Builder
                                             j++;
                                         }
                                     }
+                                    charas.AppendLine("if (0 < charas.Length) RemoveCharas(charas);");
                                 }
-                                charas.AppendLine("if (0 < charas.Length) RemoveCharas(charas);");
                             }
                             var var_script = $"var script = Encoding.UTF8.GetString(Convert.FromBase64String(\"{Convert.ToBase64String(Encoding.UTF8.GetBytes(script.script))}\"));";
                             if (isLastScene && isLastScript)
@@ -1115,7 +1115,7 @@ namespace EmeralEngine.Builder
                                     }
                                     else{
                                         {{(IsScript ? "" : "await ")}}FinishBgm();
-                                        {{(isLastEpisode ? end_func : $"Episode{episode_counter + 1}();")}}
+                                        {{(isLastEpisode ? end_func : $"Content{episode_counter + 1}();")}}
                                     }
                                 }
                                 else {
@@ -1289,7 +1289,7 @@ namespace EmeralEngine.Builder
                             switch (pre_scene.trans)
                             {
                                 case TransitionTypes.NONE:
-                                    stories.Append($$"""
+                                    stories.AppendLine($$"""
                     public async void Scene{{scene_counter}}(int script=-1) {
                         if (IsHandling) return;
                         IsHandling = true;
@@ -1316,7 +1316,7 @@ namespace EmeralEngine.Builder
                     """);
                                     break;
                                 case TransitionTypes.SIMPLE:
-                                    stories.Append($$"""
+                                    stories.AppendLine($$"""
                     public async void Scene{{scene_counter}}(int script=-1) {
                         if (IsHandling) return;
                         IsHandling = true;
@@ -1391,10 +1391,11 @@ namespace EmeralEngine.Builder
                             switch (pre_scene.trans)
                             {
                                 case TransitionTypes.NONE:
-                                    stories.Append($$"""
+                                    stories.AppendLine($$"""
                     public async void Scene{{scene_counter}}(int script=-1) {
                         if (IsHandling) return;
                         IsHandling = true;
+                        Script.Text = "";
                         CurrentScene = {{scene_counter}};
                         MessageWindowCanvas.Visibility = Visibility.Hidden;
                         {{msw}}
@@ -1416,7 +1417,7 @@ namespace EmeralEngine.Builder
                     """);
                                     break;
                                 case TransitionTypes.SIMPLE:
-                                    stories.Append($$"""
+                                    stories.AppendLine($$"""
                     public async void Scene{{scene_counter}}(int script=-1) {
                         if (IsHandling) return;
                         IsHandling = true;
@@ -1460,6 +1461,7 @@ namespace EmeralEngine.Builder
                             };
                             b1.Completed += async (sender, e) => {
                                 {{msw}}
+                                CharacterPictures.Children.Clear();
                                 {{interval}}
                                 b2.Begin();
                             };
@@ -1472,7 +1474,6 @@ namespace EmeralEngine.Builder
                             IsHandling = false;
                             var f = GetType().GetMethod($"ShowScript{script}", BindingFlags.Instance | BindingFlags.Public);
                             f.Invoke(this, null);
-                            }
                         }
                     }
                     """);
@@ -1494,8 +1495,8 @@ namespace EmeralEngine.Builder
                     switch (pre_content.trans)
                     {
                         case TransitionTypes.NONE:
-                            stories.Append($$"""
-                            public async void Episode{{episode_counter}}() {
+                            stories.AppendLine($$"""
+                            public async void Content{{episode_counter}}() {
                                 IsHandling = true;
                                 MessageWindowCanvas.Visibility = Visibility.Hidden;
                                 MainPanel.MouseLeftButtonDown -= OnMouseLeftDown;
@@ -1505,7 +1506,7 @@ namespace EmeralEngine.Builder
                                 }
                                 MediaEnded = (sender, e) => {
                                     IsHandling = false;
-                                    {{(isLastEpisode ? end_func : $"Episode{episode_counter + 1}();")}}
+                                    {{(isLastEpisode ? end_func : $"Content{episode_counter + 1}();")}}
                                 };
                                 Bg.Source = null;
                                 CharacterPictures.Children.Clear();
@@ -1518,8 +1519,8 @@ namespace EmeralEngine.Builder
                             """);
                             break;
                         case TransitionTypes.SIMPLE:
-                            stories.Append($$"""
-                            public async void Episode{{episode_counter}}() {
+                            stories.AppendLine($$"""
+                            public async void Content{{episode_counter}}() {
                                 IsHandling = true;
                                 MessageWindowCanvas.Visibility = Visibility.Hidden;
                                 Transition.Fill = MainWindow.GetBrush(@"{{pre_content.trans_color}}");
@@ -1551,7 +1552,7 @@ namespace EmeralEngine.Builder
                                     }
                                     MediaEnded = (sender, e) => {
                                         IsHandling = false;
-                                        {{(isLastEpisode ? end_func : $"Episode{episode_counter + 1}();")}}
+                                        {{(isLastEpisode ? end_func : $"Content{episode_counter + 1}();")}}
                                     };
                                     MoviePlayer.MediaEnded += MediaEnded;
                                     MoviePlayer.Play();
@@ -1730,8 +1731,7 @@ namespace EmeralEngine.Builder
                             };
                             c.BeginAnimation(UIElement.OpacityProperty, b);
                         }
-                    }
-                    
+                    }      
 
                     private void PlayBgm(string bgm)
                     {
@@ -1803,7 +1803,7 @@ namespace EmeralEngine.Builder
                             BgmPlayer.Position = TimeSpan.Zero;
                             BgmPlayer.Play();
                         };
-                        Episode1();
+                        Content1();
                     }
 
                     private void End()
@@ -1987,7 +1987,7 @@ namespace EmeralEngine.Builder
                                     Duration = new Duration(TimeSpan.FromMilliseconds(1000))
                                 };
                                 b2.Completed += (sender, e) => {
-                                    GamePage.Episode1();
+                                    GamePage.Content1();
                                 };
                                 b1.Completed += (sender, e) => {
                                     Screen.Navigate(GamePage);
