@@ -1,19 +1,8 @@
 ﻿using EmeralEngine.Core;
 using EmeralEngine.MessageWindow;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace EmeralEngine
 {
@@ -22,15 +11,16 @@ namespace EmeralEngine
     /// </summary>
     public partial class SelectMessageWindow : Window
     {
-        public MessageWindowConfig Result;
-        public int SelectedNum;
-        public SelectMessageWindow(MainWindow parent, Dictionary<int, MessageWindowConfig> windows)
+        public int Result;
+        public SelectMessageWindow()
         {
             InitializeComponent();
-            Owner = parent;
             var row = 0;
-            foreach (var k in windows)
+            var manager = new MessageWindowManager();
+            Result = -1;
+            foreach (var p in manager.windows)
             {
+                var i = row;
                 var panel = new DockPanel()
                 {
                     Background = CustomColors.CharacterBackground,
@@ -49,20 +39,19 @@ namespace EmeralEngine
                 };
                 panel.MouseDown += (sender, e) =>
                 {
-                    Result = k.Value;
-                    SelectedNum = k.Key;
+                    Result = i;
                     Close();
                 };
                 var grid = new Grid();
                 grid.ColumnDefinitions.Add(new ColumnDefinition());
                 grid.ColumnDefinitions.Add(new ColumnDefinition());
-                var builder = new MessageWindowBuilder(k.Value);
+                var builder = new MessageWindowBuilder(manager[p]);
                 var preview = builder.Build();
                 Grid.SetColumn(preview, 0);
                 grid.Children.Add(preview);
                 var name = new Label()
                 {
-                    Content = k.Key,
+                    Content = Path.GetFileNameWithoutExtension(p),
                     FontSize = 20,
                 };
                 Grid.SetColumn(name, 1);
@@ -76,6 +65,14 @@ namespace EmeralEngine
                 WindowGrid.Children.Add(panel);
                 row++;
             }
+        }
+
+        public static int Select(Window w)
+        {
+            var window = new SelectMessageWindow();
+            window.Owner = w;
+            window.ShowDialog();
+            return window.Result;
         }
     }
 }

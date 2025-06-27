@@ -278,7 +278,7 @@ namespace EmeralEngine.Builder
                         get => _{{p.Value}};
                         set{
                             _{{p.Value}} = value;
-                            OnPropertyChanged(nameof({{p.Value}}));
+                            OnPropertyChanged(@"{{p.Value}}");
                         }
                     }
                     """);
@@ -559,7 +559,7 @@ namespace EmeralEngine.Builder
                 }
                 
                 """);
-            string stories = "";
+            var stories = "";
             Application.Current.Dispatcher.Invoke(() =>
             {
                 stories = GenerateStoryCode();
@@ -800,10 +800,8 @@ namespace EmeralEngine.Builder
                                 {
                                     if (sourceStream.Position == 0 || !EnableLooping)
                                     {
-                                        // something wrong with the source stream
                                         break;
                                     }
-                                    // loop
                                     sourceStream.Position = 0;
                                 }
                                 totalBytesRead += bytesRead;
