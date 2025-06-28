@@ -891,7 +891,7 @@ namespace EmeralEngine.Builder
         private string GenerateGameUIXaml(bool IsScript=true)
         {
             return $$"""
-                    <DockPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="MainPanel" Background="Black">
+                    <DockPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="MainPanel" Background="Black" Height="{{MainWindow.pmanager.Project.Size[1]}}" Width="{{MainWindow.pmanager.Project.Size[0]}}">
                         {{(IsScript? """
                         <DockPanel.LayoutTransform>
                             <ScaleTransform x:Name="Scale"/>
@@ -915,7 +915,7 @@ namespace EmeralEngine.Builder
                                     <Label Name="Speaker" Content="名前" FontSize="30" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Canvas>
                             </Canvas>
-                            <MediaElement Name="MoviePlayer" Stretch="Uniform" Height="{Binding ActualHeight, ElementName=MainPanel}" Width="{Binding ActualWidth, ElementName=MainPanel}" LoadedBehavior="Manual"/>
+                            <MediaElement Name="MoviePlayer" Stretch="Uniform" LoadedBehavior="Manual"/>
                         </Grid>
                     </DockPanel>
                 """;
@@ -1084,24 +1084,22 @@ namespace EmeralEngine.Builder
                                           NamePlate.Visibility = Visibility.Visible;
                                           """;
                             var charas = new StringBuilder();
-                            if (pre_script is null || !Utils.IsEqualList(pre_script.charas, script.charas))
+                            charas.AppendLine("var charas = CharacterPictures.Children.Cast<UIElement>().ToArray();");
+                            if (0 < script.charas.Count)
                             {
-                                charas.AppendLine("var charas = CharacterPictures.Children.Cast<UIElement>().ToArray();");
-                                if (0 < script.charas.Count)
-                                {
-                                    var per_x = MainWindow.pmanager.Project.Size[0] / (script.charas.Count * 2);
-                                    var j = 1;
-                                    charas.AppendLine($"""
+                                var per_x = MainWindow.pmanager.Project.Size[0] / (script.charas.Count * 2);
+                                var j = 1;
+                                charas.AppendLine($"""
                                         BitmapImage c_bmp;
                                         var chara_trans = {(script.charas.Count != pre_script?.charas.Count).ToString().ToLower()};
                                         """);
-                                    foreach (var c in script.charas)
+                                foreach (var c in script.charas)
+                                {
+                                    if (!string.IsNullOrEmpty(c))
                                     {
-                                        if (!string.IsNullOrEmpty(c))
-                                        {
-                                            var file = ConvertPath(Path.Combine("Characters", c));
-                                            var bmp = Utils.CreateBmp(MainWindow.pmanager.GetResource("Characters", c));
-                                            charas.AppendLine($$"""
+                                        var file = ConvertPath(Path.Combine("Characters", c));
+                                        var bmp = Utils.CreateBmp(MainWindow.pmanager.GetResource("Characters", c));
+                                        charas.AppendLine($$"""
                                         c_bmp = MainWindow.CreateBmp(MainWindow.GetResource(@"{{file}}"));
                                         SetCharacter(new Image() {
                                             Source = c_bmp,
@@ -1109,11 +1107,10 @@ namespace EmeralEngine.Builder
                                             Height = {{MainWindow.pmanager.Project.Size[1]}}
                                         }, {{per_x * (j * 2 - 1)}} - {{bmp.Width * Math.Min(MainWindow.pmanager.Project.Size[0] / bmp.Width, MainWindow.pmanager.Project.Size[1] / bmp.Height) / 2}}, chara_trans);
                                         """);
-                                            j++;
-                                        }
+                                        j++;
                                     }
-                                    charas.AppendLine("if (0 < charas.Length) RemoveCharas(charas);");
                                 }
+                                charas.AppendLine("if (0 < charas.Length) RemoveCharas(charas);");
                             }
                             var var_script = $"var script = Encoding.UTF8.GetString(Convert.FromBase64String(\"{Convert.ToBase64String(Encoding.UTF8.GetBytes(script.script))}\"));";
                             if (isLastScene && isLastScript)
