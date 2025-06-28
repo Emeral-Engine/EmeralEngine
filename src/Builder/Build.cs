@@ -709,7 +709,7 @@ namespace EmeralEngine.Builder
                                 _movieFile.Dispose();
                             }
                             await FinishBgm();
-                            RemoveCharas();
+                            CharacterPictures.Children.Clear();
                             Script.Text = "";
                             MessageWindowCanvas.Visibility = Visibility.Hidden;
                         }
