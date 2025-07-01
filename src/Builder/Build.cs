@@ -261,7 +261,7 @@ namespace EmeralEngine.Builder
                             </Menu>
                             <Grid DockPanel.ZIndex="0">
                                 <Frame Name="Screen" Height="{{MainWindow.pmanager.Project.Size[1]}}" Width="{{MainWindow.pmanager.Project.Size[0]}}" NavigationUIVisibility="Hidden"/>
-                                <Rectangle Name="Transition" Height="{{MainWindow.pmanager.Project.Size[1]}}" Width="{{MainWindow.pmanager.Project.Size[0]}}" Opacity="0" IsHitTestVisible="False"/>
+                                <Rectangle Name="Transition" Height="{Binding ActualHeight, ElementName=Main}" Width="{Binding ActualWidth, ElementName=Main}" Opacity="0" IsHitTestVisible="False"/>
                             </Grid>
                         </DockPanel>
                 </Window>
@@ -911,7 +911,7 @@ namespace EmeralEngine.Builder
                                 </StackPanel>
                                 <TextBlock Name="Script" TextAlignment="Left" HorizontalAlignment="Left" VerticalAlignment="Top" TextWrapping="WrapWithOverflow"/>
                                 <Canvas Name="NamePlate">
-                                    <Image x:Name="NamePlateBgImage" Height="{Binding ActualHeight, ElementName=NamePlate}" Width="{Binding ActualWidth, ElementName=NamePlate}" Stretch="Fill"/>
+                                    <Image Name="NamePlateBgImage" Height="{Binding ActualHeight, ElementName=NamePlate}" Width="{Binding ActualWidth, ElementName=NamePlate}" Stretch="Fill"/>
                                     <Label Name="Speaker" Content="名前" FontSize="30" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Canvas>
                             </Canvas>
