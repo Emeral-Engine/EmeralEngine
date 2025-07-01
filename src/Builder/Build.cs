@@ -259,10 +259,10 @@ namespace EmeralEngine.Builder
                                     <MenuItem Name="MaximizeMenu" Header="最大化" IsCheckable="True" IsChecked="False"/>
                                 </MenuItem>
                             </Menu>
-                            <Canvas DockPanel.ZIndex="0">
+                            <Grid DockPanel.ZIndex="0">
                                 <Frame Name="Screen" Height="{{MainWindow.pmanager.Project.Size[1]}}" Width="{{MainWindow.pmanager.Project.Size[0]}}" NavigationUIVisibility="Hidden"/>
                                 <Rectangle Name="Transition" Height="{{MainWindow.pmanager.Project.Size[1]}}" Width="{{MainWindow.pmanager.Project.Size[0]}}" Opacity="0" IsHitTestVisible="False"/>
-                            </Canvas>
+                            </Grid>
                         </DockPanel>
                 </Window>
                 """);
