@@ -58,6 +58,7 @@ namespace EmeralEngine.Builder
         {
             var baseDir = Path.Combine(dest, title);
             var d = Path.Combine(baseDir, "datas");
+            var r = Path.Combine(baseDir, "runtime");
             var target = Path.Combine(MainWindow.pmanager.ActualProjectDir, DOTNET_DIR);
             if (File.Exists(baseDir))
             {
@@ -91,6 +92,8 @@ namespace EmeralEngine.Builder
                 progress.MainProgress.Value += 1;
                 progress.Label.Content = $"コードを生成中... {progress.MainProgress.Value} / {progress.MainProgress.Maximum}";
             });
+            Directory.CreateDirectory(r);
+            File.Copy("gameruntime/emeral.dll", Path.Combine(r, "emeral.dll"));
             var files = new CompilationFiles(target);
             File.WriteAllText(files.savedatamanager, """
                 using System;
@@ -2047,6 +2050,7 @@ namespace EmeralEngine.Builder
             return $$"""
                 using Game.Core;
                 using NAudio.Wave;
+                using System.Runtime.InteropServices;
                 using System.Windows;
                 using System.Windows.Input;
                 using System.Windows.Controls;
@@ -2064,30 +2068,35 @@ namespace EmeralEngine.Builder
                 namespace Game {
                     partial class MainWindow : Window
                     {
-                        private static Dictionary<string, object[]> _table;
                         private TitlePage TitlePage;
                         private GamePage Game;
                         private SaveDataPage SaveDataPage;
                         private bool fin;
                 
+                        [DllImport("runtime/emeral.dll", CallingConvention = CallingConvention.Cdecl)]
+                        public static extern IntPtr GetResourceData(string h, out int len);
+                        
+                        [DllImport("runtime/emeral.dll", CallingConvention = CallingConvention.Cdecl)]
+                        public static extern void Free(IntPtr ptr);
+                        
                         public static byte[] GetResource(string h)
                         {
-                            var i = _table[h];
-                            var l = ((JsonElement)i[0]).GetInt32();
-                            var b = new byte[l];
-                            using (var f = new FileStream(Path.Combine("datas", ((JsonElement)i[2]).GetString()), FileMode.Open, FileAccess.Read))
+                            int len;
+                            var ptr = GetResourceData(h, out len);
+                            if (ptr != IntPtr.Zero && 0 < len)
                             {
-                                f.Seek(((JsonElement)i[1]).GetInt32(), SeekOrigin.Begin);
-                                f.Read(b, 0, l);
+                                byte[] data = new byte[len];
+                                Marshal.Copy(ptr, data, 0, len);
+                                Free(ptr);
+                                return data;
                             }
-                            b[0] = 40;
-                            b[1] = 181;
-                            using (var d = new ZstdNet.Decompressor())
+                            else
                             {
-                                return d.Unwrap(b);
+                                Application.Current.Shutdown();
+                                return null;
                             }
                         }
-                    
+
                         public static BitmapImage CreateBmp(string path)
                         {
                             var bmp = new BitmapImage();
@@ -2268,9 +2277,6 @@ namespace EmeralEngine.Builder
                                     Close();
                                 };
                             }
-                            _table = JsonSerializer.Deserialize<Dictionary<string, object[]>>(Encoding.UTF8.GetString(File.ReadAllBytes(Path.Combine("datas", "data.dat"))
-                            .Select(c => (byte)~c)
-                            .ToArray()));
                         }
 
                         private void Transform()

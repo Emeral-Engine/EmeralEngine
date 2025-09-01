@@ -18,7 +18,7 @@ namespace EmeralEngine.Builder
     {
         private const int MAX_SIZE = 1073741824;
         private int FileCount;
-        private Dictionary<string, List<string>> Groups;
+        private Dictionary<int, List<string>> Groups;
         public ResourcePacker(string[] resources)
         {
             // 良い感じに仕分け
@@ -34,10 +34,10 @@ namespace EmeralEngine.Builder
             var num = 1;
             var file = "data1.dat";
             var group = new List<string>();
-            Groups.Add(file, group);
+            Groups.Add(num, group);
             foreach (var f in d.Reverse())
             {
-                group = Groups[file];
+                group = Groups[num];
                 if (sizes.Sum() + f.Key <= MAX_SIZE || group.Count == 0)
                 {
                     group.Add(f.Value);
@@ -47,11 +47,11 @@ namespace EmeralEngine.Builder
                 {
                     num++;
                     file = $"data{num}.dat";
-                    group = new List<string>();
+                    group = new();
                     group.Add(f.Value);
                     sizes.Clear();
                     sizes.Add(f.Key);
-                    Groups.Add(file, group);
+                    Groups.Add(num, group);
                 }
             }
         }
@@ -65,7 +65,7 @@ namespace EmeralEngine.Builder
             data.FinishedCount = 0;
             foreach (var g in Groups)
             {
-                using (var f = new FileStream(Path.Combine(dest, g.Key), FileMode.Create, FileAccess.Write))
+                using (var f = new FileStream(Path.Combine(dest, $"data{g.Key}.dat"), FileMode.Create, FileAccess.Write))
                 {
                     foreach (var p in g.Value)
                     {

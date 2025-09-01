@@ -190,7 +190,7 @@ namespace EmeralEngine.Project
                 StartInfo = new ProcessStartInfo()
                 {
                     FileName = "dotnet",
-                    Arguments = $"add \"{dest}\" package ZstdNet",
+                    Arguments = $"add \"{dest}\" package NAudio",
                     UseShellExecute = false,
                     CreateNoWindow = true,
                     RedirectStandardOutput = true
@@ -198,24 +198,7 @@ namespace EmeralEngine.Project
             };
             p2.Start();
             p2.WaitForExit();
-            if (!Utils.RaiseError(p2))
-            {
-                return;
-            }
-            var p3 = new Process()
-            {
-                StartInfo = new ProcessStartInfo()
-                {
-                    FileName = "dotnet",
-                    Arguments = $"add \"{dest}\" package NAudio",
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                    RedirectStandardOutput = true
-                }
-            };
-            p3.Start();
-            p3.WaitForExit();
-            Utils.RaiseError(p3);
+            Utils.RaiseError(p2);
         }
         public string[] GetProjectNames()
         {
