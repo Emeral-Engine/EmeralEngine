@@ -4,8 +4,8 @@ if exist %dist% (
     rmdir /s /q "%dist%"
 )
 
+git submodule update --remote
 cd Runtime
-git pull origin main
 call ./build.bat "%dist%/gameruntime/emeral.dll"
 rm "%dist%/gameruntime/emeral.h"
 cd ..
