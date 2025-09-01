@@ -1080,7 +1080,8 @@ namespace EmeralEngine.Builder
             var stories = new StringBuilder();
             var end_func = $$"""
                 IsHandling = true;
-                {{(IsScript ? "End();" : "var b = window.End();\nb.Completed += (sender, e) => {\r\n    IsHandling = false;  \r\n};\r\n        MoviePlayer.Source = null;\r\n        _movieFile.Dispose();")}}
+                {{(IsScript ? "" : "window.SaveMenu.IsEnabled = false;\nwindow.LoadMenu.IsEnabled = false;")}}
+                {{(IsScript ? "End();" : "var b = window.End();\nb.Completed += (sender, e) => {\r\n    IsHandling = false;  \r\n};\r\n        MoviePlayer.Source = null;\r\n                    window.SaveMenu.IsEnabled = true;\r\nwindow.LoadMenu.IsEnabled = true;\r\n        _movieFile.Dispose();")}}
                 """;
             var content_counter = 0;
             var scene_counter = 0;
@@ -1130,6 +1131,7 @@ namespace EmeralEngine.Builder
                             stories.AppendLine($$"""
                             public async void Content{{content_counter}}() {
                                 IsHandling = true;
+                                {{(IsScript ? "" : "window.SaveMenu.IsEnabled = false;\nwindow.LoadMenu.IsEnabled = false;")}}
                                 MessageWindowCanvas.Visibility = Visibility.Hidden;
                                 {{trans}}.Fill = MainWindow.GetBrush(@"{{pre_content.trans_color}}");
                                 var fadeout = new DoubleAnimation()
@@ -1435,6 +1437,7 @@ namespace EmeralEngine.Builder
                     public async void Scene{{scene_counter}}(int script=-1) {
                         if (IsHandling) return;
                         IsHandling = true;
+                        {{(IsScript ? "" : "window.SaveMenu.IsEnabled = false;\nwindow.LoadMenu.IsEnabled = false;")}}
                         MessageWindowCanvas.Visibility = Visibility.Hidden;
                         Script.Text = "";
                         CurrentScene = {{scene_counter}};
@@ -1443,6 +1446,7 @@ namespace EmeralEngine.Builder
                         {
                             {{interval}}
                             {{(pre_scene.bgm == s.Value.bgm ? "" : bgm)}}
+                            {{(IsScript ? "" : "window.SaveMenu.IsEnabled = true;\nwindow.LoadMenu.IsEnabled = true;")}}
                             IsHandling = false;
                             ShowScript{{start_script_num}}();
                         }
@@ -1461,6 +1465,7 @@ namespace EmeralEngine.Builder
                             b1.Completed += async (sender, e) => {
                                 {{msw}}
                                 {{bgm}}
+                                {{(IsScript ? "" : "window.SaveMenu.IsEnabled = true;\nwindow.LoadMenu.IsEnabled = true;")}}
                                 IsHandling = false;
                                 var f = GetType().GetMethod($"ShowScript{script}", BindingFlags.Instance | BindingFlags.Public);
                                 f.Invoke(this, null);
@@ -1475,6 +1480,7 @@ namespace EmeralEngine.Builder
                     public async void Scene{{scene_counter}}(int script=-1) {
                         if (IsHandling) return;
                         IsHandling = true;
+                        {{(IsScript ? "" : "window.SaveMenu.IsEnabled = false;\nwindow.LoadMenu.IsEnabled = false;")}}
                         var bg_loaded = false;
                         MessageWindowCanvas.Visibility = Visibility.Hidden;
                         Script.Text = "";
@@ -1514,6 +1520,7 @@ namespace EmeralEngine.Builder
                             b2.Children.Add(fadein);
                             b2.Completed += async (sender, e) => {
                                 {{(pre_scene.bgm == s.Value.bgm ? "" : bgm)}}
+                                {{(IsScript ? "" : "window.SaveMenu.IsEnabled = true;\nwindow.LoadMenu.IsEnabled = true;")}}
                                 IsHandling = false;
                                 ShowScript{{start_script_num}}();
                             };
@@ -1543,6 +1550,7 @@ namespace EmeralEngine.Builder
                                 {{msw}}
                                 bg_loaded = true;
                                 {{bgm}}
+                                {{(IsScript ? "" : "window.SaveMenu.IsEnabled = true;\nwindow.LoadMenu.IsEnabled = true;")}}
                                 IsHandling = false;
                                 var f = GetType().GetMethod($"ShowScript{script}", BindingFlags.Instance | BindingFlags.Public);
                                 f.Invoke(this, null);
@@ -1563,6 +1571,7 @@ namespace EmeralEngine.Builder
                     public async void Scene{{scene_counter}}(int script=-1) {
                         if (IsHandling) return;
                         IsHandling = true;
+                        {{(IsScript ? "" : "window.SaveMenu.IsEnabled = false;\nwindow.LoadMenu.IsEnabled = false;")}}
                         Script.Text = "";
                         CurrentScene = {{scene_counter}};
                         MessageWindowCanvas.Visibility = Visibility.Hidden;
@@ -1571,6 +1580,7 @@ namespace EmeralEngine.Builder
                         {
                             {{interval}}
                             {{(pre_scene.bgm == s.Value.bgm ? "" : bgm)}}
+                            {{(IsScript ? "" : "window.SaveMenu.IsEnabled = true;\nwindow.LoadMenu.IsEnabled = true;")}}
                             IsHandling = false;
                             ShowScript{{start_script_num}}();
                         }
@@ -1588,6 +1598,7 @@ namespace EmeralEngine.Builder
                             b1.Children.Add(fadein);
                             b1.Completed += async (sender, e) => {
                                 {{bgm}}
+                                {{(IsScript ? "" : "window.SaveMenu.IsEnabled = true;\nwindow.LoadMenu.IsEnabled = true;")}}
                                 IsHandling = false;
                                 var f = GetType().GetMethod($"ShowScript{script}", BindingFlags.Instance | BindingFlags.Public);
                                 f.Invoke(this, null);
@@ -1602,6 +1613,7 @@ namespace EmeralEngine.Builder
                     public async void Scene{{scene_counter}}(int script=-1) {
                         if (IsHandling) return;
                         IsHandling = true;
+                        {{(IsScript ? "" : "window.SaveMenu.IsEnabled = false;\nwindow.LoadMenu.IsEnabled = false;")}}
                         MessageWindowCanvas.Visibility = Visibility.Hidden;
                         Script.Text = "";
                         CurrentScene = {{scene_counter}};
@@ -1630,6 +1642,7 @@ namespace EmeralEngine.Builder
                             b2.Children.Add(fadein);
                             b2.Completed += (sender, e) => {
                                 {{(pre_scene.bgm == s.Value.bgm ? "" : bgm)}}
+                                {{(IsScript ? "" : "window.SaveMenu.IsEnabled = true;\nwindow.LoadMenu.IsEnabled = true;")}}
                                 IsHandling = false;
                                 if (script == -1)
                                 {
@@ -1663,6 +1676,7 @@ namespace EmeralEngine.Builder
                             b1.Completed += async (sender, e) => {
                                 {{msw}}
                                 {{bgm}}
+                                {{(IsScript ? "" : "window.SaveMenu.IsEnabled = true;\nwindow.LoadMenu.IsEnabled = true;")}}
                                 IsHandling = false;
                                 var f = GetType().GetMethod($"ShowScript{script}", BindingFlags.Instance | BindingFlags.Public);
                                 f.Invoke(this, null);
@@ -1692,6 +1706,7 @@ namespace EmeralEngine.Builder
                             stories.AppendLine($$"""
                             public async void Content{{content_counter}}() {
                                 IsHandling = true;
+                                {{(IsScript ? "" : "window.SaveMenu.IsEnabled = false;\nwindow.LoadMenu.IsEnabled = false;")}}
                                 MessageWindowCanvas.Visibility = Visibility.Hidden;
                                 MainPanel.MouseLeftButtonDown -= OnMouseLeftDown;
                                 {{(IsScript ? $"MoviePlayer.Source = new Uri(MainWindow.GetResource(@\"{t.GetRelPathToResource()}\"));" : $"    _movieFile = new TempFile(@\"{Path.GetExtension(t.FullPath)}\");\r\n    _movieFile.Write(MainWindow.GetResource(@\"{ConvertPath(t.GetRelPathToResource())}\"));\r\n    MoviePlayer.Source = new Uri(_movieFile.path);")}}
@@ -1706,7 +1721,6 @@ namespace EmeralEngine.Builder
                                 CharacterPictures.Children.Clear();
                                 MessageWindowCanvas.Visibility = Visibility.Collapsed;
                                 MoviePlayer.MediaEnded += MediaEnded;
-                                {{(IsScript ? "" : "window.SaveMenu.IsEnabled = false;\nwindow.LoadMenu.IsEnabled = false;")}}
                                 await Task.Delay({{pre_content.interval * 1000}});
                                 MoviePlayer.Play();
                             }
@@ -1716,6 +1730,7 @@ namespace EmeralEngine.Builder
                             stories.AppendLine($$"""
                             public async void Content{{content_counter}}() {
                                 IsHandling = true;
+                                {{(IsScript ? "" : "window.SaveMenu.IsEnabled = false;\nwindow.LoadMenu.IsEnabled = false;")}}
                                 MessageWindowCanvas.Visibility = Visibility.Hidden;
                                 {{trans}}.Fill = MainWindow.GetBrush(@"{{pre_content.trans_color}}");
                                 var fadeout = new DoubleAnimation()
@@ -1757,7 +1772,6 @@ namespace EmeralEngine.Builder
                                     MoviePlayer.Source = null;
                                     CharacterPictures.Children.Clear();
                                     MessageWindowCanvas.Visibility = Visibility.Collapsed;
-                                    {{(IsScript ? "" : "window.SaveMenu.IsEnabled = false;\nwindow.LoadMenu.IsEnabled = false;")}}
                                     b2.Begin();
                                 };
                                 b1.Begin();
