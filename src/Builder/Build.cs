@@ -563,6 +563,114 @@ namespace EmeralEngine.Builder
                 }
                 
                 """);
+            File.WriteAllText(files.backlog_xaml, $"""
+                 <StackPanel x:Class="Game.Backlog"
+                      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                      Width="{MainWindow.pmanager.Project.Size[0]}" Height="{MainWindow.pmanager.Project.Size[1]}">
+                </StackPanel>
+                """);
+            File.WriteAllText(files.backlog, $$"""
+                using System.Windows;
+                using System.Windows.Input;
+                using System.Windows.Controls;
+                using System.Windows.Media.Imaging;
+                using System.Windows.Media;
+                using System.Windows.Media.Animation;
+                using System.IO;
+                using System.Reflection;
+                using System.Text;
+
+                namespace Game
+                {
+                    public partial class Backlog : StackPanel
+                    {
+                        private const int PART_HEIGHT = {{MainWindow.pmanager.Project.Size[1] / 5}};
+                        public ScrollViewer BacklogViewer;
+                        private GamePage game;
+                        private Grid BacklogGrid;
+                        private bool IsLeftPressed;
+                        private double PreY;
+                        private double PreDy;
+
+                        public Backlog(GamePage game)
+                        {
+                            this.game = game;
+                            var bg = new SolidColorBrush(Brushes.Black.Color);
+                            bg.Opacity = 0.6;
+                            Background = bg;
+                            BacklogViewer = new ScrollViewer()
+                            {
+                                Width = {{MainWindow.pmanager.Project.Size[0]}},
+                                Height = {{MainWindow.pmanager.Project.Size[1]}},
+                                VerticalScrollBarVisibility = ScrollBarVisibility.Auto
+                            };
+                            BacklogGrid = new Grid();
+                            BacklogGrid.MouseLeftButtonDown += (sender, e) => {
+                                IsLeftPressed = true;
+                                PreY = e.GetPosition(BacklogGrid).Y;
+                            };
+                            BacklogGrid.MouseLeftButtonDown += (sender, e) => {
+                                IsLeftPressed = false;
+                            };
+                            BacklogGrid.MouseMove += (sender, e) => {
+                                var y = e.GetPosition(BacklogGrid).Y;
+                                var dy = - y + PreY;
+                                if (IsLeftPressed && PreDy != -dy) {
+                                    BacklogViewer.ScrollToVerticalOffset(BacklogViewer.VerticalOffset + dy);
+                                    PreY = y;
+                                    PreDy = dy;
+                                }
+                            };
+                            BacklogViewer.Content = BacklogGrid;
+                            Children.Add(BacklogViewer);
+                        }
+
+                        public void AddLog(string script, int sceneid, int scriptid)
+                        {
+                            var grid = new Grid(){
+                                Width = {{MainWindow.pmanager.Project.Size[0]}},
+                                Height = PART_HEIGHT
+                            };
+                            grid.ColumnDefinitions.Add(new ColumnDefinition(){
+                                Width = new GridLength(3, GridUnitType.Star)
+                            });
+                            grid.ColumnDefinitions.Add(new ColumnDefinition(){
+                                Width = new GridLength(1, GridUnitType.Star)
+                            });
+                            grid.Children.Add(new TextBlock(){
+                                Text = script,
+                                TextWrapping = TextWrapping.Wrap,
+                                FontSize = {{MainWindow.pmanager.Project.Size[1] / 20}},
+                                Foreground = Brushes.White
+                            });
+                            var btn_grid = new Grid();
+                            var jump_btn = new Button(){
+                                Content = "ジャンプ"
+                            };
+                            jump_btn.Click += (sender, e) => {
+                                game.GoTo(sceneid, scriptid, () => {
+                                    this.Visibility = Visibility.Hidden;
+                                });
+                            };
+                            btn_grid.Children.Add(jump_btn);
+                            Grid.SetColumn(btn_grid, 1);
+                            grid.Children.Add(btn_grid);
+                            BacklogGrid.RowDefinitions.Add(new RowDefinition(){
+                                Height = new GridLength(5)
+                            });
+                            var sep = new Separator();
+                            Grid.SetRow(sep, BacklogGrid.RowDefinitions.Count - 1);
+                            BacklogGrid.Children.Add(sep);
+                            BacklogGrid.RowDefinitions.Add(new RowDefinition(){
+                                Height = new GridLength(PART_HEIGHT)
+                            });
+                            Grid.SetRow(grid, BacklogGrid.RowDefinitions.Count - 1);
+                            BacklogGrid.Children.Add(grid);
+                        }
+                    }
+                }
+                """);
             var stories = "";
             Application.Current.Dispatcher.Invoke(() =>
             {
@@ -591,11 +699,12 @@ namespace EmeralEngine.Builder
                         public string CurrentScript;
                         private WaveOutEvent BgmPlayer;
                         private MainWindow window;
+                        public Backlog backlog;
                         public bool IsLoading;
-                        private bool IsHandling;
+                        public bool IsHandling;
                         private bool IsNowScripting;
                         private MouseButtonEventHandler OnMouseLeftDown = (sender, e) => {};
-                        private RoutedEventHandler MediaEnded;
+                        private RoutedEventHandler MediaEnded = (sender, e) => {};
                         private TempFile _movieFile;
 
                         public GamePage(MainWindow w)
@@ -606,15 +715,18 @@ namespace EmeralEngine.Builder
                             BgmPlayer = new WaveOutEvent() {
                                 Volume = BGM_VOLUME
                             };
-                            MainPanel.MouseRightButtonDown += (sender, e) => {
-                                if (!IsHandling) MessageWindowCanvas.Visibility = MessageWindowCanvas.Visibility == Visibility.Visible ? Visibility.Hidden : Visibility.Visible;
+                            backlog = new Backlog(this) {
+                                Visibility = Visibility.Hidden
                             };
+                            Grid.SetZIndex(backlog, 1);
+                            MainGrid.Children.Add(backlog);
                             Unloaded += (sender, e) => {
                                 if (_movieFile is not null)
                                 {
                                     _movieFile.Dispose();
                                 }
                             };
+                            CurrentScript = "";
                         }
                 
                         private void SetCharacter(Image chara, double x, bool trans)
@@ -714,7 +826,7 @@ namespace EmeralEngine.Builder
                             MessageWindowCanvas.Visibility = Visibility.Hidden;
                         }
 
-                        public void GoTo(int scene, int script)
+                        public void GoTo(int scene, int script, Action func=null)
                         {
                             if (IsLoading) return;
                             IsLoading = true;
@@ -732,6 +844,7 @@ namespace EmeralEngine.Builder
                             b1.Completed += async (sender, e) => {
                                 await Clear();
                                 window.Screen.Navigate(this);
+                                if (func is not null) func();
                                 var f = GetType().GetMethod($"Scene{scene}", BindingFlags.Instance | BindingFlags.Public);
                                 f.Invoke(this, new object[] { script });
                                 IsLoading = false;
@@ -860,7 +973,7 @@ namespace EmeralEngine.Builder
                 StartInfo = new ProcessStartInfo()
                 {
                     FileName = "dotnet",
-                    Arguments = $"publish \"{files.csproj}\" -c Release --self-contained true -r win-x64 -p:ReadyToRun=true -p:AssemblyName=\"{MainWindow.pmanager.ProjectName}\" -o \"{Path.Combine(dest, MainWindow.pmanager.ProjectName)}\"",
+                    Arguments = $"publish \"{files.csproj}\" -c Release -r win-x64 -p:ReadyToRun=true -p:AssemblyName=\"{MainWindow.pmanager.ProjectName}\" -o \"{Path.Combine(dest, MainWindow.pmanager.ProjectName)}\"",
                     UseShellExecute = false,
                     CreateNoWindow = true,
                     RedirectStandardOutput = true,
@@ -1123,9 +1236,9 @@ namespace EmeralEngine.Builder
                             CurrentScript = script;
                             CurrentScriptId = {{script_counter}};
                             {{speaker}}
-                            MainPanel.MouseLeftButtonDown -= OnMouseLeftDown;
+                            {{(IsScript ? "" : "window.")}}MouseLeftButtonDown -= OnMouseLeftDown;
                             OnMouseLeftDown = async (sender, e) => {
-                                if (IsHandling) return;
+                                if (IsHandling {{(IsScript ? "" : "|| window.Screen.Content is not GamePage")}}) return;
                                 else if (MessageWindowCanvas.Visibility == Visibility.Visible){
                                     if (IsNowScripting) {
                                         terminate_scripting = true;
@@ -1139,10 +1252,14 @@ namespace EmeralEngine.Builder
                                     MessageWindowCanvas.Visibility = Visibility.Visible;
                                 }
                             };
-                            MainPanel.MouseLeftButtonDown += OnMouseLeftDown;
+                            {{(IsScript ? "" : "window.")}}MouseLeftButtonDown += OnMouseLeftDown;
                             MessageWindowCanvas.Visibility = Visibility.Visible;
                             IsNowScripting = true;
                             {{charas}}
+                            {{(IsScript ? "" :
+                            $"""
+                            backlog.AddLog(script, {scene_counter}, {script_counter});
+                            """)}}
                             foreach (var s in script) {
                                 if (terminate_scripting) {
                                     Script.Text = script;
@@ -1166,9 +1283,9 @@ namespace EmeralEngine.Builder
                             CurrentScript = script;
                             CurrentScriptId = {{script_counter}};
                             {{speaker}}
-                            MainPanel.MouseLeftButtonDown -= OnMouseLeftDown;
+                            {{(IsScript ? "" : "window.")}}MouseLeftButtonDown -= OnMouseLeftDown;
                             OnMouseLeftDown = (sender, e) => {
-                                if (IsHandling) return;
+                                if (IsHandling {{(IsScript ? "" : "|| window.Screen.Content is not GamePage")}}) return;
                                 else if (MessageWindowCanvas.Visibility == Visibility.Visible) {
                                     if (IsNowScripting) {
                                         terminate_scripting = true;
@@ -1181,10 +1298,14 @@ namespace EmeralEngine.Builder
                                     MessageWindowCanvas.Visibility = Visibility.Visible;
                                 }
                             };
-                            MainPanel.MouseLeftButtonDown += OnMouseLeftDown;
+                            {{(IsScript ? "" : "window.")}}MouseLeftButtonDown += OnMouseLeftDown;
                             MessageWindowCanvas.Visibility = Visibility.Visible;
                             IsNowScripting = true;
                             {{charas}}
+                            {{(IsScript ? "" :
+                            $"""
+                            backlog.AddLog(script, {scene_counter}, {script_counter});
+                            """)}}
                             foreach (var s in script) {
                                 if (terminate_scripting) {
                                     Script.Text = script;
@@ -1208,9 +1329,9 @@ namespace EmeralEngine.Builder
                             CurrentScript = script;
                             CurrentScriptId = {{script_counter}};
                             {{speaker}}
-                            MainPanel.MouseLeftButtonDown -= OnMouseLeftDown;
+                            {{(IsScript ? "" : "window.")}}MouseLeftButtonDown -= OnMouseLeftDown;
                             OnMouseLeftDown = (sender, e) => {
-                                if (IsHandling) return;
+                                if (IsHandling {{(IsScript ? "" : "|| window.Screen.Content is not GamePage")}}) return;
                                 else if (MessageWindowCanvas.Visibility == Visibility.Visible) {
                                     if (IsNowScripting) {
                                         terminate_scripting = true;
@@ -1223,10 +1344,14 @@ namespace EmeralEngine.Builder
                                     MessageWindowCanvas.Visibility = Visibility.Visible;
                                 }
                             };
-                            MainPanel.MouseLeftButtonDown += OnMouseLeftDown;
+                            {{(IsScript ? "" : "window.")}}MouseLeftButtonDown += OnMouseLeftDown;
                             MessageWindowCanvas.Visibility = Visibility.Visible;
                             IsNowScripting = true;
                             {{charas}}
+                            {{(IsScript ? "" :
+                            $"""
+                            backlog.AddLog(script, {scene_counter}, {script_counter});
+                            """)}}
                             foreach (var s in script) {
                                 if (terminate_scripting) {
                                     Script.Text = script;
@@ -1876,7 +2001,7 @@ namespace EmeralEngine.Builder
                         MessageWindowBg = (Image)xaml.FindName("MessageWindowBg");
                         Script = (TextBlock)xaml.FindName("Script");
                         MoviePlayer = (MediaElement)xaml.FindName("MoviePlayer");
-                        MainPanel.MouseRightButtonDown += (sender, e) => {
+                        MouseRightButtonDown += (sender, e) => {
                             if (!IsHandling) MessageWindowCanvas.Visibility = MessageWindowCanvas.Visibility == Visibility.Visible ? Visibility.Hidden : Visibility.Visible;
                         };
                         BgmPlayer = new() {
@@ -1895,6 +2020,7 @@ namespace EmeralEngine.Builder
                     {
                     
                     }
+
                    {{GenerateStoryCode(start)}}
                 }
                 var window = new MainWindow(); 
@@ -1926,7 +2052,7 @@ namespace EmeralEngine.Builder
                     {
                         private static Dictionary<string, object[]> _table;
                         private TitlePage TitlePage;
-                        private GamePage GamePage;
+                        private GamePage Game;
                         private SaveDataPage SaveDataPage;
                         private bool fin;
                 
@@ -2019,14 +2145,32 @@ namespace EmeralEngine.Builder
                             ResizeMode = ResizeMode.CanMinimize;
                             Background = Brushes.Black;
                             TitlePage = new(this);
-                            GamePage = new(this);
+                            Game = new(this);
+                            MouseRightButtonDown += (sender, e) => {
+                                if (Screen.Content is GamePage && !Game.IsHandling) {
+                                    if (Game.backlog.Visibility == Visibility.Visible) {
+                                        Game.backlog.Visibility = Visibility.Hidden;
+                                    }
+                                    else {
+                                        Game.MessageWindowCanvas.Visibility = Game.MessageWindowCanvas.Visibility == Visibility.Visible ? Visibility.Hidden : Visibility.Visible;
+                                    }
+                                }
+                            };
+                            MouseWheel += (sender, e) => {
+                                if (Screen.Content is GamePage && 0 < e.Delta) {
+                                    if (!Game.IsHandling && Game.backlog.Visibility == Visibility.Hidden) {
+                                        Game.backlog.BacklogViewer.ScrollToEnd();
+                                        Game.backlog.Visibility = Visibility.Visible;
+                                    }
+                                }
+                            };
                             Closing += (sender, e) => {
                                 var res = MessageBox.Show("終了しますか？", @"{{MainWindow.pmanager.ProjectName}}", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
                                 e.Cancel = res is not MessageBoxResult.Yes;
                                 if (!e.Cancel)
                                 {
                                     fin = true;
-                                    GamePage.Clear();
+                                    Game.Clear();
                                 }
                             };
                             MouseMove += (sender, e) => {
@@ -2050,7 +2194,7 @@ namespace EmeralEngine.Builder
                                         Transform();
                                     }
                                 };
-                                SaveDataPage = new(GamePage, Screen);
+                                SaveDataPage = new(Game, Screen);
                                 ShowTitlePage();
                             };
                             if (TitlePage.FindName("StartButton") is Button sbtn)
@@ -2072,10 +2216,10 @@ namespace EmeralEngine.Builder
                                     Duration = new Duration(TimeSpan.FromMilliseconds(1000))
                                 };
                                 b2.Completed += (sender, e) => {
-                                    GamePage.Content1();
+                                    Game.Content1();
                                 };
                                 b1.Completed += (sender, e) => {
-                                    Screen.Navigate(GamePage);
+                                    Screen.Navigate(Game);
                                     Screen.BeginAnimation(UIElement.OpacityProperty, b2);
                                 };
                                 sbtn.IsEnabled = false;
@@ -2152,10 +2296,10 @@ namespace EmeralEngine.Builder
                             b1.Completed += async (sender, e) => {
                                 await Task.Delay(1000);
                                 ShowTitlePage();
-                                GamePage.Clear();
+                                Game.Clear();
                                 Screen.BeginAnimation(UIElement.OpacityProperty, b2);
                             };
-                            GamePage.MessageWindowCanvas.Visibility = Visibility.Hidden;
+                            Game.MessageWindowCanvas.Visibility = Visibility.Hidden;
                             Screen.BeginAnimation(UIElement.OpacityProperty, b1);
                             return b2;
                         }
@@ -2188,7 +2332,7 @@ namespace EmeralEngine.Builder
     }
     public class CompilationFiles
     {
-        public string baseDir, main, main_xaml, app, app_xaml, csproj, gamepage, gamepage_xaml, title, title_xaml, savedata, savedata_xaml, savedatamanager;
+        public string baseDir, main, main_xaml, app, app_xaml, csproj, gamepage, gamepage_xaml, title, title_xaml, savedata, savedata_xaml, savedatamanager, backlog, backlog_xaml;
 
         public CompilationFiles(string dir)
         {
@@ -2205,6 +2349,8 @@ namespace EmeralEngine.Builder
             savedata = Path.Combine(baseDir, "SaveDataPage.xaml.cs");
             savedata_xaml = Path.Combine(baseDir, "SaveDataPage.xaml");
             savedatamanager = Path.Combine(baseDir, "SaveDataManager.cs");
+            backlog = Path.Combine(baseDir, "Backlog.xaml.cs");
+            backlog_xaml = Path.Combine(baseDir, "Backlog.xaml");
         }
     }
 }

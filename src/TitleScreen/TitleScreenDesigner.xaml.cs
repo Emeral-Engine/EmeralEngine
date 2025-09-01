@@ -273,7 +273,7 @@ namespace EmeralEngine.TitleScreen
                                 """);
                     }else if (target is Image i)
                     {
-                        xaml.AppendLine($"    <Image Canvas.ZIndex=\"1\" Canvas.Left=\"{Canvas.GetLeft(border)}\" Canvas.Top=\"{Canvas.GetTop(border)}\" Width=\"{border.ActualWidth}\" Height=\"{border.ActualHeight}\" Source=\"{System.IO.Path.GetFileName((i.Source as BitmapImage).UriSource.LocalPath)}\"/>");
+                        xaml.AppendLine($"    <Image Canvas.ZIndex=\"1\" Canvas.Left=\"{Canvas.GetLeft(border)}\" Canvas.Top=\"{Canvas.GetTop(border)}\" Width=\"{border.ActualWidth}\" Height=\"{border.ActualHeight}\" Source=\"{ImageUtils.GetFileName(i.Source)}\"/>");
                     }
                 }
             }
