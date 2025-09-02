@@ -30,7 +30,7 @@ namespace EmeralEngine
     /// </summary>
     public partial class MainWindow : Window
     {
-        public const string CAPTION = "EmeralEngine v0.2";
+        public const string CAPTION = "EmeralEngine v0.3";
         private const double DEFAULT_WIDTH = 800;
         private const double DEFAULT_HEIGHT = 450;
         private double PREVIEW_DEFAULT_WIDTH = 600;
