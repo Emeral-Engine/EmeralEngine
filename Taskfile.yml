@@ -1,0 +1,30 @@
+# https://taskfile.dev
+
+version: '3'
+
+vars:
+  cwd:
+    sh: pwd
+  output: "{{.TASKFILE_DIR}}/EmeralEngine-dist"
+
+tasks:
+  build:
+    args:
+      - output
+    cmds:
+      - git submodule update --remote
+      - task --dir ./Runtime output="{{.output}}/gameruntime"
+      - rm "{{.output}}/gameruntime/emeral.h"
+      - dotnet publish "{{.cwd}}/src" -c Release -r win-x64 -p:PublishReadyToRun=true -o "{{.output}}"
+    silent: false
+
+  clean:
+    args:
+      - output
+    cmds:
+      - dotnet clean "{{.cwd}}/src" -c Release
+      - rm -r "{{.output}}"
+
+  default:
+    cmds:
+      - task: build
