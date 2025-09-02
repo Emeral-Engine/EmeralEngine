@@ -16,6 +16,13 @@ tasks:
       - dotnet publish "{{.TASKFILE_DIR}}/engine" -c Release -r win-x64 -p:PublishReadyToRun=true -o "{{.output}}"
     silent: false
 
+  publish:
+    args:
+      - output
+    cmds:
+      - task: build
+      - strip "{{.output}}/gameruntime/emeral.dll"
+
   clean:
     args:
       - output
