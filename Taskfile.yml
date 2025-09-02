@@ -3,8 +3,6 @@
 version: '3'
 
 vars:
-  cwd:
-    sh: pwd
   output: "{{.TASKFILE_DIR}}/EmeralEngine-dist"
 
 tasks:
@@ -12,17 +10,17 @@ tasks:
     args:
       - output
     cmds:
-      - git submodule update --remote
-      - task --dir ./runtime output="{{.output}}/gameruntime"
+      - git -C "{{.TASKFILE_DIR}}" submodule update --remote
+      - task --dir "{{.TASKFILE_DIR}}/runtime" output="{{.output}}/gameruntime"
       - rm "{{.output}}/gameruntime/emeral.h"
-      - dotnet publish "{{.cwd}}/engine" -c Release -r win-x64 -p:PublishReadyToRun=true -o "{{.output}}"
+      - dotnet publish "{{.TASKFILE_DIR}}/engine" -c Release -r win-x64 -p:PublishReadyToRun=true -o "{{.output}}"
     silent: false
 
   clean:
     args:
       - output
     cmds:
-      - dotnet clean "{{.cwd}}/engine" -c Release
+      - dotnet clean "{{.TASKFILE_DIR}}/engine" -c Release
       - rm -r "{{.output}}"
 
   default:
