@@ -1,3 +1,3 @@
 [submodule "Runtime"]
-	path = Runtime
+	path = runtime
 	url = https://github.com/Emeral-Engine/EmeralEngine-Runtime
