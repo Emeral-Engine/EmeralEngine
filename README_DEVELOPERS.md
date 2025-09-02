@@ -20,8 +20,13 @@ VisualStudioでデバッグ実行すると、そのままでは失敗します�
 コードを見てください。
 汚いですが、弄りたい値は大体コントロールだと思うので、xamlのNameを見てください。
 
-# EmeralEngineのビルド方法
-`Taskfile`を採用しています
+# EmeralEngineのビルドについて
+## 依存関係
+- .NET SDK 9
+- Go
+- go-task
+
+## コマンド
 ```sh
 $ git clone https://github.com/Emeral-Engine/EmeralEngine
 $ cd EmeralEngine
