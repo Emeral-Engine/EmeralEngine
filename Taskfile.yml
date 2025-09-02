@@ -13,16 +13,16 @@ tasks:
       - output
     cmds:
       - git submodule update --remote
-      - task --dir ./Runtime output="{{.output}}/gameruntime"
+      - task --dir ./runtime output="{{.output}}/gameruntime"
       - rm "{{.output}}/gameruntime/emeral.h"
-      - dotnet publish "{{.cwd}}/src" -c Release -r win-x64 -p:PublishReadyToRun=true -o "{{.output}}"
+      - dotnet publish "{{.cwd}}/engine" -c Release -r win-x64 -p:PublishReadyToRun=true -o "{{.output}}"
     silent: false
 
   clean:
     args:
       - output
     cmds:
-      - dotnet clean "{{.cwd}}/src" -c Release
+      - dotnet clean "{{.cwd}}/engine" -c Release
       - rm -r "{{.output}}"
 
   default:
