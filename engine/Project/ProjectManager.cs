@@ -185,20 +185,6 @@ namespace EmeralEngine.Project
             {
                 return;
             }
-            var p2 = new Process()
-            {
-                StartInfo = new ProcessStartInfo()
-                {
-                    FileName = "dotnet",
-                    Arguments = $"add \"{dest}\" package NAudio",
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                    RedirectStandardOutput = true
-                }
-            };
-            p2.Start();
-            p2.WaitForExit();
-            Utils.RaiseError(p2);
         }
         public string[] GetProjectNames()
         {

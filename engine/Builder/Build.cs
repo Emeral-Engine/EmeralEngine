@@ -536,7 +536,7 @@ namespace EmeralEngine.Builder
                         private void  OnDataMouseEnter(object sender, MouseEventArgs e)
                         {
                             {{(string.IsNullOrEmpty(MainWindow.pmanager.Project.MouseOverSE) ? "" : $"""
-                                MainWindow.PlaySound(@"{hashTable[MainWindow.pmanager.Project.MouseOverSE]}");
+                                MainWindow.PlayAudio(@"{hashTable[MainWindow.pmanager.Project.MouseOverSE]}");
                             """)}}
                         }
 
@@ -544,7 +544,7 @@ namespace EmeralEngine.Builder
                         {
                             if (Game.IsLoading) return;
                             {{(string.IsNullOrEmpty(MainWindow.pmanager.Project.MouseDownSE) ? "" : $"""
-                                MainWindow.PlaySound(@"{hashTable[MainWindow.pmanager.Project.MouseDownSE]}");
+                                MainWindow.PlayAudio(@"{hashTable[MainWindow.pmanager.Project.MouseDownSE]}");
                             """)}}
                             var n = int.Parse((e.Source as FrameworkElement).Name[4..]);
                             if (IsSaveMode)
@@ -680,9 +680,9 @@ namespace EmeralEngine.Builder
                 stories = GenerateStoryCode();
             });
             File.WriteAllText(files.gamepage, $$"""
-                using NAudio.Wave;
                 using System.Windows;
                 using System.Windows.Input;
+                using System.Runtime.InteropServices;
                 using System.Windows.Controls;
                 using System.Windows.Media.Imaging;
                 using System.Windows.Media;
@@ -700,7 +700,6 @@ namespace EmeralEngine.Builder
                         private const float BGM_VOLUME = 0.5f;
                         public int CurrentScriptId, CurrentScene;
                         public string CurrentScript;
-                        private WaveOutEvent BgmPlayer;
                         private MainWindow window;
                         public Backlog backlog;
                         public bool IsLoading;
@@ -710,14 +709,17 @@ namespace EmeralEngine.Builder
                         private RoutedEventHandler MediaEnded = (sender, e) => {};
                         private TempFile _movieFile;
 
+                        [DllImport("runtime/emeral.dll", CallingConvention = CallingConvention.Cdecl)]
+                        public static extern int PlayLoopAudioWithBytes(byte[] b, int len);
+                
+                        [DllImport("runtime/emeral.dll", CallingConvention = CallingConvention.Cdecl)]
+                        public static extern void StopAllAudio();
+
                         public GamePage(MainWindow w)
                         {
                             InitializeComponent();
                             window = w;
                             _movieFile = new();
-                            BgmPlayer = new WaveOutEvent() {
-                                Volume = BGM_VOLUME
-                            };
                             backlog = new Backlog(this) {
                                 Visibility = Visibility.Hidden
                             };
@@ -782,40 +784,15 @@ namespace EmeralEngine.Builder
                 
                         private void PlayBgm(byte[] b)
                         {
-                            BgmPlayer.Stop();
-                            BgmPlayer = new WaveOutEvent();
-                            var s = new MemoryStream(b);
-                            try
-                            {
-                                 BgmPlayer.Init(new LoopStream(new WaveFileReader(s)));   
-                            }
-                            catch
-                            {
-                                try
-                                {
-                                    BgmPlayer.Init(new LoopStream(new Mp3FileReader(s)));
-                                }
-                                catch
-                                {
-                                    BgmPlayer.Init(new LoopStream(new AiffFileReader(s)));
-                                }
-                            }
-                            BgmPlayer.Play();
+                            PlayLoopAudioWithBytes(b, b.Length);
                         }
                 
-                        private async Task FinishBgm()
+                        private void FinishBgm()
                         {
-                            float per_vol = BgmPlayer.Volume / FADEOUT_SAMPLES;
-                            for (int _=0; _ < FADEOUT_SAMPLES; _++)
-                            {
-                                await Task.Delay(FADEOUT_MILLISECOND);
-                                BgmPlayer.Volume = Math.Max(0.0f, BgmPlayer.Volume - per_vol);
-                            }
-                            BgmPlayer.Stop();
-                            BgmPlayer.Volume = BGM_VOLUME;
+                            StopAllAudio();
                         }
 
-                        public async Task Clear()
+                        public void Clear()
                         {
                             Bg.Source = null;
                             MoviePlayer.Source = null;
@@ -823,7 +800,7 @@ namespace EmeralEngine.Builder
                             {
                                 _movieFile.Dispose();
                             }
-                            await FinishBgm();
+                            FinishBgm();
                             CharacterPictures.Children.Clear();
                             Script.Text = "";
                             MessageWindowCanvas.Visibility = Visibility.Hidden;
@@ -845,7 +822,7 @@ namespace EmeralEngine.Builder
                             Storyboard.SetTargetProperty(fadeout, new PropertyPath(UIElement.OpacityProperty));
                             b1.Children.Add(fadeout);
                             b1.Completed += async (sender, e) => {
-                                await Clear();
+                                Clear();
                                 window.Screen.Navigate(this);
                                 if (func is not null) func();
                                 var f = GetType().GetMethod($"Scene{scene}", BindingFlags.Instance | BindingFlags.Public);
@@ -894,55 +871,6 @@ namespace EmeralEngine.Builder
                             }
                         }
                     }
-
-                    public class LoopStream : WaveStream
-                    {
-                        WaveStream sourceStream;
-                    
-                        public LoopStream(WaveStream sourceStream)
-                        {
-                            this.sourceStream = sourceStream;
-                            this.EnableLooping = true;
-                        }
-                    
-                        public bool EnableLooping { get; set; }
-                    
-                        public override WaveFormat WaveFormat
-                        {
-                            get { return sourceStream.WaveFormat; }
-                        }
-                    
-                        public override long Length
-                        {
-                            get { return sourceStream.Length; }
-                        }
-                    
-                        public override long Position
-                        {
-                            get { return sourceStream.Position; }
-                            set { sourceStream.Position = value; }
-                        }
-                    
-                        public override int Read(byte[] buffer, int offset, int count)
-                        {
-                            int totalBytesRead = 0;
-                    
-                            while (totalBytesRead < count)
-                            {
-                                int bytesRead = sourceStream.Read(buffer, offset + totalBytesRead, count - totalBytesRead);
-                                if (bytesRead == 0)
-                                {
-                                    if (sourceStream.Position == 0 || !EnableLooping)
-                                    {
-                                        break;
-                                    }
-                                    sourceStream.Position = 0;
-                                }
-                                totalBytesRead += bytesRead;
-                            }
-                            return totalBytesRead;
-                        }
-                    }
                 }
                 """);
             return files;
@@ -976,7 +904,7 @@ namespace EmeralEngine.Builder
                 StartInfo = new ProcessStartInfo()
                 {
                     FileName = "dotnet",
-                    Arguments = $"publish \"{files.csproj}\" -c Release -r win-x64 -p:ReadyToRun=true -p:AssemblyName=\"{MainWindow.pmanager.ProjectName}\" -o \"{Path.Combine(dest, MainWindow.pmanager.ProjectName)}\"",
+                    Arguments = $"publish \"{files.csproj}\" -c Release --self-contained true -r win-x64 -p:ReadyToRun=true -p:AssemblyName=\"{MainWindow.pmanager.ProjectName}\" -o \"{Path.Combine(dest, MainWindow.pmanager.ProjectName)}\"",
                     UseShellExecute = false,
                     CreateNoWindow = true,
                     RedirectStandardOutput = true,
@@ -1249,7 +1177,7 @@ namespace EmeralEngine.Builder
                                         terminate_scripting = true;
                                     }
                                     else{
-                                        {{(IsScript ? "" : "await ")}}FinishBgm();
+                                        FinishBgm();
                                         {{(isLastEpisode ? end_func : $"Content{content_counter + 1}();")}}
                                     }
                                 }
@@ -1388,12 +1316,13 @@ namespace EmeralEngine.Builder
                         }
                         if (string.IsNullOrEmpty(s.Value.bgm))
                         {
-                            bgm = $"{(IsScript ? "" : "await ")}FinishBgm();";
+                            bgm = $"FinishBgm();";
                         }
                         else
                         {
                             bgm = $$"""PlayBgm(MainWindow.GetResource(@"{{ConvertPath(s.Value.bgm)}}"));""";
                         }
+                        var is_bgm_continuing = pre_scene.bgm == s.Value.bgm;
                         var interval = 0 < pre_scene.interval ? $"""
                             await Task.Delay({pre_scene.interval * 1000});
                             """ : "";
@@ -1443,12 +1372,13 @@ namespace EmeralEngine.Builder
                         {{(IsScript ? "" : "window.SaveMenu.IsEnabled = false;\nwindow.LoadMenu.IsEnabled = false;")}}
                         MessageWindowCanvas.Visibility = Visibility.Hidden;
                         Script.Text = "";
+                        {{(is_bgm_continuing || IsScript ? "" : "FinishBgm();")}}
                         CurrentScene = {{scene_counter}};
                         {{bg}}
                         if (script == -1)
                         {
                             {{interval}}
-                            {{(pre_scene.bgm == s.Value.bgm ? "" : bgm)}}
+                            {{(is_bgm_continuing ? "" : bgm)}}
                             {{(IsScript ? "" : "window.SaveMenu.IsEnabled = true;\nwindow.LoadMenu.IsEnabled = true;")}}
                             IsHandling = false;
                             ShowScript{{start_script_num}}();
@@ -1486,6 +1416,7 @@ namespace EmeralEngine.Builder
                         {{(IsScript ? "" : "window.SaveMenu.IsEnabled = false;\nwindow.LoadMenu.IsEnabled = false;")}}
                         var bg_loaded = false;
                         MessageWindowCanvas.Visibility = Visibility.Hidden;
+                        {{(is_bgm_continuing || IsScript ? "" : "FinishBgm();")}}
                         Script.Text = "";
                         CurrentScene = {{scene_counter}};
                         if (script == -1)
@@ -1522,7 +1453,7 @@ namespace EmeralEngine.Builder
                             Storyboard.SetTargetProperty(fadein, new PropertyPath(UIElement.OpacityProperty));
                             b2.Children.Add(fadein);
                             b2.Completed += async (sender, e) => {
-                                {{(pre_scene.bgm == s.Value.bgm ? "" : bgm)}}
+                                {{(is_bgm_continuing ? "" : bgm)}}
                                 {{(IsScript ? "" : "window.SaveMenu.IsEnabled = true;\nwindow.LoadMenu.IsEnabled = true;")}}
                                 IsHandling = false;
                                 ShowScript{{start_script_num}}();
@@ -1575,6 +1506,7 @@ namespace EmeralEngine.Builder
                         if (IsHandling) return;
                         IsHandling = true;
                         {{(IsScript ? "" : "window.SaveMenu.IsEnabled = false;\nwindow.LoadMenu.IsEnabled = false;")}}
+                        {{(is_bgm_continuing || IsScript ? "" : "FinishBgm();")}}
                         Script.Text = "";
                         CurrentScene = {{scene_counter}};
                         MessageWindowCanvas.Visibility = Visibility.Hidden;
@@ -1582,7 +1514,7 @@ namespace EmeralEngine.Builder
                         if (script == -1)
                         {
                             {{interval}}
-                            {{(pre_scene.bgm == s.Value.bgm ? "" : bgm)}}
+                            {{(is_bgm_continuing ? "" : bgm)}}
                             {{(IsScript ? "" : "window.SaveMenu.IsEnabled = true;\nwindow.LoadMenu.IsEnabled = true;")}}
                             IsHandling = false;
                             ShowScript{{start_script_num}}();
@@ -1618,6 +1550,7 @@ namespace EmeralEngine.Builder
                         IsHandling = true;
                         {{(IsScript ? "" : "window.SaveMenu.IsEnabled = false;\nwindow.LoadMenu.IsEnabled = false;")}}
                         MessageWindowCanvas.Visibility = Visibility.Hidden;
+                        {{(is_bgm_continuing || IsScript ? "" : "FinishBgm();")}}
                         Script.Text = "";
                         CurrentScene = {{scene_counter}};
                         if (script == -1)
@@ -1644,7 +1577,7 @@ namespace EmeralEngine.Builder
                             Storyboard.SetTargetProperty(fadein, new PropertyPath(UIElement.OpacityProperty));
                             b2.Children.Add(fadein);
                             b2.Completed += (sender, e) => {
-                                {{(pre_scene.bgm == s.Value.bgm ? "" : bgm)}}
+                                {{(is_bgm_continuing ? "" : bgm)}}
                                 {{(IsScript ? "" : "window.SaveMenu.IsEnabled = true;\nwindow.LoadMenu.IsEnabled = true;")}}
                                 IsHandling = false;
                                 if (script == -1)
@@ -2049,7 +1982,6 @@ namespace EmeralEngine.Builder
         {
             return $$"""
                 using Game.Core;
-                using NAudio.Wave;
                 using System.Runtime.InteropServices;
                 using System.Windows;
                 using System.Windows.Input;
@@ -2078,6 +2010,15 @@ namespace EmeralEngine.Builder
                         
                         [DllImport("runtime/emeral.dll", CallingConvention = CallingConvention.Cdecl)]
                         public static extern void Free(IntPtr ptr);
+
+                        [DllImport("runtime/emeral.dll", CallingConvention = CallingConvention.Cdecl)]
+                        public static extern void PlayAudio(string h);
+
+                        [DllImport("runtime/emeral.dll", CallingConvention = CallingConvention.Cdecl)]
+                        public static extern void StopAudio(int n);
+
+                        [DllImport("runtime/emeral.dll", CallingConvention = CallingConvention.Cdecl)]
+                        public static extern void StopAllAudio();
                         
                         public static byte[] GetResource(string h)
                         {
@@ -2136,28 +2077,6 @@ namespace EmeralEngine.Builder
                         public static SolidColorBrush GetBrush(string code)
                         {
                             return (SolidColorBrush)new BrushConverter().ConvertFromString(code);
-                        }
-
-                        public static void PlaySound(string h)
-                        {
-                            var player = new WaveOutEvent();
-                            var s = new MemoryStream(GetResource(h));
-                            try
-                            {
-                                 player.Init(new WaveFileReader(s));   
-                            }
-                            catch
-                            {
-                                try
-                                {
-                                    player.Init(new Mp3FileReader(s));
-                                }
-                                catch
-                                {
-                                    player.Init(new AiffFileReader(s));
-                                }
-                            }
-                            player.Play();
                         }
                     
                         public MainWindow()
@@ -2224,7 +2143,7 @@ namespace EmeralEngine.Builder
                             {
                                 {{(string.IsNullOrEmpty(MainWindow.pmanager.Project.MouseOverSE) ? "" : $$"""
                                 sbtn.MouseEnter += (sender, e) => {
-                                    PlaySound(@"{{hashTable[MainWindow.pmanager.Project.MouseOverSE]}}");
+                                    PlayAudio(@"{{hashTable[MainWindow.pmanager.Project.MouseOverSE]}}");
                                 };
                                 """)}}
                                 sbtn.Click += (sender, e) => {
@@ -2249,7 +2168,7 @@ namespace EmeralEngine.Builder
                                 TitlePage.Loaded += (sender, e) => {
                                     sbtn.IsEnabled = true;
                                 };
-                                {{(string.IsNullOrEmpty(MainWindow.pmanager.Project.MouseDownSE) ? "" : $"MainWindow.PlaySound(@\"{hashTable[MainWindow.pmanager.Project.MouseDownSE]}\");")}}
+                                {{(string.IsNullOrEmpty(MainWindow.pmanager.Project.MouseDownSE) ? "" : $"MainWindow.PlayAudio(@\"{hashTable[MainWindow.pmanager.Project.MouseDownSE]}\");")}}
                                 Screen.BeginAnimation(UIElement.OpacityProperty, b1);
                                 };
                             }
@@ -2257,11 +2176,11 @@ namespace EmeralEngine.Builder
                             {
                                 {{(string.IsNullOrEmpty(MainWindow.pmanager.Project.MouseOverSE) ? "" : $$"""
                                 lbtn.MouseEnter += (sender, e) => {
-                                    PlaySound(@"{{hashTable[MainWindow.pmanager.Project.MouseOverSE]}}");
+                                    PlayAudio(@"{{hashTable[MainWindow.pmanager.Project.MouseOverSE]}}");
                                 };
                                 """)}}
                                 lbtn.Click += (sender, e) => {
-                                    {{(string.IsNullOrEmpty(MainWindow.pmanager.Project.MouseDownSE) ? "" : $"MainWindow.PlaySound(@\"{hashTable[MainWindow.pmanager.Project.MouseDownSE]}\");")}}
+                                    {{(string.IsNullOrEmpty(MainWindow.pmanager.Project.MouseDownSE) ? "" : $"MainWindow.PlayAudio(@\"{hashTable[MainWindow.pmanager.Project.MouseDownSE]}\");")}}
                                     OpenLoadDialog();
                                 };
                             }
@@ -2269,11 +2188,11 @@ namespace EmeralEngine.Builder
                             {
                                 {{(string.IsNullOrEmpty(MainWindow.pmanager.Project.MouseOverSE) ? "" : $$"""
                                 fbtn.MouseEnter += (sender, e) => {
-                                    PlaySound(@"{{hashTable[MainWindow.pmanager.Project.MouseOverSE]}}");
+                                    PlayAudio(@"{{hashTable[MainWindow.pmanager.Project.MouseOverSE]}}");
                                 };
                                 """)}}
                                 fbtn.Click += (sender, e) => {
-                                    {{(string.IsNullOrEmpty(MainWindow.pmanager.Project.MouseDownSE) ? "" : $"MainWindow.PlaySound(@\"{hashTable[MainWindow.pmanager.Project.MouseDownSE]}\");")}}
+                                    {{(string.IsNullOrEmpty(MainWindow.pmanager.Project.MouseDownSE) ? "" : $"MainWindow.PlayAudio(@\"{hashTable[MainWindow.pmanager.Project.MouseDownSE]}\");")}}
                                     Close();
                                 };
                             }

@@ -12,7 +12,7 @@ tasks:
     cmds:
       - git -C "{{.TASKFILE_DIR}}" submodule update --remote
       - task --dir "{{.TASKFILE_DIR}}/runtime" output="{{.output}}/gameruntime"
-      - rm "{{.output}}/gameruntime/emeral.h"
+      - rm "{{.output}}/gameruntime/emeral.h" || true
       - dotnet publish "{{.TASKFILE_DIR}}/engine" -c Release -r win-x64 -p:PublishReadyToRun=true -o "{{.output}}"
     silent: false
 
@@ -28,7 +28,7 @@ tasks:
       - output
     cmds:
       - dotnet clean "{{.TASKFILE_DIR}}/engine" -c Release
-      - rm -r "{{.output}}"
+      - rm -r "{{.output}}" || true
 
   default:
     cmds:
