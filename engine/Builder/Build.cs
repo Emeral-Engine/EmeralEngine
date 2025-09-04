@@ -1372,7 +1372,7 @@ namespace EmeralEngine.Builder
                         {{(IsScript ? "" : "window.SaveMenu.IsEnabled = false;\nwindow.LoadMenu.IsEnabled = false;")}}
                         MessageWindowCanvas.Visibility = Visibility.Hidden;
                         Script.Text = "";
-                        {{(is_bgm_continuing || IsScript ? "" : "FinishBgm();")}}
+                        {{(is_bgm_continuing ? "" : "FinishBgm();")}}
                         CurrentScene = {{scene_counter}};
                         {{bg}}
                         if (script == -1)
@@ -1416,7 +1416,7 @@ namespace EmeralEngine.Builder
                         {{(IsScript ? "" : "window.SaveMenu.IsEnabled = false;\nwindow.LoadMenu.IsEnabled = false;")}}
                         var bg_loaded = false;
                         MessageWindowCanvas.Visibility = Visibility.Hidden;
-                        {{(is_bgm_continuing || IsScript ? "" : "FinishBgm();")}}
+                        {{(is_bgm_continuing ? "" : "FinishBgm();")}}
                         Script.Text = "";
                         CurrentScene = {{scene_counter}};
                         if (script == -1)
@@ -1506,7 +1506,7 @@ namespace EmeralEngine.Builder
                         if (IsHandling) return;
                         IsHandling = true;
                         {{(IsScript ? "" : "window.SaveMenu.IsEnabled = false;\nwindow.LoadMenu.IsEnabled = false;")}}
-                        {{(is_bgm_continuing || IsScript ? "" : "FinishBgm();")}}
+                        {{(is_bgm_continuing ? "" : "FinishBgm();")}}
                         Script.Text = "";
                         CurrentScene = {{scene_counter}};
                         MessageWindowCanvas.Visibility = Visibility.Hidden;
@@ -1550,7 +1550,7 @@ namespace EmeralEngine.Builder
                         IsHandling = true;
                         {{(IsScript ? "" : "window.SaveMenu.IsEnabled = false;\nwindow.LoadMenu.IsEnabled = false;")}}
                         MessageWindowCanvas.Visibility = Visibility.Hidden;
-                        {{(is_bgm_continuing || IsScript ? "" : "FinishBgm();")}}
+                        {{(is_bgm_continuing ? "" : "FinishBgm();")}}
                         Script.Text = "";
                         CurrentScene = {{scene_counter}};
                         if (script == -1)
@@ -1894,12 +1894,14 @@ namespace EmeralEngine.Builder
 
                     private void FinishBgm()
                     {
+                        if (BgmPlayer.Source is null) return;
                         var b = new DoubleAnimation() {
                             To = 0.0,
                             Duration = new Duration(TimeSpan.FromMilliseconds(1000)),
                         };
                         b.Completed += (sender, e) => {
                             BgmPlayer.Stop();
+                            BgmPlayer.Source = null;
                         };
                         BgmPlayer.BeginAnimation(MediaElement.VolumeProperty, b);
                     }
