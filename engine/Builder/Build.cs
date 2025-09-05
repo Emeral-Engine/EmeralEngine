@@ -1878,8 +1878,11 @@ namespace EmeralEngine.Builder
                         }
                     }      
 
-                    private void PlayBgm(string bgm)
+                    private async void PlayBgm(string bgm)
                     {
+                        while (IsBgmFinishing) {
+                            await Task.Delay(100);
+                        }
                         var b = new DoubleAnimation() {
                             To = 0.0,
                             Duration = new Duration(TimeSpan.FromMilliseconds(500)),
