@@ -1751,6 +1751,7 @@ namespace EmeralEngine.Builder
                     private MediaElement BgmPlayer;
                     private DispatcherTimer TransitionTimer;
                     private bool fin;
+                    private bool IsBgmFinishing;
                     public int CurrentScriptId, CurrentScene;
                     private string CurrentScript;
 
@@ -1894,7 +1895,8 @@ namespace EmeralEngine.Builder
 
                     private void FinishBgm()
                     {
-                        if (BgmPlayer.Source is null) return;
+                        if (IsBgmFinishing) return;
+                        IsBgmFinishing = true;
                         var b = new DoubleAnimation() {
                             To = 0.0,
                             Duration = new Duration(TimeSpan.FromMilliseconds(1000)),
@@ -1902,6 +1904,7 @@ namespace EmeralEngine.Builder
                         b.Completed += (sender, e) => {
                             BgmPlayer.Stop();
                             BgmPlayer.Source = null;
+                            IsBgmFinishing = false;
                         };
                         BgmPlayer.BeginAnimation(MediaElement.VolumeProperty, b);
                     }

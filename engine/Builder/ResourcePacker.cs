@@ -1,4 +1,6 @@
-﻿using Microsoft.CodeAnalysis.Emit;
+﻿using EmeralEngine.Core;
+using NAudio.Wave;
+using Microsoft.CodeAnalysis.Emit;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -17,6 +19,7 @@ namespace EmeralEngine.Builder
     internal class ResourcePacker
     {
         private const int MAX_SIZE = 1073741824;
+        private const int SAMPLE_RATE = 48000;
         private int FileCount;
         private Dictionary<int, List<string>> Groups;
         public ResourcePacker(string[] resources)
@@ -71,10 +74,18 @@ namespace EmeralEngine.Builder
                     {
                         var random = new byte[2];
                         data.FileName = Path.GetFileName(p);
+                        byte[] b;
+                        if (Utils.IsAudio(p))
+                        {
+                            b = LoadAudio(p);
+                        }
+                        else
+                        {
+                            b = File.ReadAllBytes(p);
+                        }
                         using (var r = RandomNumberGenerator.Create())
                         using (var z = new Compressor())
                         {
-                            var b = File.ReadAllBytes(p);
                             var c = z.Wrap(b);
                             r.GetBytes(random);
                             c[0] = random[0];
@@ -82,7 +93,7 @@ namespace EmeralEngine.Builder
                             f.Write(c);
                             var h = HashHelper.GetHash(b);
                             table.Add(MainWindow.pmanager.RelToResourcePath(p), h);
-                            json.Add(h, new object[] { c.Length, start, g.Key});
+                            json.Add(h, new object[] { c.Length, start, g.Key });
                             start += c.Length;
                         }
                         data.FinishedCount++;
@@ -91,6 +102,28 @@ namespace EmeralEngine.Builder
             }
             File.WriteAllBytes(Path.Combine(dest, "data.dat"), Reverse(JsonSerializer.Serialize(json)));
             return table;
+        }
+
+        private byte[] LoadAudio(string file)
+        {
+            using (var reader = new MediaFoundationReader(file))
+            {
+                if (reader.WaveFormat.SampleRate == SAMPLE_RATE)
+                {
+                    using (var ms = new MemoryStream())
+                    {
+                        WaveFileWriter.WriteWavFileToStream(ms, reader);
+                        return ms.ToArray();
+                    }
+                }
+                var fmt = new WaveFormat(SAMPLE_RATE, reader.WaveFormat.BitsPerSample, reader.WaveFormat.Channels);
+                using (var resampler = new MediaFoundationResampler(reader, fmt))
+                using (var ms = new MemoryStream())
+                {
+                    WaveFileWriter.WriteWavFileToStream(ms, resampler);
+                    return ms.ToArray();
+                }
+            }
         }
 
         private static byte[] Reverse(string str)
