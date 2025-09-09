@@ -774,7 +774,7 @@ namespace EmeralEngine
                 {
                     if (0 < data.Length)
                     {
-                        var p = (int)(data.FinishedCount / data.Length * 100);
+                        var p = (int)((double)data.FinishedCount / data.Length * 100);
                         progress.VerbosePercentProgress.Content = $"{p}%";
                         progress.VerboseProgressLabel.Content = Utils.CutString(data.FileName, 15);
                         progress.VerboseProgress.Value = p;

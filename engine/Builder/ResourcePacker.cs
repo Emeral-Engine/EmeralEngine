@@ -63,11 +63,11 @@ namespace EmeralEngine.Builder
         {
             var table = new Dictionary<string, string>();
             var json = new Dictionary<string, object>();
-            var start = 0;
             data.Length = FileCount;
             data.FinishedCount = 0;
             foreach (var g in Groups)
             {
+                var start = 0;
                 using (var f = new FileStream(Path.Combine(dest, $"data{g.Key}.dat"), FileMode.Create, FileAccess.Write))
                 {
                     foreach (var p in g.Value)
