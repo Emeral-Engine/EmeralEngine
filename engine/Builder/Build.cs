@@ -46,6 +46,7 @@ namespace EmeralEngine.Builder
 
         public void ExportScript(string dst)
         {
+            JsonArray scenes;
             JsonArray scripts;
             JsonObject script;
             var num = 0;
@@ -54,6 +55,7 @@ namespace EmeralEngine.Builder
             {
                 if (t.IsScenes())
                 {
+                    scenes = new JsonArray();
                     var episode = emanager.GetEpisode(t.FullPath);
                     foreach (var s in episode.smanager.scenes)
                     {
@@ -68,14 +70,15 @@ namespace EmeralEngine.Builder
                             };
                             scripts.Add(script);
                         }
-                        data.Add(num.ToString(), new JsonObject
+                        scenes.Add(new JsonObject
                         {
                             ["bg"] = s.Value.bg,
                             ["bgm"] = s.Value.bgm,
                             ["scripts"] = scripts
                         });
-                        num++;
                     }
+                    data.Add(num.ToString(), scenes);
+                    num++;
                 }
             }
             var content = JsonSerializer.Serialize(data, new JsonSerializerOptions
