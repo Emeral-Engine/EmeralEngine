@@ -1,27 +1,27 @@
-﻿using EmeralEngine.Resource.Character;
-using EmeralEngine.Project;
-using EmeralEngine.Scene;
-using EmeralEngine.Builder;
-using EmeralEngine.Resource;
-using System.Windows;
-using System.Windows.Media.Imaging;
-using System.Windows.Media;
-using Microsoft.CodeAnalysis;
-using System.Windows.Threading;
-using System.Reflection;
-using Microsoft.Win32;
-using System.IO;
-using EmeralEngine.Setting;
-using EmeralEngine.Script;
-using EmeralEngine.Story;
-using EmeralEngine.MessageWindow;
-using System.Windows.Controls;
-using System.Windows.Media.Animation;
-using EmeralEngine.TitleScreen;
-using Microsoft.VisualBasic.FileIO;
+﻿using EmeralEngine.Builder;
 using EmeralEngine.Core;
+using EmeralEngine.MessageWindow;
 using EmeralEngine.Notify;
+using EmeralEngine.Project;
+using EmeralEngine.Resource;
+using EmeralEngine.Resource.Character;
+using EmeralEngine.Scene;
+using EmeralEngine.Script;
+using EmeralEngine.Setting;
+using EmeralEngine.Story;
+using EmeralEngine.TitleScreen;
+using Microsoft.CodeAnalysis;
+using Microsoft.VisualBasic.FileIO;
+using Microsoft.Win32;
 using System.Diagnostics;
+using System.IO;
+using System.Reflection;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
+using System.Windows.Media.Animation;
+using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 
 namespace EmeralEngine
 {
@@ -753,6 +753,21 @@ namespace EmeralEngine
                 progress.ShowDialog();
             }
         }
+
+        private void OnExportScriptButtonClicked(object sender, RoutedEventArgs e)
+        {
+            var dialog = new SaveFileDialog()
+            {
+                Filter = "Data files(*.json) | *.json | All files(*.*) | *.* ",
+            };
+            if (dialog.ShowDialog() is true)
+            {
+                var c = new GameBuilder(pmanager.ProjectName, references, mmanager, story, emanager);
+                c.ExportScript(dialog.FileName);
+                MessageBox.Show("出力が完了しました", MainWindow.CAPTION, MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
+
         private void OnCreateExeButtonClicked(object sender, RoutedEventArgs e)
         {
             var dialog = new OpenFolderDialog()

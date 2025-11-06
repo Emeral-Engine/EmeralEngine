@@ -16,6 +16,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Automation;
@@ -40,6 +42,47 @@ namespace EmeralEngine.Builder
             story = s;
             emanager = e;
             references = refs;
+        }
+
+        public void ExportScript(string dst)
+        {
+            JsonArray scripts;
+            JsonObject script;
+            var num = 0;
+            var data = new JsonObject();
+            foreach (var t in story.StoryInfos)
+            {
+                if (t.IsScenes())
+                {
+                    var episode = emanager.GetEpisode(t.FullPath);
+                    foreach (var s in episode.smanager.scenes)
+                    {
+                        scripts = new JsonArray();
+                        foreach (var sc in s.Value.scripts)
+                        {
+                            script = new JsonObject()
+                            {
+                                ["pictures"] = JsonSerializer.Serialize(sc.charas),
+                                ["speaker"] = sc.speaker,
+                                ["script"] = sc.script
+                            };
+                            scripts.Add(script);
+                        }
+                        data.Add(num.ToString(), new JsonObject
+                        {
+                            ["bg"] = s.Value.bg,
+                            ["bgm"] = s.Value.bgm,
+                            ["scripts"] = scripts
+                        });
+                        num++;
+                    }
+                }
+            }
+            var content = JsonSerializer.Serialize(data, new JsonSerializerOptions
+            {
+                WriteIndented = true,
+            });
+            File.WriteAllText(dst, content);
         }
 
         public void ExportProject(string dest, BuildProgressWindow progress, FilePackingData data, Action<Action> dispatcher)

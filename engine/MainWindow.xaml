@@ -200,6 +200,7 @@
                 <MenuItem Header="プロジェクトを保存" Click="OnSaveButtonClicked"/>
                 <Separator/>
                 <MenuItem Header="出力">
+                    <MenuItem Header="スクリプト" Click="OnExportScriptButtonClicked"/>
                     <MenuItem Header="プロジェクト" Click="OnExportProjectButtonClicked"/>
                     <MenuItem Header="実行ファイル" Click="OnCreateExeButtonClicked"/>
                 </MenuItem>
