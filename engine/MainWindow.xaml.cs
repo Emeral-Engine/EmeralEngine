@@ -200,6 +200,7 @@ namespace EmeralEngine
             pmanager.LoadProject(path);
             Title = $"{CAPTION} {pmanager.ProjectName} ロード中...";
             Refresh();
+            Debug.WriteLine(pmanager.Temp.path);
             backup_timer.Stop();
             CurrentScriptIndex = -1;
             mmanager = new();
@@ -226,7 +227,7 @@ namespace EmeralEngine
             if (story.stories.Count == 0)
             {
                 CurrentContent = story.New(CurrentEpisode.path);
-                CurrentContent.FullPath = CurrentEpisode.path;
+                CurrentContent.Path = CurrentEpisode.path;
                 pmanager.Project.Story.Add(CurrentContent);
                 pmanager.SaveProject();
             }
@@ -690,7 +691,7 @@ namespace EmeralEngine
             Task.Run(() =>
             {
                 bmanager.Backup();
-                var compiler = new GameBuilder(pname, r, mmanager, story, emanager);
+                var compiler = new GameBuilder(pname, pmanager.ProjectFile, r, mmanager, story, emanager);
                 Dispatcher.BeginInvoke(() =>
                 {
                     try
@@ -771,7 +772,7 @@ namespace EmeralEngine
                         progress.Refresh();
                     }
                 };
-                var c = new GameBuilder(pmanager.ProjectName, references, mmanager, story, emanager);
+                var c = new GameBuilder(pmanager.ProjectName, pmanager.ProjectFile, references, mmanager, story, emanager);
                 updateProgressTimer.Start();
                 Task.Run(() =>
                 {
@@ -799,7 +800,7 @@ namespace EmeralEngine
             };
             if (dialog.ShowDialog() is true)
             {
-                var c = new GameBuilder(pmanager.ProjectName, references, mmanager, story, emanager);
+                var c = new GameBuilder(pmanager.ProjectName, pmanager.ProjectFile, references, mmanager, story, emanager);
                 c.ExportScript(dialog.FileName);
                 MessageBox.Show("出力が完了しました", MainWindow.CAPTION, MessageBoxButton.OK, MessageBoxImage.Information);
             }
@@ -833,7 +834,7 @@ namespace EmeralEngine
                         progress.Refresh();
                     }
                 };
-                var c = new GameBuilder(pmanager.ProjectName, references, mmanager, story, emanager);
+                var c = new GameBuilder(pmanager.ProjectName, pmanager.ProjectFile, references, mmanager, story, emanager);
                 updateProgressTimer.Start();
                 Task.Run(() =>
                 {

@@ -29,15 +29,16 @@ namespace EmeralEngine.Builder
     class GameBuilder
     {
         public const string DOTNET_DIR = "dotnet";
-        private string title;
+        private string title, projfile;
         private MessageWindowManager mmanager;
         private StoryManager story;
         private EpisodeManager emanager;
         private Assembly[] references;
         private Dictionary<string, string> hashTable;
-        public GameBuilder(string title, Assembly[] refs, MessageWindowManager m, StoryManager s, EpisodeManager e)
+        public GameBuilder(string title, string proj, Assembly[] refs, MessageWindowManager m, StoryManager s, EpisodeManager e)
         {
             this.title = title;
+            projfile = proj;
             mmanager = m;
             story = s;
             emanager = e;

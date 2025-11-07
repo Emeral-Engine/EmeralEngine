@@ -58,12 +58,12 @@ namespace EmeralEngine.Project
         public string[] GetRecentProjects()
         {
             if (!File.Exists(RecentProjFile)) return new string[]{};
-            return File.ReadAllText(RecentProjFile).Split("\n");
+            return File.ReadAllText(RecentProjFile).Split("\n").Distinct().ToArray();
         }
 
         public void SetRecentProjects(string[] recents)
         {
-            File.WriteAllText(RecentProjFile, string.Join("\n", recents.Append(ProjectFile)));
+            File.WriteAllText(RecentProjFile, string.Join("\n", recents.Prepend(ProjectFile)));
         }
 
 

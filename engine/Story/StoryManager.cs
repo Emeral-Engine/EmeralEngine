@@ -64,17 +64,20 @@ namespace EmeralEngine.Story
                 if (!string.IsNullOrEmpty(value))
                 {
                     _path = System.IO.Path.IsPathRooted(value) ? System.IO.Path.GetRelativePath(MainWindow.pmanager.Temp.path, value) : value;
-                    FullPath = System.IO.Path.Combine(MainWindow.pmanager.Temp.path, value);
                 }
             }
         }
-        public string FullPath;
+        public string FullPath
+        {
+            get => System.IO.Path.Combine(MainWindow.pmanager.Temp.path, _path);
+        }
         public string Name {  get; set; }
         public Direction[] Directions { get; set; }
         public bool IsScenes()
         {
             return Directory.Exists(FullPath);
         }
+
         public string GetRelPathToResource()
         {
             return System.IO.Path.GetRelativePath(MainWindow.pmanager.ProjectResourceDir, FullPath);
