@@ -57,6 +57,7 @@ namespace EmeralEngine
         private Assembly[] references;
         private DispatcherTimer backup_timer;
         private DispatcherTimer updateProgressTimer;
+        private bool IsCreated;
 
         public ScriptInfo CurrentScript
         {
@@ -95,7 +96,7 @@ namespace EmeralEngine
         {
             get => !string.IsNullOrEmpty(pmanager.ProjectName);
         }
-        public MainWindow()
+        public MainWindow(bool Default=true)
         {
             references = AppDomain.CurrentDomain.GetAssemblies();
             InitializeComponent();
@@ -104,12 +105,16 @@ namespace EmeralEngine
                 var r = Math.Min(ActualWidth / DEFAULT_WIDTH, ActualHeight / DEFAULT_HEIGHT);
                 Scale.ScaleX = r;
                 Scale.ScaleY = r;
-                OpenSelectedProject();
+                if (Default)
+                {
+                    OpenSelectedProject();
+                }
             };
             Closing += (sender, e) =>
             {
                 e.Cancel = AskSave();
             };
+            /*
             App.Current.DispatcherUnhandledException += (sender, e) => {
                 Dispatcher.Invoke(() =>
                 {
@@ -140,6 +145,7 @@ namespace EmeralEngine
                     ErrorNotifyWindow.Show(e.Exception.Message);
                 });
             };
+            */
             backup_timer = new DispatcherTimer()
             {
                 Interval = TimeSpan.FromMinutes(10)
@@ -181,10 +187,17 @@ namespace EmeralEngine
             Dispatcher.BeginInvoke(DispatcherPriority.Background, callback, frame);
             Dispatcher.PushFrame(frame);
         }
-        public void LoadProject(string name)
+
+        public void NewProject(string title, int[] size)
+        {
+            pmanager.NewProject(title, size);
+            IsCreated = true;
+        }
+
+        public void LoadProject(string path)
         {
             CloseSubWindows();
-            pmanager.LoadProject(name);
+            pmanager.LoadProject(path);
             Title = $"{CAPTION} {pmanager.ProjectName} ロード中...";
             Refresh();
             backup_timer.Stop();
@@ -697,9 +710,33 @@ namespace EmeralEngine
         }
         private void Save(bool dialog = true)
         {
+            var d = "";
+            if (IsCreated)
+            {
+                var dlg = new OpenFolderDialog()
+                {
+                    Multiselect = false
+                };
+                if (dlg.ShowDialog() is true)
+                {
+                    d = pmanager.ActualProjectDir;
+                    var dst = Path.Combine(dlg.FolderName, pmanager.Project.Title);
+                    Directory.CreateDirectory(dst);
+                    pmanager.SetProjectDir(dst);
+                }
+                else
+                {
+                    return;
+                }
+            }
             emanager.Dump();
             pmanager.ApplyStory(story.StoryInfos);
             pmanager.SaveProject();
+            if (IsCreated && d != "")
+            {
+                Directory.Delete(d, true);
+                IsCreated = false;
+            }
             if (dialog) MessageBox.Show("保存しました", MainWindow.CAPTION, MessageBoxButton.OK, MessageBoxImage.Information);
         }
 

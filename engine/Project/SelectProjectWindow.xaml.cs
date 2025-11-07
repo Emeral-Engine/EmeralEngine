@@ -1,4 +1,5 @@
 ﻿using EmeralEngine.Core;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -17,14 +18,20 @@ namespace EmeralEngine.Project
             InitializeComponent();
             this.parent = parent;
             Owner = parent;
+            SelectedProject = "";
             Load();
         }
         private void Load()
         {
             var row = 0;
             var row_h = new GridLength(85);
-            foreach (var p in MainWindow.pmanager.GetProjectNames())
+            var recents = new List<string>();
+            foreach (var p in MainWindow.pmanager.GetRecentProjects())
             {
+                if (!File.Exists(p))
+                {
+                    continue;
+                }
                 var panel = new DockPanel()
                 {
                     Background = CustomColors.CharacterBackground,
@@ -53,7 +60,7 @@ namespace EmeralEngine.Project
                 };
                 var name = new Label()
                 {
-                    Content = p,
+                    Content = ProjectManager.Parse(p).Title,
                     FontSize = 20,
                     Foreground = Brushes.Black
                 };
@@ -69,7 +76,9 @@ namespace EmeralEngine.Project
                 Grid.SetRow(panel, row);
                 Projects.Children.Add(panel);
                 row++;
+                recents.Add(p);
             }
+            MainWindow.pmanager.SetRecentProjects(recents.ToArray());
         }
         private void LoadProject()
         {

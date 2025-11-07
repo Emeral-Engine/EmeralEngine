@@ -1,19 +1,11 @@
-﻿using EmeralEngine.Story;
-using EmeralEngine.MessageWindow;
-using EmeralEngine.Scene;
-using System;
-using System.Collections.Generic;
+﻿using EmeralEngine.Builder;
+using EmeralEngine.Core;
+using EmeralEngine.Story;
+using Microsoft.VisualBasic.FileIO;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Xml.Linq;
-using EmeralEngine.Builder;
-using Microsoft.VisualBasic.FileIO;
-using EmeralEngine.Core;
 
 namespace EmeralEngine.Project
 {
@@ -22,6 +14,7 @@ namespace EmeralEngine.Project
         public static string BaseDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "EmeralEngine");
         public static string ProjectsDir = Path.Combine(BaseDir, "Projects");
         public static string ConfigFile = Path.Combine(BaseDir, "config.json");
+        public static string RecentProjFile = Path.Combine(BaseDir, "recent.txt");
         public Config config;
         public ProjectConfig Project;
         public string ActualProjectDir;
@@ -45,7 +38,42 @@ namespace EmeralEngine.Project
             {
                 config = new();
             }
+            Temp = new();
         }
+
+        public void SetProjectDir(string dir)
+        {
+            ActualProjectDir = dir;
+            UpdatePath();
+            AddRecentProject();
+        }
+
+
+        public static ProjectConfig Parse(string path)
+        {
+            return JsonSerializer.Deserialize<ProjectConfig>(File.ReadAllText(path));
+        }
+
+
+        public string[] GetRecentProjects()
+        {
+            if (!File.Exists(RecentProjFile)) return new string[]{};
+            return File.ReadAllText(RecentProjFile).Split("\n");
+        }
+
+        public void SetRecentProjects(string[] recents)
+        {
+            File.WriteAllText(RecentProjFile, string.Join("\n", recents.Append(ProjectFile)));
+        }
+
+
+        public void AddRecentProject()
+        {
+            var recents = GetRecentProjects();
+            SetRecentProjects(recents);
+        }
+
+
         public void SaveProject()
         {
             SaveProjectFile();
@@ -111,6 +139,23 @@ namespace EmeralEngine.Project
         {
             File.WriteAllText(Path.Combine(dest, "project.emeral"), JsonSerializer.Serialize(Project));
         }
+
+        private void UpdatePath()
+        {
+            ProjectFile = Path.Combine(ActualProjectDir, "project.emeral");
+            ProjectTitleScreen = Path.Combine(Temp.path, "titlescreen.xaml");
+            ActualProjectTitleScreen = Path.Combine(ActualProjectDir, "titlescreen.xaml");
+            ProjectMswDir = Path.Combine(Temp.path, "MessageWindows");
+            ActualProjectMswDir = Path.Combine(ActualProjectDir, "MessageWindows");
+            ActualProjectEpisodesDir = Path.Combine(ActualProjectDir, "Episodes");
+            ActualProjectResourceDir = Path.Combine(ActualProjectDir, "Resources");
+            Directory.CreateDirectory(ActualProjectDir);
+            Directory.CreateDirectory(ProjectResourceDir);
+            Directory.CreateDirectory(ProjectEpisodesDir);
+            Directory.CreateDirectory(ProjectMswDir);
+            FileSystem.CopyDirectory(ActualProjectDir, Temp.path, true);
+        }
+
         private void Setup(string name)
         {
             if (Temp is not null)
@@ -118,41 +163,33 @@ namespace EmeralEngine.Project
                 Temp.Dispose();
             }
             ProjectName = name;
-            ActualProjectDir = Path.Combine(ProjectsDir, ProjectName);
             Temp = new();
             ProjectResourceDir = Path.Combine(Temp.path, "Resources");
-            ActualProjectResourceDir = Path.Combine(ActualProjectDir, "Resources");
             ProjectEpisodesDir = Path.Combine(Temp.path, "Episodes");
-            ActualProjectEpisodesDir = Path.Combine(ActualProjectDir, "Episodes");
             ProjectDotNet = Path.Combine(Temp.path, "dotnet");
             try
             {
                 Directory.Delete(ProjectDotNet, true);
             }
             catch { }
-            ProjectFile = Path.Combine(ActualProjectDir, "project.emeral");
-            ProjectTitleScreen = Path.Combine(Temp.path, "titlescreen.xaml");
-            ActualProjectTitleScreen = Path.Combine(ActualProjectDir, "titlescreen.xaml");
-            ProjectMswDir = Path.Combine(Temp.path, "MessageWindows");
-            ActualProjectMswDir = Path.Combine(ActualProjectDir, "MessageWindows");
-            Directory.CreateDirectory(ActualProjectDir);
-            Directory.CreateDirectory(ProjectResourceDir);
-            Directory.CreateDirectory(ProjectEpisodesDir);
-            Directory.CreateDirectory(ProjectMswDir);
-            FileSystem.CopyDirectory(ActualProjectDir, Temp.path, true);
+            UpdatePath();
         }
-        public void LoadProject(string name)
+        public void LoadProject(string path)
         {
-            Setup(name);
-            Project = JsonSerializer.Deserialize<ProjectConfig>(File.ReadAllText(ProjectFile));
+            ProjectFile = path;
+            Project = Parse(ProjectFile);
+            ActualProjectDir = Directory.GetParent(path).FullName;
+            Setup(Project.Title);
             var default_msw = Path.Combine(ProjectMswDir, "0.xaml");
             if (!File.Exists(default_msw))
             {
                 File.WriteAllText(default_msw, GetDefaultMsw());
             }
+            AddRecentProject();
         }
         public void NewProject(string name, int[] size)
         {
+            ActualProjectDir = Path.Combine(ProjectsDir, name);
             Setup(name);
             Project = new()
             {

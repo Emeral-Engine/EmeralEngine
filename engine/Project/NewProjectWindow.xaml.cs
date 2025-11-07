@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.IO;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
@@ -41,11 +42,11 @@ namespace EmeralEngine.Project
             var title = ProjectTitle.Text;
             p.Start(new Task(() =>
             {
-                MainWindow.pmanager.NewProject(title, size);
+                parent.NewProject(title, size);
                 Dispatcher.Invoke(Close);
             }), () =>
             {
-                parent.LoadProject(title);
+                parent.LoadProject(Path.Combine(ProjectManager.ProjectsDir, title, "project.emeral"));
             });
         }
 
