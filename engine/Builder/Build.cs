@@ -64,7 +64,7 @@ namespace EmeralEngine.Builder
                         {
                             script = new JsonObject()
                             {
-                                ["pictures"] = JsonSerializer.Serialize(sc.charas),
+                                ["pictures"] = JsonSerializer.SerializeToNode(sc.charas),
                                 ["speaker"] = sc.speaker,
                                 ["script"] = sc.script
                             };
