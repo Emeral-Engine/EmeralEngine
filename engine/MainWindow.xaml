@@ -318,11 +318,11 @@
                                 <RowDefinition/>
                                 <RowDefinition/>
                             </Grid.RowDefinitions>
-                            <Button Style="{DynamicResource IconButtonStyle}" ToolTip="プレビューの更新" Click="OnRefreshPreviewButtonClicked" Width="40" Height="25">
-                                <Icon:PackIconPhosphorIcons Foreground="#FFC4D6D6" HorizontalAlignment="Center" VerticalAlignment="Center" Width="25" Height="25" Kind="ArrowCounterClockwiseBold" />
+                            <Button Style="{DynamicResource IconButtonStyle}" ToolTip="プレビューの更新" Click="OnRefreshPreviewButtonClicked" Width="50" Height="40">
+                                <Icon:PackIconPhosphorIcons Foreground="#FFC4D6D6" HorizontalAlignment="Center" VerticalAlignment="Center" Width="30" Height="30" Kind="ArrowCounterClockwiseBold" />
                             </Button>
-                            <Button x:Name="RunButton" Style="{DynamicResource IconButtonStyle}" Grid.Column="1" ToolTip="デバッグ実行" Click="OnRunButtonClicked" Width="40" Height="25">
-                                <Icon:PackIconEntypo Foreground="#FFC4D6D6" VerticalAlignment="Center" HorizontalAlignment="Center" Width="25" Height="25" Kind="ControllerPlay"/>
+                            <Button x:Name="RunButton" Style="{DynamicResource IconButtonStyle}" Grid.Column="1" ToolTip="デバッグ実行" Click="OnRunButtonClicked" Width="50" Height="40">
+                                <Icon:PackIconEntypo Foreground="#FFC4D6D6" VerticalAlignment="Center" HorizontalAlignment="Center" Width="30" Height="30" Kind="ControllerPlay"/>
                             </Button>
                             <Label Grid.Row="1" Style="{DynamicResource LabelStyle1}" Content="背景" VerticalAlignment="Top" Foreground="#FFC4D6D6"/>
                             <Button Grid.Column="1" Grid.Row="1" x:Name="SelectBgButton" Style="{DynamicResource ButtonStyle1}" VerticalAlignment="Center" Width="50" Height="30" Content="参照" Background="#FFBBD6D6" Foreground="#FF181818" Click="Button_Click"/>
