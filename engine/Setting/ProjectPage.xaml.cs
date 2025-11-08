@@ -14,6 +14,7 @@ namespace EmeralEngine.Setting
         {
             get => NavigationService is not null;
         }
+
         private Window window;
         public ProjectPage(Window w)
         {
@@ -24,6 +25,7 @@ namespace EmeralEngine.Setting
             MouseOverSE.Text = MainWindow.pmanager.Project.MouseOverSE;
             MouseDownSE.Text = MainWindow.pmanager.Project.MouseDownSE;
             TextInterval.Value = MainWindow.pmanager.Project.TextInterval;
+            ScalingMode.SelectedIndex = MainWindow.pmanager.Project.ScalingMode;
         }
 
         private void OnGameWidthValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
@@ -65,6 +67,14 @@ namespace EmeralEngine.Setting
             if (IsSelected)
             {
                 MainWindow.pmanager.Project.TextInterval = (int)TextInterval.Value;
+            }
+        }
+
+        private void ScalingMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (IsSelected)
+            {
+                MainWindow.pmanager.Project.ScalingMode = ScalingMode.SelectedIndex;
             }
         }
     }

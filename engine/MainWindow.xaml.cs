@@ -35,6 +35,7 @@ namespace EmeralEngine
         private const double DEFAULT_HEIGHT = 450;
         private double PREVIEW_DEFAULT_WIDTH = 600;
         private double PREVIEW_MAX_DEFAULT_WIDTH = 780;
+        public static BitmapScalingMode[] SCALING_MODE = { BitmapScalingMode.Linear, BitmapScalingMode.NearestNeighbor};
         public int CurrentScriptIndex;
         public static ProjectManager pmanager = new();
         public Logger Log;
@@ -58,6 +59,10 @@ namespace EmeralEngine
         private DispatcherTimer backup_timer;
         private DispatcherTimer updateProgressTimer;
         private bool IsCreated;
+        private BitmapScalingMode CurrentScalingMode
+        {
+            get => SCALING_MODE[pmanager.Project.ScalingMode];
+        }
 
         public ScriptInfo CurrentScript
         {
@@ -373,6 +378,7 @@ namespace EmeralEngine
                             Stretch = Stretch.Uniform,
                             Height = pmanager.Project.Size[1],
                         };
+                        RenderOptions.SetBitmapScalingMode(img, CurrentScalingMode);
                         SetCharacter(img, per * (2 * (i + 1) - 1) - b.Width * Math.Min(Preview.Width / b.Width, Preview.Height / b.Height) / 2);
                     }
                 }
@@ -683,7 +689,7 @@ namespace EmeralEngine
             return w is not null && w.IsLoaded && w.IsVisible;
         }
 
-        private void Button_Click_1(object sender, RoutedEventArgs e)
+        private void OnRunButtonClicked(object sender, RoutedEventArgs e)
         {
             RunButton.IsEnabled = false;
             var pname = pmanager.ProjectName;
@@ -915,6 +921,12 @@ namespace EmeralEngine
                 }
             }
             BgmLabel.Content = "";
+        }
+
+        private void OnRefreshPreviewButtonClicked(object sender, RoutedEventArgs e)
+        {
+            AdjustPreviewSize();
+            LoadPreview();
         }
     }
 }

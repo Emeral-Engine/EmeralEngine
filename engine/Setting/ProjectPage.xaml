@@ -18,6 +18,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <GroupBox Width="150" HorizontalAlignment="Left" Margin="10,0,0,0" Header="ウィンドウサイズ" FontSize="18">
             <Grid>
@@ -64,6 +65,22 @@
                 <Label Content="インターバル"/>
                 <xctk:IntegerUpDown Name="TextInterval" Grid.Column="1" Width="100" Height="30" FontSize="20" ValueChanged="OnIntervalValueChanged"/>
                 <Label Grid.Column="2" Content="ミリ秒"/>
+            </Grid>
+        </GroupBox>
+        <GroupBox Grid.Row="3" Header="スケーリング">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Label Content="画像の拡大方法"/>
+                <ComboBox Name="ScalingMode" Grid.Column="1" Width="130" Height="20" FontSize="13" SelectionChanged="ScalingMode_SelectionChanged">
+                    <ComboBoxItem Content="Linear"/>
+                    <ComboBoxItem Content="Nearest Neighbor"/>
+                </ComboBox>
             </Grid>
         </GroupBox>
     </Grid>

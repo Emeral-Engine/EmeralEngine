@@ -22,12 +22,14 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
+using System.Windows.Media;
 using Xceed.Wpf.Toolkit.PropertyGrid.Editors;
 
 namespace EmeralEngine.Builder
 {
     class GameBuilder
     {
+        private string[] SCALING_MODE = { "Linear", "NearestNeighbor" };
         public const string DOTNET_DIR = "dotnet";
         private string title, projfile;
         private MessageWindowManager mmanager;
@@ -35,6 +37,11 @@ namespace EmeralEngine.Builder
         private EpisodeManager emanager;
         private Assembly[] references;
         private Dictionary<string, string> hashTable;
+        private string ScalingMode
+        {
+            get => SCALING_MODE[MainWindow.pmanager.Project.ScalingMode];
+        }
+
         public GameBuilder(string title, string proj, Assembly[] refs, MessageWindowManager m, StoryManager s, EpisodeManager e)
         {
             this.title = title;
@@ -403,7 +410,7 @@ namespace EmeralEngine.Builder
                     {GenerateGameUIXaml(false)}
                 </Page>
                 """);
-            File.WriteAllText(files.savedata_xaml, """
+            File.WriteAllText(files.savedata_xaml, $$"""
                  <Page x:Class="Game.Core.SaveDataPage"
                       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -416,7 +423,7 @@ namespace EmeralEngine.Builder
                                     <RowDefinition Height="2*"/>
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
-                                <Image IsHitTestVisible="False" Name="ScreenShot1" Stretch="Uniform"/>
+                                <Image RenderOptions.BitmapScalingMode="{{ScalingMode}}" IsHitTestVisible="False" Name="ScreenShot1" Stretch="Uniform"/>
                                 <Label IsHitTestVisible="False" Grid.Row="1" Name="Time1"/>
                             </Grid>
                         </StackPanel>
@@ -426,7 +433,7 @@ namespace EmeralEngine.Builder
                                     <RowDefinition Height="2*"/>
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
-                                <Image IsHitTestVisible="False" Name="ScreenShot2" Stretch="Uniform"/>
+                                <Image RenderOptions.BitmapScalingMode="{{ScalingMode}}" IsHitTestVisible="False" Name="ScreenShot2" Stretch="Uniform"/>
                                 <Label IsHitTestVisible="False" Grid.Row="1" Name="Time2"/>
                             </Grid>
                         </StackPanel>
@@ -436,7 +443,7 @@ namespace EmeralEngine.Builder
                                     <RowDefinition Height="2*"/>
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
-                                <Image IsHitTestVisible="False" Name="ScreenShot3" Stretch="Uniform"/>
+                                <Image RenderOptions.BitmapScalingMode="{{ScalingMode}}" IsHitTestVisible="False" Name="ScreenShot3" Stretch="Uniform"/>
                                 <Label IsHitTestVisible="False" Grid.Row="1" Name="Time3"/>
                             </Grid>
                         </StackPanel>
@@ -446,7 +453,7 @@ namespace EmeralEngine.Builder
                                     <RowDefinition Height="2*"/>
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
-                                <Image IsHitTestVisible="False" Name="ScreenShot4" Stretch="Uniform"/>
+                                <Image RenderOptions.BitmapScalingMode="{{ScalingMode}}" IsHitTestVisible="False" Name="ScreenShot4" Stretch="Uniform"/>
                                 <Label IsHitTestVisible="False" Grid.Row="1" Name="Time4"/>
                             </Grid>
                         </StackPanel>
@@ -456,7 +463,7 @@ namespace EmeralEngine.Builder
                                     <RowDefinition Height="2*"/>
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
-                                <Image IsHitTestVisible="False" Name="ScreenShot5" Stretch="Uniform"/>
+                                <Image RenderOptions.BitmapScalingMode="{{ScalingMode}}" IsHitTestVisible="False" Name="ScreenShot5" Stretch="Uniform"/>
                                 <Label IsHitTestVisible="False" Grid.Row="1" Name="Time5"/>
                             </Grid>
                         </StackPanel>
@@ -466,7 +473,7 @@ namespace EmeralEngine.Builder
                                     <RowDefinition Height="2*"/>
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
-                                <Image IsHitTestVisible="False" Name="ScreenShot6" Stretch="Uniform"/>
+                                <Image RenderOptions.BitmapScalingMode="{{ScalingMode}}" IsHitTestVisible="False" Name="ScreenShot6" Stretch="Uniform"/>
                                 <Label IsHitTestVisible="False" Grid.Row="1" Name="Time6"/>
                             </Grid>
                         </StackPanel>
@@ -476,7 +483,7 @@ namespace EmeralEngine.Builder
                                     <RowDefinition Height="2*"/>
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
-                                <Image IsHitTestVisible="False" Name="ScreenShot7" Stretch="Uniform"/>
+                                <Image RenderOptions.BitmapScalingMode="{{ScalingMode}}" IsHitTestVisible="False" Name="ScreenShot7" Stretch="Uniform"/>
                                 <Label IsHitTestVisible="False" Grid.Row="1" Name="Time7"/>
                             </Grid>
                         </StackPanel>
@@ -486,7 +493,7 @@ namespace EmeralEngine.Builder
                                     <RowDefinition Height="2*"/>
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
-                                <Image IsHitTestVisible="False" Name="ScreenShot8" Stretch="Uniform"/>
+                                <Image RenderOptions.BitmapScalingMode="{{ScalingMode}}" IsHitTestVisible="False" Name="ScreenShot8" Stretch="Uniform"/>
                                 <Label IsHitTestVisible="False" Grid.Row="1" Name="Time8"/>
                             </Grid>
                         </StackPanel>
@@ -496,7 +503,7 @@ namespace EmeralEngine.Builder
                                     <RowDefinition Height="2*"/>
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
-                                <Image IsHitTestVisible="False" Name="ScreenShot9" Stretch="Uniform"/>
+                                <Image RenderOptions.BitmapScalingMode="{{ScalingMode}}" IsHitTestVisible="False" Name="ScreenShot9" Stretch="Uniform"/>
                                 <Label IsHitTestVisible="False" Grid.Row="1" Name="Time9"/>
                             </Grid>
                         </StackPanel>
@@ -994,15 +1001,15 @@ namespace EmeralEngine.Builder
                         </Menu>
                 """ : "")}}
                         <Grid Name="MainGrid" Height="{{MainWindow.pmanager.Project.Size[1]}}" Width="{{MainWindow.pmanager.Project.Size[0]}}">
-                            <Image Name="Bg" Stretch="Uniform"/>
+                            <Image RenderOptions.BitmapScalingMode="{{ScalingMode}}"  Name="Bg" Stretch="Uniform"/>
                             <Canvas Name="CharacterPictures"/>
                             <Canvas Name="MessageWindowCanvas">
                                 <StackPanel Name="MessageWindow" VerticalAlignment="Bottom">
-                                    <Image Name="MessageWindowBg" Stretch="Fill"/>
+                                    <Image RenderOptions.BitmapScalingMode="{{ScalingMode}}"  Name="MessageWindowBg" Stretch="Fill"/>
                                 </StackPanel>
                                 <TextBlock Name="Script" TextAlignment="Left" HorizontalAlignment="Left" VerticalAlignment="Top" TextWrapping="WrapWithOverflow"/>
                                 <Canvas Name="NamePlate">
-                                    <Image Name="NamePlateBgImage" Height="{Binding ActualHeight, ElementName=NamePlate}" Width="{Binding ActualWidth, ElementName=NamePlate}" Stretch="Fill"/>
+                                    <Image RenderOptions.BitmapScalingMode="{{ScalingMode}}"  Name="NamePlateBgImage" Height="{Binding ActualHeight, ElementName=NamePlate}" Width="{Binding ActualWidth, ElementName=NamePlate}" Stretch="Fill"/>
                                     <Label Name="Speaker" Content="名前" FontSize="30" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Canvas>
                             </Canvas>
@@ -1184,6 +1191,7 @@ namespace EmeralEngine.Builder
                                 var j = 1;
                                 charas.AppendLine($"""
                                         BitmapImage c_bmp;
+                                        Image c_img;
                                         var chara_trans = {(script.charas.Count != pre_script?.charas.Count).ToString().ToLower()};
                                         """);
                                 foreach (var c in script.charas)
@@ -1194,11 +1202,13 @@ namespace EmeralEngine.Builder
                                         var bmp = Utils.CreateBmp(MainWindow.pmanager.GetResource("Characters", c));
                                         charas.AppendLine($$"""
                                         c_bmp = MainWindow.CreateBmp(MainWindow.GetResource(@"{{file}}"));
-                                        SetCharacter(new Image() {
+                                        c_img = new Image() {
                                             Source = c_bmp,
                                             Stretch = Stretch.Uniform,
                                             Height = {{MainWindow.pmanager.Project.Size[1]}}
-                                        }, {{per_x * (j * 2 - 1)}} - {{bmp.Width * Math.Min(MainWindow.pmanager.Project.Size[0] / bmp.Width, MainWindow.pmanager.Project.Size[1] / bmp.Height) / 2}}, chara_trans);
+                                        };
+                                        RenderOptions.SetBitmapScalingMode(c_img, BitmapScalingMode.{{ScalingMode}});
+                                        SetCharacter(c_img, {{per_x * (j * 2 - 1)}} - {{bmp.Width * Math.Min(MainWindow.pmanager.Project.Size[0] / bmp.Width, MainWindow.pmanager.Project.Size[1] / bmp.Height) / 2}}, chara_trans);
                                         """);
                                         j++;
                                     }

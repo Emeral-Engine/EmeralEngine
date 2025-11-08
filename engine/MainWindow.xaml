@@ -3,9 +3,10 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:Icon="http://metro.mahapps.com/winfx/xaml/iconpacks"
         xmlns:local="clr-namespace:EmeralEngine"
         mc:Ignorable="d"
-        Height="450" Width="800" Background="#FF1D2D29" WindowState="Maximized" SizeChanged="OnWindowSizeChanged">
+        Height="450" Width="800" Background="#1D2D29" WindowState="Maximized" SizeChanged="OnWindowSizeChanged">
     <Window.Resources>
         <Style x:Key="ScrollViewerStyle1" TargetType="{x:Type ScrollViewer}">
             <Setter Property="Template">
@@ -188,6 +189,57 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        <Style x:Key="FocusVisual1">
+            <Setter Property="Control.Template">
+                <Setter.Value>
+                    <ControlTemplate>
+                        <Rectangle Margin="2" StrokeDashArray="1 2" Stroke="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" SnapsToDevicePixels="true" StrokeThickness="1"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <SolidColorBrush x:Key="Button.Static.Background1" Color="#FFDDDDDD"/>
+        <SolidColorBrush x:Key="Button.Static.Border1" Color="#FF707070"/>
+        <SolidColorBrush x:Key="Button.MouseOver.Background1" Color="#FFBEE6FD"/>
+        <SolidColorBrush x:Key="Button.MouseOver.Border1" Color="#FF3C7FB1"/>
+        <SolidColorBrush x:Key="Button.Pressed.Background1" Color="#FFC4E5F6"/>
+        <SolidColorBrush x:Key="Button.Pressed.Border1" Color="#FF2C628B"/>
+        <SolidColorBrush x:Key="Button.Disabled.Background1" Color="#FFF4F4F4"/>
+        <SolidColorBrush x:Key="Button.Disabled.Border1" Color="#FFADB2B5"/>
+        <SolidColorBrush x:Key="Button.Disabled.Foreground1" Color="#FF838383"/>
+        <Style x:Key="IconButtonStyle" TargetType="{x:Type Button}">
+            <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual1}"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Button.Static.Border1}"/>
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Padding" Value="1"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" SnapsToDevicePixels="true">
+                            <ContentPresenter x:Name="contentPresenter" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsDefaulted" Value="true">
+                                <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="true">
+                                <Setter Property="Background" TargetName="border" Value="#1d412d"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="true">
+                                <Setter Property="Background" TargetName="border" Value="#5e8967"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="false">
+                                <Setter Property="Background" TargetName="border" Value="#96ae9a"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
     <Window.InputBindings>
         <KeyBinding Key="S" Modifiers="Ctrl" Command="Save"/>
@@ -266,7 +318,12 @@
                                 <RowDefinition/>
                                 <RowDefinition/>
                             </Grid.RowDefinitions>
-                            <Button Grid.Column="1" Name="RunButton" Style="{DynamicResource ButtonStyle1}" VerticalAlignment="Center" Width="50" Height="35" Content="実行" FontSize="16" Background="#FFBBD6D6" Foreground="#FF181818" Click="Button_Click_1"/>
+                            <Button Style="{DynamicResource IconButtonStyle}" ToolTip="プレビューの更新" Click="OnRefreshPreviewButtonClicked" Width="40" Height="25">
+                                <Icon:PackIconPhosphorIcons Foreground="#FFC4D6D6" HorizontalAlignment="Center" VerticalAlignment="Center" Width="25" Height="25" Kind="ArrowCounterClockwiseBold" />
+                            </Button>
+                            <Button x:Name="RunButton" Style="{DynamicResource IconButtonStyle}" Grid.Column="1" ToolTip="デバッグ実行" Click="OnRunButtonClicked" Width="40" Height="25">
+                                <Icon:PackIconEntypo Foreground="#FFC4D6D6" VerticalAlignment="Center" HorizontalAlignment="Center" Width="25" Height="25" Kind="ControllerPlay"/>
+                            </Button>
                             <Label Grid.Row="1" Style="{DynamicResource LabelStyle1}" Content="背景" VerticalAlignment="Top" Foreground="#FFC4D6D6"/>
                             <Button Grid.Column="1" Grid.Row="1" x:Name="SelectBgButton" Style="{DynamicResource ButtonStyle1}" VerticalAlignment="Center" Width="50" Height="30" Content="参照" Background="#FFBBD6D6" Foreground="#FF181818" Click="Button_Click"/>
                             <Button Grid.Column="2" Grid.Row="1" x:Name="RemoveBgButton" Style="{DynamicResource ButtonStyle1}" VerticalAlignment="Center" Width="50" Height="30" Content="削除" Background="#FFBBD6D6" Foreground="#FF181818" Click="RemoveBgButton_Click"/>

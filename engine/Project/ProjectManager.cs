@@ -443,6 +443,7 @@ namespace EmeralEngine.Project
         public string MouseDownSE { set; get; } = "";
         public int[] Size { get; set; }
         public int TextInterval { get; set; } = 60; // ms
+        public int ScalingMode { get; set; } = 0; // 0: Linear, 1: Nearest
         public ProjectStartupWindows Startup {  set; get; } = new();
         public EditorSettings EditorSettings { set; get; } = new();
         public SceneSettings SceneSettings { set; get; } = new();
