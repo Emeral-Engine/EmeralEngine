@@ -113,6 +113,7 @@ namespace EmeralEngine.Builder
             var baseDir = Path.Combine(dest, title);
             var d = Path.Combine(baseDir, "datas");
             var r = Path.Combine(baseDir, "runtime");
+            var runtime_emeral = Path.Combine(r, "emeral.dll");
             var target = Path.Combine(MainWindow.pmanager.ActualProjectDir, DOTNET_DIR);
             if (File.Exists(baseDir))
             {
@@ -147,7 +148,10 @@ namespace EmeralEngine.Builder
                 progress.Label.Content = $"コードを生成中... {progress.MainProgress.Value} / {progress.MainProgress.Maximum}";
             });
             Directory.CreateDirectory(r);
-            File.Copy("gameruntime/emeral.dll", Path.Combine(r, "emeral.dll"));
+            if (!File.Exists(runtime_emeral))
+            {
+                File.Copy("gameruntime/emeral.dll", runtime_emeral);
+            }
             var files = new CompilationFiles(target);
             File.WriteAllText(files.savedatamanager, """
                 using System;
