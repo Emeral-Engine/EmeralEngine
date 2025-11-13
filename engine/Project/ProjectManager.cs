@@ -438,18 +438,19 @@ namespace EmeralEngine.Project
 
     public class ProjectConfig
     {
-        public string Title { set; get; }
+        public string Title { set; get; } = "仮題";
         public string MouseOverSE { set; get; } = "";
         public string MouseDownSE { set; get; } = "";
-        public int[] Size { get; set; }
+        public int[] Size { get; set; } = new int[2];
         public int TextInterval { get; set; } = 60; // ms
         public int ScalingMode { get; set; } = 0; // 0: Linear, 1: Nearest
         public ProjectStartupWindows Startup {  set; get; } = new();
         public EditorSettings EditorSettings { set; get; } = new();
         public SceneSettings SceneSettings { set; get; } = new();
         public CharacterSettings CharacterSettings { set; get; } = new();
-        public List<ContentInfo> Story { set; get; }
-        public List<string> Flags { set; get; }
+        public ExportSettings ExportSettings { set; get; } = new();
+        public List<ContentInfo> Story { set; get; } = new();
+        public List<string> Flags { set; get; } = new();
     }
     public class ProjectStartupWindows
     {
@@ -473,5 +474,29 @@ namespace EmeralEngine.Project
     public class CharacterSettings
     {
         public bool Triming { set; get; } = true;
+    }
+
+    public class ExportSettings
+    {
+        public string ContentFormat { get; set; } = """
+"%(n)": %(scenes),
+""";
+        public string SceneFormat { get; set; } = """
+{
+    "bg": "%(bg)",
+    "bgm": "%(bgm)",
+    "fadein": %(fadein),
+    "fadeout": %(fadeout),
+    "wait": %(wait),
+    "scripts": %(scripts)
+},
+""";
+        public string ScriptFormat { get; set; } = """
+{
+    "pictures": %(pictures),
+    "speaker": "%(speaker)",
+    "script": "%(script)"
+},
+""";
     }
 }

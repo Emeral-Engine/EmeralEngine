@@ -21,7 +21,7 @@ namespace EmeralEngine.Setting
     public partial class SettingWindow : Window
     {
         private DockPanel now_setting;
-        private Page projectPage, startupPage, editorPage, scenePage, charaPage;
+        private Page projectPage, startupPage, editorPage, scenePage, charaPage, exportPage;
         public SettingWindow(Window parent)
         {
             InitializeComponent();
@@ -31,6 +31,7 @@ namespace EmeralEngine.Setting
             editorPage = new EditorPage();
             scenePage = new SceneSettingPage();
             charaPage = new CharaSettingPage();
+            exportPage = new ExportPage();
             now_setting = ProjectPanel;
             Frame.Navigate(projectPage);
         }
@@ -65,6 +66,11 @@ namespace EmeralEngine.Setting
         private void OnScenePanelMouseLeftDown(object sender, MouseButtonEventArgs e)
         {
             ChangePage(ScenePanel, scenePage);
+        }
+
+        private void OnExportPanelMouseLeftDown(object sender, MouseButtonEventArgs e)
+        {
+            ChangePage(ExportPanel, exportPage);
         }
     }
 }

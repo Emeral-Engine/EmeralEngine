@@ -24,21 +24,25 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition/>
             </Grid.RowDefinitions>
-            <DockPanel x:Name="ProjectPanel" Grid.Row="1" Height="35" Background="#f2f2f2" MouseLeftButtonDown="OnProjectPanelMouseLeftDown">
+            <DockPanel x:Name="ProjectPanel" Grid.Row="0" Height="35" Background="#f2f2f2" MouseLeftButtonDown="OnProjectPanelMouseLeftDown">
                 <Label FontSize="20" Content="プロジェクト"/>
             </DockPanel>
-            <DockPanel x:Name="StartupPanel" Grid.Row="2" Height="35">
+            <DockPanel x:Name="StartupPanel" Grid.Row="1" Height="35">
                 <Label FontSize="20" Content="スタートアップ" MouseLeftButtonDown="OnStartupPanelMouseLeftDown"/>
             </DockPanel>
-            <DockPanel x:Name="EditorPanel" Grid.Row="3" Height="35">
+            <DockPanel x:Name="EditorPanel" Grid.Row="2" Height="35">
                 <Label FontSize="20" Content="エディター" MouseLeftButtonDown="OnEditorPanelMouseLeftDown"/>
             </DockPanel>
-            <DockPanel x:Name="ScenePanel" Grid.Row="4" Height="35">
+            <DockPanel x:Name="ScenePanel" Grid.Row="3" Height="35">
                 <Label FontSize="20" Content="シーン" MouseLeftButtonDown="OnScenePanelMouseLeftDown"/>
             </DockPanel>
-            <DockPanel x:Name="CharaPanel" Grid.Row="5" Height="35">
+            <DockPanel x:Name="CharaPanel" Grid.Row="4" Height="35">
                 <Label FontSize="20" Content="キャラクター" MouseLeftButtonDown="OnCharaPanelMouseLeftDown" />
+            </DockPanel>
+            <DockPanel x:Name="ExportPanel" Grid.Row="5" Height="35">
+                <Label FontSize="20" Content="出力" MouseLeftButtonDown="OnExportPanelMouseLeftDown"/>
             </DockPanel>
         </Grid>
         <ScrollViewer Grid.Column="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">

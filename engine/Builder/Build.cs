@@ -12,18 +12,15 @@ using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Scripting;
 using Microsoft.VisualBasic.FileIO;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using System.Windows;
-using System.Windows.Automation;
 using System.Windows.Controls;
-using System.Windows.Media;
-using Xceed.Wpf.Toolkit.PropertyGrid.Editors;
 
 namespace EmeralEngine.Builder
 {
@@ -54,46 +51,55 @@ namespace EmeralEngine.Builder
 
         public void ExportScript(string dst)
         {
-            JsonArray scenes;
-            JsonArray scripts;
-            JsonObject script;
             var num = 0;
-            var data = new JsonObject();
+            var data = new StringBuilder("{\n");
             foreach (var t in story.StoryInfos)
             {
                 if (t.IsScenes())
                 {
-                    scenes = new JsonArray();
+                    var scenes = new StringBuilder("[\n");
                     var episode = emanager.GetEpisode(t.FullPath);
                     foreach (var s in episode.smanager.scenes)
                     {
-                        scripts = new JsonArray();
+                        var scripts = new StringBuilder("[");
                         foreach (var sc in s.Value.scripts)
                         {
-                            script = new JsonObject()
+                            var script = MainWindow.pmanager.Project.ExportSettings.ScriptFormat;
+                            var charas = new StringBuilder("[");
+                            if (0 < sc.charas.Count)
                             {
-                                ["pictures"] = JsonSerializer.SerializeToNode(sc.charas),
-                                ["speaker"] = sc.speaker,
-                                ["script"] = sc.script
-                            };
-                            scripts.Add(script);
+                                foreach (var chara in sc.charas[..sc.charas.Count])
+                                {
+                                    charas.Append($"\"{string.Join("", chara.Select(c => $"\\u{(int)c:X4}"))}\", ");
+                                }
+                                charas.Append($"\"{string.Join("", sc.charas.Last().Select(c => $"\\u{(int)c:X4}"))}\"");
+                            }
+                            charas.Append("]");
+                            script = Regex.Replace(script, @"(?<!\\)%\(pictures\)", charas.ToString());
+                            script = Regex.Replace(script, @"(?<!\\)%\(speaker\)", string.Join("", sc.speaker.Select(c => $"\\u{(int)c:X4}")));
+                            script = Regex.Replace(script, @"(?<!\\)%\(script\)", string.Join("", sc.script.Select(c => $"\\u{(int)c:X4}")));
+                            scripts.AppendLine(script);
                         }
-                        scenes.Add(new JsonObject
-                        {
-                            ["bg"] = s.Value.bg,
-                            ["bgm"] = s.Value.bgm,
-                            ["scripts"] = scripts
-                        });
+                        scripts.AppendLine("]");
+                        var scene = MainWindow.pmanager.Project.ExportSettings.SceneFormat;
+                        scene = Regex.Replace(scene, @"(?<!\\)%\(bg\)", string.Join("", s.Value.bg.Select(c => $"\\u{(int)c:X4}")));
+                        scene = Regex.Replace(scene, @"(?<!\\)%\(bgm\)", string.Join("", s.Value.bgm.Select(c => $"\\u{(int)c:X4}")));
+                        scene = Regex.Replace(scene, @"(?<!\\)%\(fadeout\)", s.Value.fadeout.ToString());
+                        scene = Regex.Replace(scene, @"(?<!\\)%\(fadein\)", s.Value.fadein.ToString());
+                        scene = Regex.Replace(scene, @"(?<!\\)%\(wait\)", s.Value.interval.ToString());
+                        scene = Regex.Replace(scene, @"(?<!\\)%\(scripts\)", scripts.ToString());
+                        scenes.Append(scene);
                     }
-                    data.Add(num.ToString(), scenes);
+                    scenes.AppendLine("]");
+                    var d = MainWindow.pmanager.Project.ExportSettings.ContentFormat;
+                    d = Regex.Replace(d, @"(?<!\\)%\(n\)", num.ToString());
+                    d = Regex.Replace(d, @"(?<!\\)%\(scenes\)", scenes.ToString());
+                    data.AppendLine(d);
                     num++;
                 }
             }
-            var content = JsonSerializer.Serialize(data, new JsonSerializerOptions
-            {
-                WriteIndented = true,
-            });
-            File.WriteAllText(dst, content);
+            data.Append("}");
+            File.WriteAllText(dst, Regex.Replace(data.ToString(), @",\s*(?=[\]\}])", ""));
         }
 
         public void ExportProject(string dest, BuildProgressWindow progress, FilePackingData data, Action<Action> dispatcher)
