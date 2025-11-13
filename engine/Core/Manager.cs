@@ -11,20 +11,20 @@ using System.Threading.Tasks;
 
 namespace EmeralEngine.Core
 {
-    public class Manager<T>
+    public class Manager<BaseInfo>
     {
-        public ObservableCollection<T> Information;
-        private Stack<ObservableCollection<T>> Histories;
-        private Stack<ObservableCollection<T>> UndoHistories;
+        public ObservableCollection<BaseInfo> Information;
+        private Stack<ObservableCollection<BaseInfo>> Histories;
+        private Stack<ObservableCollection<BaseInfo>> UndoHistories;
 
         public Manager()
         {
             UndoHistories = new();
             Histories = new();
-            Information = new ObservableCollection<T>();
+            Information = new ObservableCollection<BaseInfo>();
             Information.CollectionChanged += (sender, e) =>
             {
-                Histories.Push(new ObservableCollection<T>(Information));
+                Histories.Push(new ObservableCollection<BaseInfo>(Information));
                 UndoHistories.Clear();
             };
         }
@@ -35,7 +35,7 @@ namespace EmeralEngine.Core
             if (0 < Histories.Count)
             {
                 Information = Histories.Pop();
-                UndoHistories.Push(new ObservableCollection<T>(Information));
+                UndoHistories.Push(new ObservableCollection<BaseInfo>(Information));
             }
         }
 
@@ -45,7 +45,7 @@ namespace EmeralEngine.Core
             if (0 < UndoHistories.Count)
             {
                 Information = UndoHistories.Pop();
-                Histories.Push(new ObservableCollection<T>(Information));
+                Histories.Push(new ObservableCollection<BaseInfo>(Information));
             }
         }
     }

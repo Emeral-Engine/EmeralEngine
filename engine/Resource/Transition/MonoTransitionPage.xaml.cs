@@ -31,8 +31,8 @@ namespace EmeralEngine.Resource.Transition
             Loaded += (sender, e) =>
             {
                 MonochroColor.SelectedColor = string.IsNullOrEmpty(parent.info.trans_color) ? System.Windows.Media.Colors.Black : (Color)ColorConverter.ConvertFromString(parent.info.trans_color);
-                Fadein.Value = 0 < parent.info.fadein ? parent.info.fadein : TransitionWindow.DEFAULT_FADE_TIME;
-                Fadeout.Value = 0 < parent.info.fadeout ? parent.info.fadeout : TransitionWindow.DEFAULT_FADE_TIME;
+                Fadein.Value = parent.info.fadein;
+                Fadeout.Value = parent.info.fadeout;
                 parent.info.trans = TransitionTypes.SIMPLE;
             };
         }

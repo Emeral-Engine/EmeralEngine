@@ -622,8 +622,8 @@ namespace EmeralEngine.Core
             {
                 if (THICK2 < element.Width)
                 {
-                    center.Width = element.ActualWidth - THICK2;
-                    center.Height = element.ActualHeight - THICK2;
+                    center.Width = Math.Max(0, element.ActualWidth - THICK2);
+                    center.Height = Math.Max(0, element.ActualHeight - THICK2);
                 }
             };
             left.DragStarted += (sender, e) =>

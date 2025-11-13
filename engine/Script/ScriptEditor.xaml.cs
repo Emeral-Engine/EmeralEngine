@@ -593,6 +593,7 @@ namespace EmeralEngine.Script
             if (_Handling) return;
             if (parent.CurrentScript.speaker == "" || Speaker.Text == "")
             {
+                parent.CurrentScript.script = Handle(Script.Text);
                 CurrentPanelHeader.Content = Utils.CutString(Handle(Script.Text), HEADER_LENGTH_LIMIT);
             }
             parent.CurrentScript.speaker = Speaker.Text;
