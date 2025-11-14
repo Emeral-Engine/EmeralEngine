@@ -486,7 +486,7 @@ namespace EmeralEngine.Project
         public string BeginChar { get; set; } = "{";
         public string EndChar { get; set; } = "}";
         public string _ContentFormat = """
-            "%(n)": %(scenes),
+            "%(n1)": %(scenes),
             """;
         public string ContentFormat
         {
