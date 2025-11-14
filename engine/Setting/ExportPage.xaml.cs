@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection.Metadata;
 using System.Text;
@@ -23,67 +24,81 @@ namespace EmeralEngine.Setting
     /// </summary>
     public partial class ExportPage : Page
     {
-        private static string[] CONTENT_HILIGHTED_KWD = { "%(n)", "%(scenes)"};
-        private static string[] SCENE_HILIGHTED_KWD = { "%(bg)", "%(bgm)", "%(scripts)", "%(fadein)", "%(fadeout)", "%(wait)"};
-        private static string[] SCRIPT_HILIGHTED_KWD = { "%(pictures)", "%(speaker)", "%(script)"};
+        private static string[] HILIGHTED_KWD = { "%(n1)", "%(n2)", "%(n3)", "%(scenes)", "%(bg)", "%(bgm)", "%(scripts)", "%(fadein)", "%(fadeout)", "%(wait)", "%(pictures)", "%(speaker)", "%(script)"};
         private bool _IsHandling;
-        private Regex ContentPat, ScenePat, ScriptPat;
+        private static Regex LinePat = new Regex(@"\r\n$");
+        private Regex HilightPat;
         public ExportPage()
         {
             InitializeComponent();
-            ContentPat = new Regex("(" + string.Join("|", CONTENT_HILIGHTED_KWD.Select(Regex.Escape)) + ")", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-            ScenePat = new Regex("(" + string.Join("|", SCENE_HILIGHTED_KWD.Select(Regex.Escape)) + ")", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-            ScriptPat = new Regex("(" + string.Join("|", SCRIPT_HILIGHTED_KWD.Select(Regex.Escape)) + ")", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+            HilightPat = new Regex("(" + string.Join("|", HILIGHTED_KWD.Select(Regex.Escape)) + ")", RegexOptions.IgnoreCase | RegexOptions.Compiled);
             _IsHandling = true;
             var doc = new FlowDocument();
-            var p = new Paragraph();
+            var p = new Paragraph()
+            {
+                Margin = new Thickness(0)
+            };
             p.Inlines.Add(MainWindow.pmanager.Project.ExportSettings.ContentFormat);
             doc.Blocks.Add(p);
             ContentFormat.Document = doc;
             var doc1 = new FlowDocument();
-            var p1 = new Paragraph();
+            var p1 = new Paragraph()
+            {
+                Margin = new Thickness(0)
+            };
             p1.Inlines.Add(MainWindow.pmanager.Project.ExportSettings.SceneFormat);
             doc1.Blocks.Add(p1);
             SceneFormat.Document = doc1;
             var doc2 = new FlowDocument();
-            var p2 = new Paragraph();
+            var p2 = new Paragraph()
+            {
+                Margin = new Thickness(0)
+            };
             p2.Inlines.Add(MainWindow.pmanager.Project.ExportSettings.ScriptFormat);
             doc2.Blocks.Add(p2);
             ScriptFormat.Document = doc2;
+            BeginChar.Text = MainWindow.pmanager.Project.ExportSettings.BeginChar;
+            EndChar.Text = MainWindow.pmanager.Project.ExportSettings.EndChar;
+            IsBackSlashEscape.IsChecked = MainWindow.pmanager.Project.ExportSettings.IsBackSlashEscape;
+            IsScenesArrayShape.IsChecked = MainWindow.pmanager.Project.ExportSettings.IsScenesArrayShape;
+            IsScriptsArrayShape.IsChecked = MainWindow.pmanager.Project.ExportSettings.IsScriptsArrayShape;
+            IsPicturesArrayShape.IsChecked = MainWindow.pmanager.Project.ExportSettings.IsPicturesArrayShape;
+            PicturesSeparator.IsEnabled = !MainWindow.pmanager.Project.ExportSettings.IsPicturesArrayShape;
+            PicturesSeparator.Text = MainWindow.pmanager.Project.ExportSettings.PicturesSeparator;
             _IsHandling = false;
-            Coloring(ContentFormat, ContentPat);
-            Coloring(SceneFormat, ScenePat);
-            Coloring(ScriptFormat, ScriptPat);
+            Coloring(ContentFormat);
+            Coloring(SceneFormat);
+            Coloring(ScriptFormat);
         }
 
         private void ContentFormat_TextChanged(object sender, TextChangedEventArgs e)
         {
-            MainWindow.pmanager.Project.ExportSettings.ContentFormat = new TextRange(
+            MainWindow.pmanager.Project.ExportSettings.ContentFormat = LinePat.Replace(new TextRange(
                 ContentFormat.Document.ContentStart,
                 ContentFormat.Document.ContentEnd
-            ).Text;
-            Coloring(ContentFormat, ContentPat);
+            ).Text, "");
+            Coloring(ContentFormat);
         }
 
         private void SceneFormat_TextChanged(object sender, TextChangedEventArgs e)
         {
-            MainWindow.pmanager.Project.ExportSettings.SceneFormat = new TextRange(
+            MainWindow.pmanager.Project.ExportSettings.SceneFormat = LinePat.Replace(new TextRange(
                 SceneFormat.Document.ContentStart,
                 SceneFormat.Document.ContentEnd
-            ).Text;
-            Coloring(SceneFormat, ScenePat);
+            ).Text, "");
+            Coloring(SceneFormat);
         }
 
         private void ScriptFormat_TextChanged(object sender, TextChangedEventArgs e)
         {
-            MainWindow.pmanager.Project.ExportSettings.ScriptFormat = new TextRange(
+            MainWindow.pmanager.Project.ExportSettings.ScriptFormat = LinePat.Replace(new TextRange(
                 ScriptFormat.Document.ContentStart,
                 ScriptFormat.Document.ContentEnd
-            ).Text;
-            Coloring(ScriptFormat, ScriptPat);
+            ).Text, "");
+            Coloring(ScriptFormat);
         }
 
-        private void Coloring(RichTextBox tbox, Regex r)
+        private void Coloring(RichTextBox tbox)
         {
             if (_IsHandling) return;
             _IsHandling = true;
@@ -97,7 +112,7 @@ namespace EmeralEngine.Setting
             fullRange.ClearAllProperties();
             fullRange.ApplyPropertyValue(TextElement.ForegroundProperty, Brushes.Black);
 
-            foreach (Match m in r.Matches(text))
+            foreach (Match m in HilightPat.Matches(text))
             {
                 int matchStart = m.Index;
                 int matchLength = m.Length;
@@ -122,6 +137,37 @@ namespace EmeralEngine.Setting
             {
                 _IsHandling = false;
             }
+        }
+
+        private void BeginChar_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            MainWindow.pmanager.Project.ExportSettings.BeginChar = BeginChar.Text;
+        }
+
+        private void EndChar_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            MainWindow.pmanager.Project.ExportSettings.EndChar = EndChar.Text;
+        }
+
+        private void IsScenesArrayShape_Click(object sender, RoutedEventArgs e)
+        {
+            MainWindow.pmanager.Project.ExportSettings.IsScenesArrayShape = (bool)IsScenesArrayShape.IsChecked;
+        }
+
+        private void IsScriptsArrayShape_Checked(object sender, RoutedEventArgs e)
+        {
+            MainWindow.pmanager.Project.ExportSettings.IsScriptsArrayShape = (bool)IsScriptsArrayShape.IsChecked;
+        }
+
+        private void IsPicturesArrayShape_Checked(object sender, RoutedEventArgs e)
+        {
+            MainWindow.pmanager.Project.ExportSettings.IsPicturesArrayShape = (bool)IsPicturesArrayShape.IsChecked;
+            PicturesSeparator.IsEnabled = !MainWindow.pmanager.Project.ExportSettings.IsPicturesArrayShape;
+        }
+
+        private void PicturesSeparator_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            MainWindow.pmanager.Project.ExportSettings.PicturesSeparator = PicturesSeparator.Text;
         }
 
         private static string GetPlainText(FlowDocument doc)
@@ -159,6 +205,11 @@ namespace EmeralEngine.Setting
             }
 
             return remaining == 0 ? start.DocumentEnd : null;
+        }
+
+        private void IsBackSlashEscape_Click(object sender, RoutedEventArgs e)
+        {
+            MainWindow.pmanager.Project.ExportSettings.IsBackSlashEscape = (bool)IsBackSlashEscape.IsChecked;
         }
     }
 }

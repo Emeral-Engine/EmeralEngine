@@ -5,13 +5,16 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:EmeralEngine"
         mc:Ignorable="d"
-        Title="設定" Height="450" Width="800">
+        Title="設定" Height="450" Width="800" SizeChanged="OnWindowSizeChanged">
     <Window.Resources>
         <Style TargetType="Label">
             <Setter Property="Foreground" Value="Black"/>
         </Style>
     </Window.Resources>
     <Grid>
+        <Grid.LayoutTransform>
+            <ScaleTransform x:Name="Scale"/>
+        </Grid.LayoutTransform>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="1*"/>
             <ColumnDefinition Width="5*"/>

@@ -20,6 +20,8 @@ namespace EmeralEngine.Setting
     /// </summary>
     public partial class SettingWindow : Window
     {
+        private const int DEFAULT_WIDTH = 800;
+        private const int DEFAULT_HEIGHT = 450;
         private DockPanel now_setting;
         private Page projectPage, startupPage, editorPage, scenePage, charaPage, exportPage;
         public SettingWindow(Window parent)
@@ -46,6 +48,12 @@ namespace EmeralEngine.Setting
         private void OnStartupPanelMouseLeftDown(object sender, MouseButtonEventArgs e)
         {
             ChangePage(StartupPanel, startupPage);
+        }
+
+        private void OnWindowSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            Scale.ScaleX = ActualWidth / DEFAULT_WIDTH;
+            Scale.ScaleY = ActualHeight / DEFAULT_HEIGHT;
         }
 
         private void OnCharaPanelMouseLeftDown(object sender, MouseButtonEventArgs e)

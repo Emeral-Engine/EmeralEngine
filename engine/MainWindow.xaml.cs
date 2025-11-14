@@ -798,7 +798,7 @@ namespace EmeralEngine
             }
         }
 
-        private void OnExportScriptButtonClicked(object sender, RoutedEventArgs e)
+        private void OnExportDataButtonClicked(object sender, RoutedEventArgs e)
         {
             var dialog = new SaveFileDialog()
             {
@@ -807,7 +807,7 @@ namespace EmeralEngine
             if (dialog.ShowDialog() is true)
             {
                 var c = new GameBuilder(pmanager.ProjectName, pmanager.ProjectFile, references, mmanager, story, emanager);
-                c.ExportScript(dialog.FileName);
+                c.ExportData(dialog.FileName);
                 MessageBox.Show("出力が完了しました", MainWindow.CAPTION, MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }

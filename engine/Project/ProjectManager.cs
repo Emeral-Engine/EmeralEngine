@@ -478,25 +478,56 @@ namespace EmeralEngine.Project
 
     public class ExportSettings
     {
-        public string ContentFormat { get; set; } = """
-"%(n)": %(scenes),
-""";
-        public string SceneFormat { get; set; } = """
-{
-    "bg": "%(bg)",
-    "bgm": "%(bgm)",
-    "fadein": %(fadein),
-    "fadeout": %(fadeout),
-    "wait": %(wait),
-    "scripts": %(scripts)
-},
-""";
-        public string ScriptFormat { get; set; } = """
-{
-    "pictures": %(pictures),
-    "speaker": "%(speaker)",
-    "script": "%(script)"
-},
-""";
+        public bool IsBackSlashEscape { set; get; } = true;
+        public bool IsScenesArrayShape { set; get; } = true;
+        public bool IsScriptsArrayShape { set; get; } = true;
+        public bool IsPicturesArrayShape { set; get; } = true;
+        public string PicturesSeparator { set; get; } = " ";
+        public string BeginChar { get; set; } = "{";
+        public string EndChar { get; set; } = "}";
+        public string _ContentFormat = """
+            "%(n)": %(scenes),
+            """;
+        public string ContentFormat
+        {
+            get => _ContentFormat;
+            set
+            {
+                _ContentFormat = value;
+            }
+        }
+        public string _SceneFormat = """
+            {
+                "bg": "%(bg)",
+                "bgm": "%(bgm)",
+                "fadein": %(fadein),
+                "fadeout": %(fadeout),
+                "wait": %(wait),
+                "scripts": %(scripts)
+            },
+            """;
+        public string SceneFormat
+        {
+            get => _SceneFormat;
+            set
+            {
+                _SceneFormat = value;
+            }
+        }
+        public string _ScriptFormat = """
+            {
+                "pictures": %(pictures),
+                "speaker": "%(speaker)",
+                "script": "%(script)"
+            },
+            """;
+        public string ScriptFormat
+        {
+            get => _ScriptFormat;
+            set
+            {
+                _ScriptFormat = value;
+            }
+        }
     }
 }

@@ -16,6 +16,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -49,57 +50,109 @@ namespace EmeralEngine.Builder
             references = refs;
         }
 
-        public void ExportScript(string dst)
+        public void ExportData(string dst)
         {
-            var num = 0;
-            var data = new StringBuilder("{\n");
+            var num = 1;
+            var data = new StringBuilder(MainWindow.pmanager.Project.ExportSettings.BeginChar);
             foreach (var t in story.StoryInfos)
             {
                 if (t.IsScenes())
                 {
-                    var scenes = new StringBuilder("[\n");
+                    var scenes = new StringBuilder();
+                    if (MainWindow.pmanager.Project.ExportSettings.IsScenesArrayShape)
+                    {
+                        scenes.Append('[');
+                    }
                     var episode = emanager.GetEpisode(t.FullPath);
                     foreach (var s in episode.smanager.scenes)
                     {
-                        var scripts = new StringBuilder("[");
-                        foreach (var sc in s.Value.scripts)
+                        var scripts = new StringBuilder();
+                        if (MainWindow.pmanager.Project.ExportSettings.IsScriptsArrayShape)
                         {
+                            scripts.Append('[');
+                        }
+                        for (var i=0; i<s.Value.scripts.Count; i++)
+                        {
+                            var sc = s.Value.scripts[i];
                             var script = MainWindow.pmanager.Project.ExportSettings.ScriptFormat;
-                            var charas = new StringBuilder("[");
+                            var charas = new StringBuilder();
                             if (0 < sc.charas.Count)
                             {
+                                if (MainWindow.pmanager.Project.ExportSettings.IsPicturesArrayShape)
+                                {
+                                    charas.Append("[\"");
+                                }
                                 foreach (var chara in sc.charas[..sc.charas.Count])
                                 {
-                                    charas.Append($"\"{string.Join("", chara.Select(c => $"\\u{(int)c:X4}"))}\", ");
+                                    charas.Append(HandleString(chara));
+                                    if (MainWindow.pmanager.Project.ExportSettings.IsPicturesArrayShape)
+                                    {
+                                        charas.Append("\", \"");
+                                    }
+                                    else
+                                    {
+                                        charas.Append(MainWindow.pmanager.Project.ExportSettings.PicturesSeparator);
+                                    }
                                 }
-                                charas.Append($"\"{string.Join("", sc.charas.Last().Select(c => $"\\u{(int)c:X4}"))}\"");
+                                charas.Append(HandleString(sc.charas.Last()));
+                                if (MainWindow.pmanager.Project.ExportSettings.IsPicturesArrayShape)
+                                {
+                                    charas.Append("\"]");
+                                }
                             }
-                            charas.Append("]");
+                            script = Regex.Replace(script, @"(?<!\\)%\(n1\)", num.ToString());
+                            script = Regex.Replace(script, @"(?<!\\)%\(n2\)", s.Value.order.ToString());
+                            script = Regex.Replace(script, @"(?<!\\)%\(bg\)", s.Value.bg);
+                            script = Regex.Replace(script, @"(?<!\\)%\(bgm\)", s.Value.bgm);
+                            script = Regex.Replace(script, @"(?<!\\)%\(fadeout\)", s.Value.fadeout.ToString());
+                            script = Regex.Replace(script, @"(?<!\\)%\(fadein\)", s.Value.fadein.ToString());
+                            script = Regex.Replace(script, @"(?<!\\)%\(wait\)", s.Value.interval.ToString());
+                            script = Regex.Replace(script, @"(?<!\\)%\(n3\)", (i+1).ToString());
                             script = Regex.Replace(script, @"(?<!\\)%\(pictures\)", charas.ToString());
-                            script = Regex.Replace(script, @"(?<!\\)%\(speaker\)", string.Join("", sc.speaker.Select(c => $"\\u{(int)c:X4}")));
-                            script = Regex.Replace(script, @"(?<!\\)%\(script\)", string.Join("", sc.script.Select(c => $"\\u{(int)c:X4}")));
+                            script = Regex.Replace(script, @"(?<!\\)%\(speaker\)", sc.speaker);
+                            script = Regex.Replace(script, @"(?<!\\)%\(script\)", sc.script);
                             scripts.AppendLine(script);
                         }
-                        scripts.AppendLine("]");
+                        if (MainWindow.pmanager.Project.ExportSettings.IsScriptsArrayShape)
+                        {
+                            scripts.Append(']');
+                        }
                         var scene = MainWindow.pmanager.Project.ExportSettings.SceneFormat;
-                        scene = Regex.Replace(scene, @"(?<!\\)%\(bg\)", string.Join("", s.Value.bg.Select(c => $"\\u{(int)c:X4}")));
-                        scene = Regex.Replace(scene, @"(?<!\\)%\(bgm\)", string.Join("", s.Value.bgm.Select(c => $"\\u{(int)c:X4}")));
+                        scene = Regex.Replace(scene, @"(?<!\\)%\(n1\)", num.ToString());
+                        scene = Regex.Replace(scene, @"(?<!\\)%\(n2\)", s.Value.order.ToString());
+                        scene = Regex.Replace(scene, @"(?<!\\)%\(bg\)", s.Value.bg);
+                        scene = Regex.Replace(scene, @"(?<!\\)%\(bgm\)", s.Value.bgm);
                         scene = Regex.Replace(scene, @"(?<!\\)%\(fadeout\)", s.Value.fadeout.ToString());
                         scene = Regex.Replace(scene, @"(?<!\\)%\(fadein\)", s.Value.fadein.ToString());
                         scene = Regex.Replace(scene, @"(?<!\\)%\(wait\)", s.Value.interval.ToString());
                         scene = Regex.Replace(scene, @"(?<!\\)%\(scripts\)", scripts.ToString());
                         scenes.Append(scene);
                     }
-                    scenes.AppendLine("]");
+                    if (MainWindow.pmanager.Project.ExportSettings.IsScenesArrayShape)
+                    {
+                        scenes.Append(']');
+                    }
                     var d = MainWindow.pmanager.Project.ExportSettings.ContentFormat;
-                    d = Regex.Replace(d, @"(?<!\\)%\(n\)", num.ToString());
+                    d = Regex.Replace(d, @"(?<!\\)%\(n1\)", num.ToString());
                     d = Regex.Replace(d, @"(?<!\\)%\(scenes\)", scenes.ToString());
                     data.AppendLine(d);
                     num++;
                 }
             }
-            data.Append("}");
+            data.Append(MainWindow.pmanager.Project.ExportSettings.EndChar);
             File.WriteAllText(dst, Regex.Replace(data.ToString(), @",\s*(?=[\]\}])", ""));
+        }
+
+        private string HandleString(string s)
+        {
+            if (MainWindow.pmanager.Project.ExportSettings.IsBackSlashEscape)
+            {
+                return s.Replace(@"\", @"\\");
+            }
+            else
+            {
+                return s;
+            }
         }
 
         public void ExportProject(string dest, BuildProgressWindow progress, FilePackingData data, Action<Action> dispatcher)
