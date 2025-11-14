@@ -49,7 +49,7 @@
                     <Label Content="末尾文字" Grid.Column="2"/>
                     <TextBox x:Name="EndChar" Grid.Column="3" Width="100" Height="25" TextChanged="EndChar_TextChanged"/>
                 </Grid>
-                <CheckBox Grid.Column="1" x:Name="IsBackSlashEscape" Content="バックスラッシュをエスケープ" VerticalAlignment="Center" Click="IsBackSlashEscape_Click"/>
+                <CheckBox Grid.Column="1" x:Name="IsEscape" Content="文字をエスケープ" VerticalAlignment="Center" Click="IsBackSlashEscape_Click"/>
                 <Label Grid.Row="1" Content="コンテンツの出力フォーマット"/>
                 <RichTextBox HorizontalAlignment="Left" Grid.Row="2" Name="ContentFormat" Width="400" Height="70" TextChanged="ContentFormat_TextChanged"/>
                 <Label Grid.Row="1" Grid.Column="1" Content="各種割り当て"/>

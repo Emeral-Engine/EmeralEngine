@@ -478,7 +478,7 @@ namespace EmeralEngine.Project
 
     public class ExportSettings
     {
-        public bool IsBackSlashEscape { set; get; } = true;
+        public bool IsEscape { set; get; } = true;
         public bool IsScenesArrayShape { set; get; } = true;
         public bool IsScriptsArrayShape { set; get; } = true;
         public bool IsPicturesArrayShape { set; get; } = true;

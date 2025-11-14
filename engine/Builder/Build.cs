@@ -76,11 +76,15 @@ namespace EmeralEngine.Builder
                             var sc = s.Value.scripts[i];
                             var script = MainWindow.pmanager.Project.ExportSettings.ScriptFormat;
                             var charas = new StringBuilder();
+                            if (MainWindow.pmanager.Project.ExportSettings.IsPicturesArrayShape)
+                            {
+                                charas.Append('[');
+                            }
                             if (0 < sc.charas.Count)
                             {
                                 if (MainWindow.pmanager.Project.ExportSettings.IsPicturesArrayShape)
                                 {
-                                    charas.Append("[\"");
+                                    charas.Append('"');
                                 }
                                 foreach (var chara in sc.charas[..sc.charas.Count])
                                 {
@@ -97,20 +101,24 @@ namespace EmeralEngine.Builder
                                 charas.Append(HandleString(sc.charas.Last()));
                                 if (MainWindow.pmanager.Project.ExportSettings.IsPicturesArrayShape)
                                 {
-                                    charas.Append("\"]");
+                                    charas.Append('"');
                                 }
+                            }
+                            if (MainWindow.pmanager.Project.ExportSettings.IsPicturesArrayShape)
+                            {
+                                charas.Append(']');
                             }
                             script = Regex.Replace(script, @"(?<!\\)%\(n1\)", num.ToString());
                             script = Regex.Replace(script, @"(?<!\\)%\(n2\)", s.Value.order.ToString());
-                            script = Regex.Replace(script, @"(?<!\\)%\(bg\)", s.Value.bg);
-                            script = Regex.Replace(script, @"(?<!\\)%\(bgm\)", s.Value.bgm);
+                            script = Regex.Replace(script, @"(?<!\\)%\(bg\)", HandleString(s.Value.bg));
+                            script = Regex.Replace(script, @"(?<!\\)%\(bgm\)", HandleString(s.Value.bgm));
                             script = Regex.Replace(script, @"(?<!\\)%\(fadeout\)", s.Value.fadeout.ToString());
                             script = Regex.Replace(script, @"(?<!\\)%\(fadein\)", s.Value.fadein.ToString());
                             script = Regex.Replace(script, @"(?<!\\)%\(wait\)", s.Value.interval.ToString());
                             script = Regex.Replace(script, @"(?<!\\)%\(n3\)", (i+1).ToString());
                             script = Regex.Replace(script, @"(?<!\\)%\(pictures\)", charas.ToString());
-                            script = Regex.Replace(script, @"(?<!\\)%\(speaker\)", sc.speaker);
-                            script = Regex.Replace(script, @"(?<!\\)%\(script\)", sc.script);
+                            script = Regex.Replace(script, @"(?<!\\)%\(speaker\)", HandleString(sc.speaker));
+                            script = Regex.Replace(script, @"(?<!\\)%\(script\)", HandleString(sc.script));
                             scripts.AppendLine(script);
                         }
                         if (MainWindow.pmanager.Project.ExportSettings.IsScriptsArrayShape)
@@ -120,8 +128,8 @@ namespace EmeralEngine.Builder
                         var scene = MainWindow.pmanager.Project.ExportSettings.SceneFormat;
                         scene = Regex.Replace(scene, @"(?<!\\)%\(n1\)", num.ToString());
                         scene = Regex.Replace(scene, @"(?<!\\)%\(n2\)", s.Value.order.ToString());
-                        scene = Regex.Replace(scene, @"(?<!\\)%\(bg\)", s.Value.bg);
-                        scene = Regex.Replace(scene, @"(?<!\\)%\(bgm\)", s.Value.bgm);
+                        scene = Regex.Replace(scene, @"(?<!\\)%\(bg\)", HandleString(s.Value.bg));
+                        scene = Regex.Replace(scene, @"(?<!\\)%\(bgm\)", HandleString(s.Value.bgm));
                         scene = Regex.Replace(scene, @"(?<!\\)%\(fadeout\)", s.Value.fadeout.ToString());
                         scene = Regex.Replace(scene, @"(?<!\\)%\(fadein\)", s.Value.fadein.ToString());
                         scene = Regex.Replace(scene, @"(?<!\\)%\(wait\)", s.Value.interval.ToString());
@@ -145,14 +153,11 @@ namespace EmeralEngine.Builder
 
         private string HandleString(string s)
         {
-            if (MainWindow.pmanager.Project.ExportSettings.IsBackSlashEscape)
+            if (MainWindow.pmanager.Project.ExportSettings.IsEscape)
             {
-                return s.Replace(@"\", @"\\");
+                return s.Replace(@"\", @"\\").Replace("\n", @"\n");
             }
-            else
-            {
-                return s;
-            }
+            return s;
         }
 
         public void ExportProject(string dest, BuildProgressWindow progress, FilePackingData data, Action<Action> dispatcher)

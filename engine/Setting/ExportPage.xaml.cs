@@ -59,7 +59,7 @@ namespace EmeralEngine.Setting
             ScriptFormat.Document = doc2;
             BeginChar.Text = MainWindow.pmanager.Project.ExportSettings.BeginChar;
             EndChar.Text = MainWindow.pmanager.Project.ExportSettings.EndChar;
-            IsBackSlashEscape.IsChecked = MainWindow.pmanager.Project.ExportSettings.IsBackSlashEscape;
+            IsEscape.IsChecked = MainWindow.pmanager.Project.ExportSettings.IsEscape;
             IsScenesArrayShape.IsChecked = MainWindow.pmanager.Project.ExportSettings.IsScenesArrayShape;
             IsScriptsArrayShape.IsChecked = MainWindow.pmanager.Project.ExportSettings.IsScriptsArrayShape;
             IsPicturesArrayShape.IsChecked = MainWindow.pmanager.Project.ExportSettings.IsPicturesArrayShape;
@@ -209,7 +209,7 @@ namespace EmeralEngine.Setting
 
         private void IsBackSlashEscape_Click(object sender, RoutedEventArgs e)
         {
-            MainWindow.pmanager.Project.ExportSettings.IsBackSlashEscape = (bool)IsBackSlashEscape.IsChecked;
+            MainWindow.pmanager.Project.ExportSettings.IsEscape = (bool)IsEscape.IsChecked;
         }
     }
 }
