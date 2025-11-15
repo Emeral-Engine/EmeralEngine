@@ -3,6 +3,7 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
       xmlns:local="clr-namespace:EmeralEngine.Setting"
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="666" Background="White"
@@ -13,6 +14,8 @@
         </Style>
         <Style TargetType="TextBox">
             <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Width" Value="100"/>
+            <Setter Property="Height" Value="25"/>
         </Style>
     </Page.Resources>
 
@@ -43,31 +46,62 @@
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <Label Content="開始文字"/>
                     <TextBox x:Name="BeginChar" Grid.Column="1" Width="100" Height="25" TextChanged="BeginChar_TextChanged"/>
                     <Label Content="末尾文字" Grid.Column="2"/>
                     <TextBox x:Name="EndChar" Grid.Column="3" Width="100" Height="25" TextChanged="EndChar_TextChanged"/>
+                    <Label Grid.Column="4" Content="\n: 改行"/>
                 </Grid>
-                <CheckBox Grid.Column="1" x:Name="IsEscape" Content="文字をエスケープ" VerticalAlignment="Center" Click="IsBackSlashEscape_Click"/>
-                <Label Grid.Row="1" Content="コンテンツの出力フォーマット"/>
-                <RichTextBox HorizontalAlignment="Left" Grid.Row="2" Name="ContentFormat" Width="400" Height="70" TextChanged="ContentFormat_TextChanged"/>
-                <Label Grid.Row="1" Grid.Column="1" Content="各種割り当て"/>
-                <TextBlock Grid.Row="2" Grid.Column="1">
-                    %(n1)        : コンテンツ連番
+                <Grid Grid.Column="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <CheckBox x:Name="IsEscape" Content="文字をエスケープ" Click="IsBackSlashEscape_Click"/>
+                    <CheckBox Grid.Row="1" x:Name="IsIndented" Content="インデントを揃える" Click="IsIndented_Click"/>
+                </Grid>
+                <GroupBox Grid.Row="1" Header="コンテンツの出力">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Label Content="区切り文字" Width="100" HorizontalAlignment="Left"/>
+                        <TextBox Grid.Column="1" x:Name="ContentsSeparator" HorizontalAlignment="Left" TextChanged="ContentsSeparator_TextChanged"/>
+                        <xctk:RichTextBox Grid.Row="1" Grid.ColumnSpan="2" HorizontalAlignment="Left" Name="ContentFormat" Width="400" Height="70" TextChanged="ContentFormat_TextChanged"/>
+                    </Grid>
+                </GroupBox>
+                <TextBlock Grid.Row="1" Grid.Column="1">
+                    各種割り当て
+                    <LineBreak/>
+                    \n          : 改行（区切り文字にのみ適用）
+                    <LineBreak/>
+                    %(n1)       : コンテンツ連番
                     <LineBreak/>
                     %(scenes)   : シーン情報
                 </TextBlock>
-                <Grid Grid.Row="3">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <Label Content="シーンの出力フォーマット"/>
-                    <CheckBox x:Name="IsScenesArrayShape" Grid.Column="1" Content="配列形式で出力" VerticalAlignment="Center" Click="IsScenesArrayShape_Click"/>
-                </Grid>
-                <RichTextBox Grid.Row="4" x:Name="SceneFormat" Width="400" Height="95" HorizontalAlignment="Left" TextChanged="SceneFormat_TextChanged"/>
-                <TextBlock Grid.Row="4" Grid.Column="1">
+                <GroupBox Grid.Row="2" Header="シーンの出力">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Label Content="区切り文字" Width="100" HorizontalAlignment="Left"/>
+                        <TextBox Grid.Column="1" x:Name="ScenesSeparator" HorizontalAlignment="Left" TextChanged="ScenesSeparator_TextChanged"/>
+                        <xctk:RichTextBox Grid.Row="1" Grid.ColumnSpan="2" HorizontalAlignment="Left" Name="SceneFormat" Width="400" Height="70" TextChanged="SceneFormat_TextChanged"/>
+                    </Grid>
+                </GroupBox>
+                <TextBlock Grid.Row="2" Grid.Column="1">
                     %(n2)       : シーン連番
                     <LineBreak/>
                     %(bg)       : 背景
@@ -82,16 +116,22 @@
                     <LineBreak/>
                     %(scripts)  : スクリプト情報
                 </TextBlock>
-                <Grid Grid.Row="5">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <Label Content="スクリプトの出力フォーマット"/>
-                    <CheckBox x:Name="IsScriptsArrayShape" Grid.Column="1" Content="配列形式で出力" VerticalAlignment="Center" Click="IsScriptsArrayShape_Checked"/>
-                </Grid>
-                <RichTextBox HorizontalAlignment="Left" x:Name="ScriptFormat" Grid.Row="6" Width="400" Height="150" TextChanged="ScriptFormat_TextChanged"/>
-                <TextBlock Grid.Row="6" Grid.Column="1">
+                <GroupBox Grid.Row="3" Header="スクリプトの出力">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Label Content="区切り文字" Width="100" HorizontalAlignment="Left"/>
+                        <TextBox Grid.Column="1" x:Name="ScriptsSeparator" HorizontalAlignment="Left" TextChanged="ScriptsSeparator_TextChanged"/>
+                        <xctk:RichTextBox Grid.Row="1" Grid.ColumnSpan="2" HorizontalAlignment="Left" Name="ScriptFormat" Width="400" Height="70" TextChanged="ScriptFormat_TextChanged"/>
+                    </Grid>
+                </GroupBox>
+                <TextBlock Grid.Row="3" Grid.Column="1">
                     %(n3)       : スクリプト連番
                     <LineBreak/>
                     %(pictures) : 立ち絵情報
@@ -100,17 +140,20 @@
                     <LineBreak/>
                     %(script)   : セリフ
                 </TextBlock>
-                <Label Grid.Row="7" Content="立ち絵の出力フォーマット"/>
-                <Grid Grid.Row="8">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <CheckBox x:Name="IsPicturesArrayShape" VerticalAlignment="Center" Content="配列形式で出力" Click="IsPicturesArrayShape_Checked"/>
-                    <Label Grid.Column="1" Content="区切り文字"/>
-                    <TextBox Grid.Column="2" Name="PicturesSeparator" Width="200" Height="25" TextChanged="PicturesSeparator_TextChanged"/>
-                </Grid>
+                <GroupBox Grid.Row="4" Header="立ち絵の出力">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Label Content="区切り文字" Width="100" HorizontalAlignment="Left"/>
+                        <TextBox Grid.Column="1" x:Name="PicturesSeparator" HorizontalAlignment="Left" TextChanged="PicturesSeparator_TextChanged"/>
+                    </Grid>
+                </GroupBox>
             </Grid>
         </GroupBox>
     </Grid>

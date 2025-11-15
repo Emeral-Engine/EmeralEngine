@@ -479,14 +479,17 @@ namespace EmeralEngine.Project
     public class ExportSettings
     {
         public bool IsEscape { set; get; } = true;
-        public bool IsScenesArrayShape { set; get; } = true;
-        public bool IsScriptsArrayShape { set; get; } = true;
-        public bool IsPicturesArrayShape { set; get; } = true;
-        public string PicturesSeparator { set; get; } = " ";
-        public string BeginChar { get; set; } = "{";
-        public string EndChar { get; set; } = "}";
+        public bool IsIndented { set; get; } = true;
+        public string ContentsSeparator { set; get; } = ",\\n";
+        public string ScenesSeparator { set; get; } = ",\\n";
+        public string ScriptsSeparator { set; get; } = ",\\n";
+        public string PicturesSeparator { set; get; } = "\",\\n\"";
+        public string BeginChar { get; set; } = @"{\n";
+        public string EndChar { get; set; } = @"\n}";
         public string _ContentFormat = """
-            "%(n1)": %(scenes),
+                "%(n1)": [
+                    %(scenes)
+                ]
             """;
         public string ContentFormat
         {
@@ -503,8 +506,10 @@ namespace EmeralEngine.Project
                 "fadein": %(fadein),
                 "fadeout": %(fadeout),
                 "wait": %(wait),
-                "scripts": %(scripts)
-            },
+                "scripts": [
+                    %(scripts)
+                ]
+            }
             """;
         public string SceneFormat
         {
@@ -516,10 +521,12 @@ namespace EmeralEngine.Project
         }
         public string _ScriptFormat = """
             {
-                "pictures": %(pictures),
+                "pictures": [
+                    "%(pictures)"
+                ],
                 "speaker": "%(speaker)",
                 "script": "%(script)"
-            },
+            }
             """;
         public string ScriptFormat
         {

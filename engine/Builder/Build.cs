@@ -13,6 +13,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Scripting;
 using Microsoft.VisualBasic.FileIO;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
@@ -29,6 +30,7 @@ namespace EmeralEngine.Builder
     {
         private string[] SCALING_MODE = { "Linear", "NearestNeighbor" };
         public const string DOTNET_DIR = "dotnet";
+        private static Regex NewLinePat = new Regex(@"(?<!\\)\\n");
         private string title, projfile;
         private MessageWindowManager mmanager;
         private StoryManager story;
@@ -53,60 +55,32 @@ namespace EmeralEngine.Builder
         public void ExportData(string dst)
         {
             var num = 1;
-            var data = new StringBuilder(MainWindow.pmanager.Project.ExportSettings.BeginChar);
-            foreach (var t in story.StoryInfos)
+            var data = new StringBuilder(NewLinePat.Replace(MainWindow.pmanager.Project.ExportSettings.BeginChar, "\n"));
+            for (var i=0; i< story.StoryInfos.Length; i++)
             {
+                var t = story.StoryInfos[i];
                 if (t.IsScenes())
                 {
                     var scenes = new StringBuilder();
-                    if (MainWindow.pmanager.Project.ExportSettings.IsScenesArrayShape)
-                    {
-                        scenes.Append('[');
-                    }
                     var episode = emanager.GetEpisode(t.FullPath);
+                    var scount = 0;
                     foreach (var s in episode.smanager.scenes)
                     {
+                        scount++;
                         var scripts = new StringBuilder();
-                        if (MainWindow.pmanager.Project.ExportSettings.IsScriptsArrayShape)
+                        for (var j=0; j<s.Value.scripts.Count; j++)
                         {
-                            scripts.Append('[');
-                        }
-                        for (var i=0; i<s.Value.scripts.Count; i++)
-                        {
-                            var sc = s.Value.scripts[i];
+                            var sc = s.Value.scripts[j];
                             var script = MainWindow.pmanager.Project.ExportSettings.ScriptFormat;
                             var charas = new StringBuilder();
-                            if (MainWindow.pmanager.Project.ExportSettings.IsPicturesArrayShape)
-                            {
-                                charas.Append('[');
-                            }
                             if (0 < sc.charas.Count)
                             {
-                                if (MainWindow.pmanager.Project.ExportSettings.IsPicturesArrayShape)
-                                {
-                                    charas.Append('"');
-                                }
-                                foreach (var chara in sc.charas[..sc.charas.Count])
+                                foreach (var chara in sc.charas[..(sc.charas.Count-1)])
                                 {
                                     charas.Append(HandleString(chara));
-                                    if (MainWindow.pmanager.Project.ExportSettings.IsPicturesArrayShape)
-                                    {
-                                        charas.Append("\", \"");
-                                    }
-                                    else
-                                    {
-                                        charas.Append(MainWindow.pmanager.Project.ExportSettings.PicturesSeparator);
-                                    }
+                                    charas.Append(NewLinePat.Replace(MainWindow.pmanager.Project.ExportSettings.PicturesSeparator, "\n"));
                                 }
                                 charas.Append(HandleString(sc.charas.Last()));
-                                if (MainWindow.pmanager.Project.ExportSettings.IsPicturesArrayShape)
-                                {
-                                    charas.Append('"');
-                                }
-                            }
-                            if (MainWindow.pmanager.Project.ExportSettings.IsPicturesArrayShape)
-                            {
-                                charas.Append(']');
                             }
                             script = Regex.Replace(script, @"(?<!\\)%\(n1\)", num.ToString());
                             script = Regex.Replace(script, @"(?<!\\)%\(n2\)", s.Value.order.ToString());
@@ -115,15 +89,15 @@ namespace EmeralEngine.Builder
                             script = Regex.Replace(script, @"(?<!\\)%\(fadeout\)", s.Value.fadeout.ToString());
                             script = Regex.Replace(script, @"(?<!\\)%\(fadein\)", s.Value.fadein.ToString());
                             script = Regex.Replace(script, @"(?<!\\)%\(wait\)", s.Value.interval.ToString());
-                            script = Regex.Replace(script, @"(?<!\\)%\(n3\)", (i+1).ToString());
-                            script = Regex.Replace(script, @"(?<!\\)%\(pictures\)", charas.ToString());
-                            script = Regex.Replace(script, @"(?<!\\)%\(speaker\)", HandleString(sc.speaker));
-                            script = Regex.Replace(script, @"(?<!\\)%\(script\)", HandleString(sc.script));
-                            scripts.AppendLine(script);
-                        }
-                        if (MainWindow.pmanager.Project.ExportSettings.IsScriptsArrayShape)
-                        {
-                            scripts.Append(']');
+                            script = Regex.Replace(script, @"(?<!\\)%\(n3\)", (j+1).ToString());
+                            script = IndentedString(script, "pictures", charas.ToString());
+                            script = Regex.Replace(script, @"(?<!\\)%\(speaker\)", HandleString(sc.speaker ?? ""));
+                            script = IndentedString(script, "script", HandleString(sc.script ?? ""));
+                            if (j+1 < s.Value.scripts.Count)
+                            {
+                                script += NewLinePat.Replace(MainWindow.pmanager.Project.ExportSettings.ScriptsSeparator, "\n");
+                            }
+                            scripts.Append(script);
                         }
                         var scene = MainWindow.pmanager.Project.ExportSettings.SceneFormat;
                         scene = Regex.Replace(scene, @"(?<!\\)%\(n1\)", num.ToString());
@@ -133,29 +107,53 @@ namespace EmeralEngine.Builder
                         scene = Regex.Replace(scene, @"(?<!\\)%\(fadeout\)", s.Value.fadeout.ToString());
                         scene = Regex.Replace(scene, @"(?<!\\)%\(fadein\)", s.Value.fadein.ToString());
                         scene = Regex.Replace(scene, @"(?<!\\)%\(wait\)", s.Value.interval.ToString());
-                        scene = Regex.Replace(scene, @"(?<!\\)%\(scripts\)", scripts.ToString());
+                        scene = IndentedString(scene, "scripts", scripts.ToString());
+                        if (scount < episode.smanager.scenes.Count)
+                        {
+                            scene += NewLinePat.Replace(MainWindow.pmanager.Project.ExportSettings.ScenesSeparator, "\n");
+                        }
                         scenes.Append(scene);
-                    }
-                    if (MainWindow.pmanager.Project.ExportSettings.IsScenesArrayShape)
-                    {
-                        scenes.Append(']');
                     }
                     var d = MainWindow.pmanager.Project.ExportSettings.ContentFormat;
                     d = Regex.Replace(d, @"(?<!\\)%\(n1\)", num.ToString());
-                    d = Regex.Replace(d, @"(?<!\\)%\(scenes\)", scenes.ToString());
-                    data.AppendLine(d);
+                    d = IndentedString(d, "scenes", scenes.ToString());
+                    if (i+1 < story.StoryInfos.Length)
+                    {
+                        d += NewLinePat.Replace(MainWindow.pmanager.Project.ExportSettings.ContentsSeparator, "\n");
+                    }
+                    data.Append(d);
                     num++;
                 }
             }
-            data.Append(MainWindow.pmanager.Project.ExportSettings.EndChar);
-            File.WriteAllText(dst, Regex.Replace(data.ToString(), @",\s*(?=[\]\}])", ""));
+            data.Append(NewLinePat.Replace(MainWindow.pmanager.Project.ExportSettings.EndChar, "\n"));
+            File.WriteAllText(dst, data.ToString());
         }
+
+        private string IndentedString(string src, string key, string v)
+        {
+            if (MainWindow.pmanager.Project.ExportSettings.IsIndented)
+            {
+                return Regex.Replace(
+                    src,
+                    @$"^(?<indent>\s*)(?<before>[^\n]*?)%\((?<value>{key})\)(?<after>[^\n]*)",
+                    match =>
+                    {
+                        var indent = match.Groups["indent"].Value;
+                        var r =  indent + match.Groups["before"].Value + Regex.Replace(v, @"(?<=\n)", match => indent) + match.Groups["after"].Value;
+                        return r;
+                    },
+                    RegexOptions.Multiline
+                );
+            }
+            return Regex.Replace(src, @$"(?<!\)%\({key}\)", v);
+        }
+
 
         private string HandleString(string s)
         {
             if (MainWindow.pmanager.Project.ExportSettings.IsEscape)
             {
-                return s.Replace(@"\", @"\\").Replace("\n", @"\n");
+                return Regex.Replace(s.Replace(@"\", @"\\"), @"\r?\n", @"\n");
             }
             return s;
         }
