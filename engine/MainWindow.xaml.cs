@@ -799,7 +799,7 @@ namespace EmeralEngine
         {
             var dialog = new SaveFileDialog()
             {
-                Filter = "Data files(*.json) | *.json | All files(*.*) | *.* ",
+                Filter = "All files(*.*) | *.* ",
             };
             if (dialog.ShowDialog() is true)
             {
