@@ -1,15 +1,11 @@
-﻿using System.Collections.ObjectModel;
-using System.Diagnostics;
+﻿using EmeralEngine.Core;
+using EmeralEngine.Resource.Character;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using EmeralEngine.Core;
-using EmeralEngine.Resource.Character;
-using EmeralEngine.Scene;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Scripting;
 
 namespace EmeralEngine.Script
 {

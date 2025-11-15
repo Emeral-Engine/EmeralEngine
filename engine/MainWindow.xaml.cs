@@ -11,7 +11,6 @@ using EmeralEngine.Setting;
 using EmeralEngine.Story;
 using EmeralEngine.TitleScreen;
 using Microsoft.CodeAnalysis;
-using Microsoft.VisualBasic.FileIO;
 using Microsoft.Win32;
 using System.Diagnostics;
 using System.IO;

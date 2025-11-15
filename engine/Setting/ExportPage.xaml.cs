@@ -1,22 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Reflection.Metadata;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+﻿using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using System.Xml.Linq;
 
 namespace EmeralEngine.Setting
 {
@@ -25,14 +12,13 @@ namespace EmeralEngine.Setting
     /// </summary>
     public partial class ExportPage : Page
     {
-        private static string[] HILIGHTED_KWD = { "%(n1)", "%(n2)", "%(n3)", "%(scenes)", "%(bg)", "%(bgm)", "%(scripts)", "%(fadein)", "%(fadeout)", "%(wait)", "%(pictures)", "%(speaker)", "%(script)"};
-        private bool _IsHandling;
+        private static string[] HIGHLIGHTED_KWD = { "%(n1)", "%(n2)", "%(n3)", "%(scenes)", "%(bg)", "%(bgm)", "%(scripts)", "%(fadein)", "%(fadeout)", "%(wait)", "%(pictures)", "%(speaker)", "%(script)"};
+        private static Regex HighLightPat = new Regex($"({(string.Join("|", HIGHLIGHTED_KWD.Select(Regex.Escape)))})");
         private static Regex LinePat = new Regex(@"\r\n$");
-        private Regex HilightPat;
+        private bool _IsHandling;
         public ExportPage()
         {
             InitializeComponent();
-            HilightPat = new Regex("(" + string.Join("|", HILIGHTED_KWD.Select(Regex.Escape)) + ")", RegexOptions.IgnoreCase | RegexOptions.Compiled);
             _IsHandling = true;
             var doc = new FlowDocument();
             var p = new Paragraph()
@@ -42,6 +28,21 @@ namespace EmeralEngine.Setting
             p.Inlines.Add(MainWindow.pmanager.Project.ExportSettings.ContentFormat);
             doc.Blocks.Add(p);
             ContentFormat.Document = doc;
+            ContentFormat.PreviewKeyDown += (s, e) =>
+            {
+                if (e.Key is Key.Enter)
+                {
+                    e.Handled = true;
+                    var caret = ContentFormat.CaretPosition;
+                    caret.InsertTextInRun("\r\n");
+                    var offset = GetCaretOffset(ContentFormat);
+                    if (offset != 0)
+                    {
+                        ContentFormat.CaretPosition = caret.GetPositionAtOffset(offset, LogicalDirection.Forward);
+                    }
+                    ContentFormat.ScrollToVerticalOffset(ContentFormat.VerticalOffset + 16);
+                }
+            };
             var doc1 = new FlowDocument();
             var p1 = new Paragraph()
             {
@@ -50,6 +51,21 @@ namespace EmeralEngine.Setting
             p1.Inlines.Add(MainWindow.pmanager.Project.ExportSettings.SceneFormat);
             doc1.Blocks.Add(p1);
             SceneFormat.Document = doc1;
+            SceneFormat.PreviewKeyDown += (s, e) =>
+            {
+                if (e.Key is Key.Enter)
+                {
+                    e.Handled = true;
+                    var caret = SceneFormat.CaretPosition;
+                    caret.InsertTextInRun("\r\n");
+                    var offset = GetCaretOffset(SceneFormat);
+                    if (offset != 0)
+                    {
+                        SceneFormat.CaretPosition = caret.GetPositionAtOffset(offset, LogicalDirection.Forward);
+                    }
+                    SceneFormat.ScrollToVerticalOffset(SceneFormat.VerticalOffset + 16);
+                }
+            };
             var doc2 = new FlowDocument();
             var p2 = new Paragraph()
             {
@@ -58,6 +74,21 @@ namespace EmeralEngine.Setting
             p2.Inlines.Add(MainWindow.pmanager.Project.ExportSettings.ScriptFormat);
             doc2.Blocks.Add(p2);
             ScriptFormat.Document = doc2;
+            ScriptFormat.PreviewKeyDown += (s, e) =>
+            {
+                if (e.Key is Key.Enter)
+                {
+                    e.Handled = true;
+                    var caret = ScriptFormat.CaretPosition;
+                    caret.InsertTextInRun("\r\n");
+                    var offset = GetCaretOffset(ScriptFormat);
+                    if (offset == 0)
+                    {
+                        ScriptFormat.CaretPosition = caret.GetPositionAtOffset(offset, LogicalDirection.Forward);
+                    }
+                    ScriptFormat.ScrollToVerticalOffset(ScriptFormat.VerticalOffset + 16);
+                }
+            };
             BeginChar.Text = MainWindow.pmanager.Project.ExportSettings.BeginChar;
             EndChar.Text = MainWindow.pmanager.Project.ExportSettings.EndChar;
             IsEscape.IsChecked = MainWindow.pmanager.Project.ExportSettings.IsEscape;
@@ -75,21 +106,58 @@ namespace EmeralEngine.Setting
             };
         }
 
+        private int GetCaretOffset(RichTextBox tbox)
+        {
+            var caret = tbox.CaretPosition;
+            if (caret.GetPointerContext(LogicalDirection.Backward) == TextPointerContext.Text)
+            {
+                var run = caret.Parent as Run;
+                if (run is not null)
+                {
+                    caret = caret.GetInsertionPosition(LogicalDirection.Forward);
+                    var lineStart = caret.GetLineStartPosition(0);
+                    int count;
+                    var lineEnd = caret.GetLineStartPosition(1, out count);
+                    if (lineEnd == null)
+                    {
+                        lineEnd = tbox.Document.ContentEnd;
+                    }
+                    var range = new TextRange(lineStart, lineEnd);
+                    if (range.Text.TrimEnd('\r', '\n').Length == 0) return 0;
+                    var color = run.Foreground as SolidColorBrush;
+                    if (color is not null)
+                    {
+                        return color.Color == Colors.Black ? 1 : 3;
+                    }
+                }
+            }
+            return 1;
+        }
+
         private void ContentFormat_TextChanged(object sender, TextChangedEventArgs e)
         {
-            MainWindow.pmanager.Project.ExportSettings.ContentFormat = ContentFormat.Text;
+            MainWindow.pmanager.Project.ExportSettings.ContentFormat = LinePat.Replace(new TextRange(
+                                                                           ContentFormat.Document.ContentStart,
+                                                                           ContentFormat.Document.ContentEnd
+                                                                       ).Text, "");
             Coloring(ContentFormat);
         }
 
         private void SceneFormat_TextChanged(object sender, TextChangedEventArgs e)
         {
-            MainWindow.pmanager.Project.ExportSettings.SceneFormat = SceneFormat.Text;
+            MainWindow.pmanager.Project.ExportSettings.SceneFormat = LinePat.Replace(new TextRange(
+                                                                           SceneFormat.Document.ContentStart,
+                                                                           SceneFormat.Document.ContentEnd
+                                                                       ).Text, "");
             Coloring(SceneFormat);
         }
 
         private void ScriptFormat_TextChanged(object sender, TextChangedEventArgs e)
         {
-            MainWindow.pmanager.Project.ExportSettings.ScriptFormat = ScriptFormat.Text;
+            MainWindow.pmanager.Project.ExportSettings.ScriptFormat = LinePat.Replace(new TextRange(
+                                                                           ScriptFormat.Document.ContentStart,
+                                                                           ScriptFormat.Document.ContentEnd
+                                                                       ).Text, "");
             Coloring(ScriptFormat);
         }
 
@@ -98,47 +166,44 @@ namespace EmeralEngine.Setting
             if (_IsHandling) return;
             _IsHandling = true;
             var doc = tbox.Document;
-            if (doc is null) return;
-            new TextRange(doc.ContentStart, doc.ContentEnd)
-                .ApplyPropertyValue(TextElement.ForegroundProperty, Brushes.Black);
-            var text = new TextRange(doc.ContentStart, doc.ContentEnd).Text;
-            var pattern = "(" + string.Join("|",
-                HILIGHTED_KWD.Select(Regex.Escape)) + ")";
-            foreach (Match m in Regex.Matches(text, pattern))
+            var full = new TextRange(doc.ContentStart, doc.ContentEnd);
+            full.ClearAllProperties();
+            string text = full.Text;
+            foreach (Match m in HighLightPat.Matches(text))
             {
                 var start = GetTextPointerAtOffset(doc.ContentStart, m.Index);
                 var end = GetTextPointerAtOffset(doc.ContentStart, m.Index + m.Length);
-                if (start != null && end != null)
+                if (start is not null)
                 {
-                    new TextRange(start, end)
-                        .ApplyPropertyValue(TextElement.ForegroundProperty, Brushes.Purple);
+                    if (end is null)
+                    {
+                        end = doc.ContentEnd;
+                    }
+                    var range = new TextRange(start, end);
+                    range.ApplyPropertyValue(TextElement.ForegroundProperty, Brushes.Purple);
                 }
             }
             _IsHandling = false;
         }
 
-        private TextPointer GetTextPointerAtOffset(TextPointer start, int offset)
+        public static TextPointer? GetTextPointerAtOffset(TextPointer start, int offset)
         {
             var navigator = start;
-            int count = 0;
+            int cnt = 0;
 
             while (navigator != null)
             {
                 if (navigator.GetPointerContext(LogicalDirection.Forward) == TextPointerContext.Text)
                 {
-                    string run = navigator.GetTextInRun(LogicalDirection.Forward);
-
-                    if (count + run.Length >= offset)
+                    string textRun = navigator.GetTextInRun(LogicalDirection.Forward);
+                    if (cnt + textRun.Length > offset)
                     {
-                        return navigator.GetPositionAtOffset(offset - count);
+                        return navigator.GetPositionAtOffset(offset - cnt);
                     }
-
-                    count += run.Length;
+                    cnt += textRun.Length;
                 }
-
                 navigator = navigator.GetNextContextPosition(LogicalDirection.Forward);
             }
-
             return null;
         }
 

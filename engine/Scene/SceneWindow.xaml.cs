@@ -1,13 +1,11 @@
 ﻿using EmeralEngine.Core;
 using EmeralEngine.MessageWindow;
 using EmeralEngine.Scene;
-using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 
 namespace EmeralEngine

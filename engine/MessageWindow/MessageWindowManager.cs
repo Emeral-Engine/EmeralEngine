@@ -1,7 +1,5 @@
 ﻿using EmeralEngine.Core;
 using System.IO;
-using System.Security.Cryptography.X509Certificates;
-using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Markup;

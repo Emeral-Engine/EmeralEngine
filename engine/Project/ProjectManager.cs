@@ -5,7 +5,6 @@ using Microsoft.VisualBasic.FileIO;
 using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
-using System.Windows;
 
 namespace EmeralEngine.Project
 {

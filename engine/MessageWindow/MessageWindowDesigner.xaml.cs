@@ -1,21 +1,12 @@
 ﻿using EmeralEngine.Core;
 using EmeralEngine.MessageWindow;
-using EmeralEngine.Resource;
-using System;
 using System.ComponentModel;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.IO;
-using System.Reflection;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
 using System.Windows.Markup;
 using System.Windows.Media;
-using System.Windows.Media.Converters;
-using System.Windows.Media.Media3D;
 using System.Windows.Threading;
 
 namespace EmeralEngine

@@ -1,8 +1,6 @@
 ﻿using EmeralEngine.Core;
-using EmeralEngine.Resource;
 using EmeralEngine.Resource.CustomTransition;
 using EmeralEngine.Resource.Transition;
-using EmeralEngine.Scene;
 using System.Windows;
 
 namespace EmeralEngine

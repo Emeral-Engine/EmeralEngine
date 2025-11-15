@@ -1,8 +1,7 @@
-﻿using System.IO;
-using System.Windows;
-using System.Windows.Media.Imaging;
-using EmeralEngine.Core;
+﻿using EmeralEngine.Core;
 using EmeralEngine.Script;
+using System.IO;
+using System.Windows.Media.Imaging;
 
 namespace EmeralEngine.Scene
 {

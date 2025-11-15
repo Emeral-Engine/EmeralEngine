@@ -1,9 +1,9 @@
-﻿using EmeralEngine.Resource;
+﻿using EmeralEngine.Core;
+using EmeralEngine.Resource;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using System.IO;
-using EmeralEngine.Core;
 
 namespace EmeralEngine.MessageWindow
 {
