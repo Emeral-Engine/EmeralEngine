@@ -101,24 +101,45 @@ namespace EmeralEngine.Setting
             if (doc is null) return;
             new TextRange(doc.ContentStart, doc.ContentEnd)
                 .ApplyPropertyValue(TextElement.ForegroundProperty, Brushes.Black);
-            foreach (var keyword in HILIGHTED_KWD)
+            var text = new TextRange(doc.ContentStart, doc.ContentEnd).Text;
+            var pattern = "(" + string.Join("|",
+                HILIGHTED_KWD.Select(Regex.Escape)) + ")";
+            foreach (Match m in Regex.Matches(text, pattern))
             {
-                if (string.IsNullOrEmpty(keyword)) continue;
-                var navigator = doc.ContentStart;
-                while (navigator.CompareTo(doc.ContentEnd) < 0)
+                var start = GetTextPointerAtOffset(doc.ContentStart, m.Index);
+                var end = GetTextPointerAtOffset(doc.ContentStart, m.Index + m.Length);
+                if (start != null && end != null)
                 {
-                    var pos = navigator.GetPositionAtOffset(keyword.Length);
-                    if (pos is null) break;
-                    var textRange = new TextRange(navigator, pos);
-                    if (textRange is not null && textRange.Text == keyword)
-                    {
-                        textRange.ApplyPropertyValue(TextElement.ForegroundProperty, Brushes.Purple);
-                    }
-                    navigator = navigator.GetPositionAtOffset(1);
-                    if (navigator == null) break;
+                    new TextRange(start, end)
+                        .ApplyPropertyValue(TextElement.ForegroundProperty, Brushes.Purple);
                 }
             }
             _IsHandling = false;
+        }
+
+        private TextPointer GetTextPointerAtOffset(TextPointer start, int offset)
+        {
+            var navigator = start;
+            int count = 0;
+
+            while (navigator != null)
+            {
+                if (navigator.GetPointerContext(LogicalDirection.Forward) == TextPointerContext.Text)
+                {
+                    string run = navigator.GetTextInRun(LogicalDirection.Forward);
+
+                    if (count + run.Length >= offset)
+                    {
+                        return navigator.GetPositionAtOffset(offset - count);
+                    }
+
+                    count += run.Length;
+                }
+
+                navigator = navigator.GetNextContextPosition(LogicalDirection.Forward);
+            }
+
+            return null;
         }
 
         private void BeginChar_TextChanged(object sender, TextChangedEventArgs e)
