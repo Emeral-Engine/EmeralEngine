@@ -29,7 +29,7 @@ namespace EmeralEngine
     /// </summary>
     public partial class MainWindow : Window
     {
-        public const string CAPTION = "EmeralEngine v0.3";
+        public const string CAPTION = "EmeralEngine v0.3.1";
         private const double DEFAULT_WIDTH = 800;
         private const double DEFAULT_HEIGHT = 450;
         private double PREVIEW_DEFAULT_WIDTH = 600;
@@ -118,7 +118,6 @@ namespace EmeralEngine
             {
                 e.Cancel = AskSave();
             };
-            /*
             App.Current.DispatcherUnhandledException += (sender, e) => {
                 Dispatcher.Invoke(() =>
                 {
@@ -149,7 +148,6 @@ namespace EmeralEngine
                     ErrorNotifyWindow.Show(e.Exception.Message);
                 });
             };
-            */
             backup_timer = new DispatcherTimer()
             {
                 Interval = TimeSpan.FromMinutes(10)
@@ -174,7 +172,7 @@ namespace EmeralEngine
                     Save(false);
                     break;
                 case MessageBoxResult.No:
-                    break;
+                    return IsCreated;
                 default:
                     return true;
             }
