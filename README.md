@@ -19,29 +19,18 @@
 - Windows10, 11
 
 # 導入について
-以下の2つを導入する必要があります。
-
-- .NET SDK 9
 - `EmeralEngine`本体
-
-# .NET SDKの導入
-
-1. Windowsキー+Rキーを同時押し
-2. `cmd`と入力しエンターキーを押す
-3. 出てきたコマンドプロンプトに以下のコマンドを入力しエンターキーを押す
-
-```cmd
-winget install --id Microsoft.DotNet.SDK.9
-```
-
-4. `dotnet --version`と打ってバージョン情報が出てくることを確認する
-
-もしwingetコマンドが無い場合は、[公式サイト](https://dotnet.microsoft.com/ja-jp/download)よりインストーラーをダウンロード、インストールしてください。
-バージョンは9です。
+- .NET SDK 10 （ゲームとして出力したい場合のみ）
 
 ## EmeralEngineの導入
-1. [リリースページ](https://github.com/Emeral-Engine/EmeralEngine/releases/latest)より`EmeralEngine-dist.zip`をダウンロードし解凍
-2. `EmeralEngine.exe`をダブルクリック
+[リリースページ](https://github.com/Emeral-Engine/EmeralEngine/releases/latest)より`EmeralEngine-dist.zip`をダウンロード、解凍してください
+
+起動の際は`EmeralEngine.exe`をダブルクリックしてください
+
+## .NET SDK 10の導入
+（ここの操作はゲームとして出力したい場合のみ行ってください。それ以外であれば無くても動きます。）
+[公式サイト](https://dotnet.microsoft.com/ja-jp/download)よりインストーラーをダウンロード、インストールしてください。
+バージョンは10です。
 
 # 使い方
 ## プロジェクトの作成

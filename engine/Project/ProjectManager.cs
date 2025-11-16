@@ -204,23 +204,96 @@ namespace EmeralEngine.Project
         public static void InitDotnet(string? target=null)
         {
             var dest = target ?? Path.Combine(MainWindow.pmanager.ActualProjectDir, GameBuilder.DOTNET_DIR);
-            var p = new Process()
-            {
-                StartInfo = new ProcessStartInfo()
+            var files = new CompilationFiles(dest);
+            Directory.CreateDirectory(dest);
+            File.WriteAllText(files.AppXaml, """
+                <Application x:Class="Game.App"
+                             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                             xmlns:local="clr-namespace:Game"
+                             StartupUri="MainWindow.xaml">
+                    <Application.Resources>
+
+                    </Application.Resources>
+                </Application>
+                """);
+            File.WriteAllText(files.App, """
+                using System.Configuration;
+                using System.Data;
+                using System.Windows;
+
+                namespace Game;
+
+                /// <summary>
+                /// Interaction logic for App.xaml
+                /// </summary>
+                public partial class App : Application
                 {
-                    FileName = "dotnet",
-                    Arguments = $"new wpf -o \"{dest}\" -n \"Game\"",
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                    RedirectStandardOutput = true
                 }
-            };
-            p.Start();
-            p.WaitForExit();
-            if (!Utils.RaiseError(p))
-            {
-                return;
-            }
+                """);
+            File.WriteAllText(files.AssemblyInfo, """
+                using System.Windows;
+
+                [assembly:ThemeInfo(
+                    ResourceDictionaryLocation.None,            //where theme specific resource dictionaries are located
+                                                                //(used if a resource is not found in the page,
+                                                                // or application resource dictionaries)
+                    ResourceDictionaryLocation.SourceAssembly   //where the generic resource dictionary is located
+                                                                //(used if a resource is not found in the page,
+                                                                // app, or any theme specific resource dictionaries)
+                )]
+                """);
+            File.WriteAllText(files.Csproj, """
+                <Project Sdk="Microsoft.NET.Sdk">
+
+                  <PropertyGroup>
+                    <OutputType>WinExe</OutputType>
+                    <TargetFramework>net10.0-windows</TargetFramework>
+                    <Nullable>enable</Nullable>
+                    <ImplicitUsings>enable</ImplicitUsings>
+                    <UseWPF>true</UseWPF>
+                  </PropertyGroup>
+                </Project>
+                """);
+            File.WriteAllText(files.MainXaml, """
+                <Window x:Class="Game.MainWindow"
+                        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                        xmlns:local="clr-namespace:Game"
+                        mc:Ignorable="d"
+                        Title="MainWindow" Height="450" Width="800">
+                    <Grid>
+
+                    </Grid>
+                </Window>
+                """);
+            File.WriteAllText(files.Main, """
+                using System.Text;
+                using System.Windows;
+                using System.Windows.Controls;
+                using System.Windows.Data;
+                using System.Windows.Documents;
+                using System.Windows.Input;
+                using System.Windows.Media;
+                using System.Windows.Media.Imaging;
+                using System.Windows.Navigation;
+                using System.Windows.Shapes;
+
+                namespace Game;
+
+                /// <summary>
+                /// Interaction logic for MainWindow.xaml
+                /// </summary>
+                public partial class MainWindow : Window
+                {
+                    public MainWindow()
+                    {
+                        InitializeComponent();
+                    }
+                }
+                """);
         }
         public string[] GetProjectNames()
         {
@@ -482,7 +555,7 @@ namespace EmeralEngine.Project
         public string ContentsSeparator { set; get; } = ",\\n";
         public string ScenesSeparator { set; get; } = ",\\n";
         public string ScriptsSeparator { set; get; } = ",\\n";
-        public string PicturesSeparator { set; get; } = "\",\\n\"";
+        public string PicturesSeparator { set; get; } = ",\\n";
         public string BeginChar { get; set; } = @"{\n";
         public string EndChar { get; set; } = @"\n}";
         public string _ContentFormat = """
@@ -521,7 +594,7 @@ namespace EmeralEngine.Project
         public string _ScriptFormat = """
             {
                 "pictures": [
-                    "%(pictures)"
+                    %(pictures)
                 ],
                 "speaker": "%(speaker)",
                 "script": "%(script)"
@@ -533,6 +606,18 @@ namespace EmeralEngine.Project
             set
             {
                 _ScriptFormat = value;
+            }
+        }
+
+        public string _PictureFormat = """
+            "%(picture)"
+            """;
+        public string PictureFormat
+        {
+            get => _PictureFormat;
+            set
+            {
+                _PictureFormat = value;
             }
         }
     }

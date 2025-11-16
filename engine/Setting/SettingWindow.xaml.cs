@@ -18,6 +18,8 @@ namespace EmeralEngine.Setting
         {
             InitializeComponent();
             Owner = parent;
+            Width *= 1.5;
+            Height *= 1.5;
             projectPage = new ProjectPage(this);
             startupPage = new StartupPage();
             editorPage = new EditorPage();
@@ -42,8 +44,9 @@ namespace EmeralEngine.Setting
 
         private void OnWindowSizeChanged(object sender, SizeChangedEventArgs e)
         {
-            Scale.ScaleX = ActualWidth / DEFAULT_WIDTH;
-            Scale.ScaleY = ActualHeight / DEFAULT_HEIGHT;
+            var r = Math.Min(ActualWidth / DEFAULT_WIDTH, ActualHeight / DEFAULT_HEIGHT);
+            Scale.ScaleX = r;
+            Scale.ScaleY = r;
         }
 
         private void OnCharaPanelMouseLeftDown(object sender, MouseButtonEventArgs e)

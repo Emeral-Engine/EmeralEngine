@@ -12,7 +12,7 @@ namespace EmeralEngine.Setting
     /// </summary>
     public partial class ExportPage : Page
     {
-        private static string[] HIGHLIGHTED_KWD = { "%(n1)", "%(n2)", "%(n3)", "%(scenes)", "%(bg)", "%(bgm)", "%(scripts)", "%(fadein)", "%(fadeout)", "%(wait)", "%(pictures)", "%(speaker)", "%(script)"};
+        private static string[] HIGHLIGHTED_KWD = { "%(n1)", "%(n2)", "%(n3)", "%(n4)", "%(scenes)", "%(bg)", "%(bgm)", "%(scripts)", "%(fadein)", "%(fadeout)", "%(wait)", "%(pictures)", "%(speaker)", "%(script)", "%(picture)", "%(picturesn)"};
         private static Regex HighLightPat = new Regex($"({(string.Join("|", HIGHLIGHTED_KWD.Select(Regex.Escape)))})");
         private static Regex LinePat = new Regex(@"\r\n$");
         private bool _IsHandling;
@@ -89,6 +89,29 @@ namespace EmeralEngine.Setting
                     ScriptFormat.ScrollToVerticalOffset(ScriptFormat.VerticalOffset + 16);
                 }
             };
+            var doc3 = new FlowDocument();
+            var p3 = new Paragraph()
+            {
+                Margin = new Thickness(0)
+            };
+            p3.Inlines.Add(MainWindow.pmanager.Project.ExportSettings.PictureFormat);
+            doc3.Blocks.Add(p3);
+            PictureFormat.Document = doc3;
+            PictureFormat.PreviewKeyDown += (s, e) =>
+            {
+                if (e.Key is Key.Enter)
+                {
+                    e.Handled = true;
+                    var caret = PictureFormat.CaretPosition;
+                    caret.InsertTextInRun("\r\n");
+                    var offset = GetCaretOffset(PictureFormat);
+                    if (offset != 0)
+                    {
+                        PictureFormat.CaretPosition = caret.GetPositionAtOffset(offset, LogicalDirection.Forward);
+                    }
+                    PictureFormat.ScrollToVerticalOffset(PictureFormat.VerticalOffset + 16);
+                }
+            };
             BeginChar.Text = MainWindow.pmanager.Project.ExportSettings.BeginChar;
             EndChar.Text = MainWindow.pmanager.Project.ExportSettings.EndChar;
             IsEscape.IsChecked = MainWindow.pmanager.Project.ExportSettings.IsEscape;
@@ -103,6 +126,7 @@ namespace EmeralEngine.Setting
                 Coloring(ContentFormat);
                 Coloring(SceneFormat);
                 Coloring(ScriptFormat);
+                Coloring(PictureFormat);
             };
         }
 
@@ -159,6 +183,15 @@ namespace EmeralEngine.Setting
                                                                            ScriptFormat.Document.ContentEnd
                                                                        ).Text, "");
             Coloring(ScriptFormat);
+        }
+
+        private void PictureFormat_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            MainWindow.pmanager.Project.ExportSettings.PictureFormat = LinePat.Replace(new TextRange(
+                                                                           PictureFormat.Document.ContentStart,
+                                                                           PictureFormat.Document.ContentEnd
+                                                                       ).Text, "");
+            Coloring(PictureFormat);
         }
 
         private void Coloring(Xceed.Wpf.Toolkit.RichTextBox tbox)

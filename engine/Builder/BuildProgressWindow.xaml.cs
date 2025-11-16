@@ -20,6 +20,12 @@ namespace EmeralEngine.Builder
             };
         }
 
+        public void CloseForce()
+        {
+            MainProgress.Value = MainProgress.Maximum;
+            Close();
+        }
+
         public void Refresh()
         {
             DispatcherFrame frame = new DispatcherFrame();

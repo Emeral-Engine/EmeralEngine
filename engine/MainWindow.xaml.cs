@@ -172,7 +172,7 @@ namespace EmeralEngine
                     Save(false);
                     break;
                 case MessageBoxResult.No:
-                    return IsCreated;
+                    break;
                 default:
                     return true;
             }
@@ -811,6 +811,13 @@ namespace EmeralEngine
 
         private void OnCreateExeButtonClicked(object sender, RoutedEventArgs e)
         {
+            var c = new GameBuilder(pmanager.ProjectName, pmanager.ProjectFile, references, mmanager, story, emanager);
+            var msg = c.CheckDotNetSDK();
+            if (msg != "")
+            {
+                ErrorNotifyWindow.Show(this, msg);
+                return;
+            }
             var dialog = new OpenFolderDialog()
             {
                 DefaultDirectory = pmanager.ProjectName,
@@ -837,7 +844,6 @@ namespace EmeralEngine
                         progress.Refresh();
                     }
                 };
-                var c = new GameBuilder(pmanager.ProjectName, pmanager.ProjectFile, references, mmanager, story, emanager);
                 updateProgressTimer.Start();
                 Task.Run(() =>
                 {
@@ -847,7 +853,11 @@ namespace EmeralEngine
                     }
                     catch(Exception e)
                     {
-                        ErrorNotifyWindow.Show(this, e.Message);
+                        Dispatcher.Invoke(() =>
+                        {
+                            progress.CloseForce();
+                            ErrorNotifyWindow.Show(this, e.Message);
+                        });
                     }
                     finally
                     {

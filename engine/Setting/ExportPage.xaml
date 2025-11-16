@@ -31,10 +31,6 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -152,8 +148,16 @@
                         </Grid.ColumnDefinitions>
                         <Label Content="区切り文字" Width="100" HorizontalAlignment="Left"/>
                         <TextBox Grid.Column="1" x:Name="PicturesSeparator" HorizontalAlignment="Left" TextChanged="PicturesSeparator_TextChanged"/>
+                        <xctk:RichTextBox Grid.Row="1" Grid.ColumnSpan="2" HorizontalAlignment="Left" Name="PictureFormat" Width="400" Height="70" TextChanged="PictureFormat_TextChanged"/>
                     </Grid>
                 </GroupBox>
+                <TextBlock Grid.Row="4" Grid.Column="1">
+                    %(n4)       : 立ち絵連番
+                    <LineBreak/>
+                    %(picture)  : 立ち絵の相対ファイルパス
+                    <LineBreak/>
+                    %(picturesn): 表示する立ち絵の総数
+                </TextBlock>
             </Grid>
         </GroupBox>
     </Grid>

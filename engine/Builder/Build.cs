@@ -7,11 +7,13 @@ using EmeralEngine.Scene;
 using EmeralEngine.Script;
 using EmeralEngine.Story;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
+using Microsoft.CodeAnalysis.Operations;
 using Microsoft.CodeAnalysis.Scripting;
 using Microsoft.VisualBasic.FileIO;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows;
@@ -45,6 +47,36 @@ namespace EmeralEngine.Builder
             references = refs;
         }
 
+        public string CheckDotNetSDK()
+        {
+            try
+            {
+                var p = new Process
+                {
+                    StartInfo = new ProcessStartInfo
+                    {
+                        FileName = "dotnet",
+                        Arguments = "--list-sdks",
+                        RedirectStandardOutput = true,
+                        UseShellExecute = false,
+                        CreateNoWindow = true
+                    }
+                };
+                p.Start();
+                var output = p.StandardOutput.ReadToEnd();
+                p.WaitForExit();
+                foreach (var line in output.Split('\n'))
+                {
+                    if (line.Trim().StartsWith("10.")) return "";
+                }
+                return ".NET SDKは見つかりましたが、バージョン10が見つかりません";
+            }
+            catch
+            {
+                return ".NET SDKの存在を確認できませんでした";
+            }
+        }
+
         public void ExportData(string dst)
         {
             var num = 1;
@@ -66,14 +98,17 @@ namespace EmeralEngine.Builder
                             var sc = s.Value.scripts[j];
                             var script = MainWindow.pmanager.Project.ExportSettings.ScriptFormat;
                             var charas = new StringBuilder();
-                            if (0 < sc.charas.Count)
+                            for (var k = 0; k < sc.charas.Count; k++)
                             {
-                                foreach (var chara in sc.charas[..(sc.charas.Count-1)])
+                                var chara = MainWindow.pmanager.Project.ExportSettings.PictureFormat;
+                                chara = Regex.Replace(chara, @"(?<!\\)%\(n4\)", (k + 1).ToString());
+                                chara = Regex.Replace(chara, @"(?<!\\)%\(picture\)", sc.charas[k]);
+                                chara = Regex.Replace(chara, @"(?<!\\)%\(picturesn\)", sc.charas.Count.ToString());
+                                charas.Append(HandleString(chara));
+                                if (k + 1 < sc.charas.Count)
                                 {
-                                    charas.Append(HandleString(chara));
                                     charas.Append(NewLinePat.Replace(MainWindow.pmanager.Project.ExportSettings.PicturesSeparator, "\n"));
                                 }
-                                charas.Append(HandleString(sc.charas.Last()));
                             }
                             script = Regex.Replace(script, @"(?<!\\)%\(n1\)", num.ToString());
                             script = Regex.Replace(script, @"(?<!\\)%\(n2\)", s.Value.order.ToString());
@@ -154,7 +189,7 @@ namespace EmeralEngine.Builder
         public void ExportProject(string dest, BuildProgressWindow progress, FilePackingData data, Action<Action> dispatcher)
         {
             var baseDir = Path.Combine(dest, title);
-            FileSystem.CopyDirectory(_ExportProject(dest, data, progress, dispatcher).baseDir, baseDir, UIOption.AllDialogs, UICancelOption.DoNothing);
+            FileSystem.CopyDirectory(_ExportProject(dest, data, progress, dispatcher).BaseDir, baseDir, UIOption.AllDialogs, UICancelOption.DoNothing);
             dispatcher(() =>
             {
                 progress.MainProgress.Value = progress.MainProgress.Maximum;
@@ -208,7 +243,7 @@ namespace EmeralEngine.Builder
                 File.Copy("gameruntime/emeral.dll", runtime_emeral);
             }
             var files = new CompilationFiles(target);
-            File.WriteAllText(files.savedatamanager, """
+            File.WriteAllText(files.SaveDataManager, """
                 using System;
                 using System.Collections.Generic;
                 using System.IO;
@@ -352,8 +387,8 @@ namespace EmeralEngine.Builder
                 }
                 
                 """);
-            File.WriteAllText(files.main, GenerateCompilationCode());
-            File.WriteAllText(files.main_xaml, $$"""
+            File.WriteAllText(files.Main, GenerateCompilationCode());
+            File.WriteAllText(files.MainXaml, $$"""
                 <Window x:Class="Game.MainWindow"
                         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -402,14 +437,14 @@ namespace EmeralEngine.Builder
                     }
                     """);
             }
-            File.WriteAllText(files.title_xaml, $"""
+            File.WriteAllText(files.TitleXaml, $"""
                 <Page x:Class="Game.TitlePage"
                       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
                     {xaml}
                 </Page>
                 """);
-            File.WriteAllText(files.title, $$"""
+            File.WriteAllText(files.Title, $$"""
                 using System.Windows;
                 using System.Windows.Input;
                 using System.Windows.Controls;
@@ -461,7 +496,7 @@ namespace EmeralEngine.Builder
                     }
                 }
                 """);
-            File.WriteAllText(files.gamepage_xaml, $"""
+            File.WriteAllText(files.GamePageXaml, $"""
                 <Page
                     x:Class="Game.GamePage"
                     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -469,7 +504,7 @@ namespace EmeralEngine.Builder
                     {GenerateGameUIXaml(false)}
                 </Page>
                 """);
-            File.WriteAllText(files.savedata_xaml, $$"""
+            File.WriteAllText(files.SaveDataXaml, $$"""
                  <Page x:Class="Game.Core.SaveDataPage"
                       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -570,7 +605,7 @@ namespace EmeralEngine.Builder
                 </Page>
                 
                 """);
-            File.WriteAllText(files.savedata, $$"""
+            File.WriteAllText(files.SaveData, $$"""
                 using System;
                 using System.IO;
                 using System.Reflection;
@@ -679,14 +714,14 @@ namespace EmeralEngine.Builder
                 }
                 
                 """);
-            File.WriteAllText(files.backlog_xaml, $"""
+            File.WriteAllText(files.BacklogXaml, $"""
                  <StackPanel x:Class="Game.Backlog"
                       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                       Width="{MainWindow.pmanager.Project.Size[0]}" Height="{MainWindow.pmanager.Project.Size[1]}">
                 </StackPanel>
                 """);
-            File.WriteAllText(files.backlog, $$"""
+            File.WriteAllText(files.Backlog, $$"""
                 using System.Windows;
                 using System.Windows.Input;
                 using System.Windows.Controls;
@@ -792,7 +827,7 @@ namespace EmeralEngine.Builder
             {
                 stories = GenerateStoryCode();
             });
-            File.WriteAllText(files.gamepage, $$"""
+            File.WriteAllText(files.GamePage, $$"""
                 using System.Windows;
                 using System.Windows.Input;
                 using System.Runtime.InteropServices;
@@ -1002,6 +1037,11 @@ namespace EmeralEngine.Builder
         }
         public void CreateExe(string dest, BuildProgressWindow progress, FilePackingData data, Action<Action> dispatcher)
         {
+            var msg = CheckDotNetSDK();
+            if (msg != "")
+            {
+                throw new DotNetException(msg);
+            }
             var files = _ExportProject(dest, data, progress, dispatcher);
             if (files is null)
             {
@@ -1017,7 +1057,7 @@ namespace EmeralEngine.Builder
                 StartInfo = new ProcessStartInfo()
                 {
                     FileName = "dotnet",
-                    Arguments = $"publish \"{files.csproj}\" -c Release --self-contained true -r win-x64 -p:ReadyToRun=true -p:AssemblyName=\"{MainWindow.pmanager.ProjectName}\" -o \"{Path.Combine(dest, MainWindow.pmanager.ProjectName)}\"",
+                    Arguments = $"publish \"{files.Csproj}\" -c Release --self-contained true -r win-x64 -p:ReadyToRun=true -p:AssemblyName=\"{MainWindow.pmanager.ProjectName}\" -o \"{Path.Combine(dest, MainWindow.pmanager.ProjectName)}\"",
                     UseShellExecute = false,
                     CreateNoWindow = true,
                     RedirectStandardOutput = true,
@@ -2388,6 +2428,25 @@ namespace EmeralEngine.Builder
                 """;
         }
     }
+
+    public class DotNetException : Exception
+    {
+        public DotNetException() : base()
+        {
+
+        }
+
+        public DotNetException(string msg) : base(msg)
+        {
+
+        }
+
+        public DotNetException(string msg, Exception inner) : base(msg, inner)
+        {
+
+        }
+    }
+
     class FilePackingData
     {
         public int FinishedCount, Length;
@@ -2395,25 +2454,26 @@ namespace EmeralEngine.Builder
     }
     public class CompilationFiles
     {
-        public string baseDir, main, main_xaml, app, app_xaml, csproj, gamepage, gamepage_xaml, title, title_xaml, savedata, savedata_xaml, savedatamanager, backlog, backlog_xaml;
+        public string BaseDir, Main, MainXaml, App, AppXaml, AssemblyInfo, Csproj, GamePage, GamePageXaml, Title, TitleXaml, SaveData, SaveDataXaml, SaveDataManager, Backlog, BacklogXaml;
 
         public CompilationFiles(string dir)
         {
-            baseDir = dir;
-            main = Path.Combine(baseDir, "MainWindow.xaml.cs");
-            main_xaml = Path.Combine(baseDir, "MainWindow.xaml");
-            app = Path.Combine(baseDir, "App.xaml.cs");
-            app_xaml = Path.Combine(baseDir, "App.xaml");
-            csproj = Path.Combine(baseDir, $"Game.csproj");
-            gamepage = Path.Combine(baseDir, "GamePage.xaml.cs");
-            gamepage_xaml = Path.Combine(baseDir, "GamePage.xaml");
-            title = Path.Combine(baseDir, "Title.xaml.cs");
-            title_xaml = Path.Combine(baseDir, "Title.xaml");
-            savedata = Path.Combine(baseDir, "SaveDataPage.xaml.cs");
-            savedata_xaml = Path.Combine(baseDir, "SaveDataPage.xaml");
-            savedatamanager = Path.Combine(baseDir, "SaveDataManager.cs");
-            backlog = Path.Combine(baseDir, "Backlog.xaml.cs");
-            backlog_xaml = Path.Combine(baseDir, "Backlog.xaml");
+            BaseDir = dir;
+            Main = Path.Combine(BaseDir, "MainWindow.xaml.cs");
+            MainXaml = Path.Combine(BaseDir, "MainWindow.xaml");
+            App = Path.Combine(BaseDir, "App.xaml.cs");
+            AppXaml = Path.Combine(BaseDir, "App.xaml");
+            AssemblyInfo = Path.Combine(BaseDir, "AssemblyInfo.cs");
+            Csproj = Path.Combine(BaseDir, $"Game.csproj");
+            GamePage = Path.Combine(BaseDir, "GamePage.xaml.cs");
+            GamePageXaml = Path.Combine(BaseDir, "GamePage.xaml");
+            Title = Path.Combine(BaseDir, "Title.xaml.cs");
+            TitleXaml = Path.Combine(BaseDir, "Title.xaml");
+            SaveData = Path.Combine(BaseDir, "SaveDataPage.xaml.cs");
+            SaveDataXaml = Path.Combine(BaseDir, "SaveDataPage.xaml");
+            SaveDataManager = Path.Combine(BaseDir, "SaveDataManager.cs");
+            Backlog = Path.Combine(BaseDir, "Backlog.xaml.cs");
+            BacklogXaml = Path.Combine(BaseDir, "Backlog.xaml");
         }
     }
 }
