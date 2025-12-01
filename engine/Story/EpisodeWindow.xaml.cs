@@ -1,40 +1,43 @@
 ﻿using EmeralEngine.Core;
-using Microsoft.Win32;
 using System.IO;
+using System.Collections.Generic;
+using System.Net.Sockets;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Data;
+using System.Windows.Documents;
 using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Xml.Linq;
 
-namespace EmeralEngine.Resource.Character
+namespace EmeralEngine.Story
 {
     /// <summary>
-    /// PersonalPage.xaml の相互作用ロジック
+    /// EpisodeWindow.xaml の相互作用ロジック
     /// </summary>
-    public partial class PersonalPage : Page
+    public partial class EpisodeWindow : Window
     {
-        private CharacterWindow cwindow;
-        private bool IsSelectMode, IsPressed;
-        private string name;
+        private EpisodeManager emanager;
+        public EpisodeInfo Selection;
         private string pre_text;
-        public PersonalPage(CharacterWindow w)
+        private bool IsPressed, IsSelectMode;
+        public EpisodeWindow(Window w)
         {
             InitializeComponent();
-            cwindow = w;
-        }
-        public void SetName(string n)
-        {
-            name = n;
-            CharacterName.Content = name;
-            Title = name;
+            Owner = w;
+            emanager = new();
             Load();
         }
+
         private void Load()
         {
-            CharacterImagesGrid.Children.Clear();
-            CharacterImagesGrid.RowDefinitions.Clear();
+            MainGrid.Children.Clear();
+            MainGrid.RowDefinitions.Clear();
             var row = 0;
-            foreach (var s in cwindow.cmanager.GetCharacterPictureFiles(name))
+            foreach (var ep in emanager.GetEpisodes())
             {
                 var panel = new DockPanel()
                 {
@@ -60,9 +63,8 @@ namespace EmeralEngine.Resource.Character
                 {
                     if (IsSelectMode && IsPressed)
                     {
-                        cwindow.SelectedPicture = s;
-                        cwindow.Hide();
-                        cwindow = null;
+                        Selection = ep;
+                        Close();
                     }
                 };
                 var grid = new UniformGrid()
@@ -78,7 +80,7 @@ namespace EmeralEngine.Resource.Character
                 };
                 var label = new TextBox()
                 {
-                    Text = Path.GetFileName(s),
+                    Text = ep.Name,
                     FontSize = 20,
                     TextWrapping = TextWrapping.WrapWithOverflow,
                     Width = 150,
@@ -96,19 +98,20 @@ namespace EmeralEngine.Resource.Character
                 label.GotFocus += (sender, e) =>
                 {
                     label.IsReadOnly = false;
-                    var length = Path.GetFileNameWithoutExtension(label.Text).Count();
+                    var length = label.Text.Count();
                     label.Select(0, length);
                     pre_text = label.Text;
                 };
                 label.TextChanged += (sender, e) =>
                 {
-                    label.BorderBrush = cwindow.cmanager.ExistsPictureName(name, label.Text) ? CustomColors.WarnBorder : CustomColors.Transparent;
+                    label.BorderBrush = emanager.GetEpisode(label.Text) is null ? CustomColors.Transparent : CustomColors.WarnBorder;
                 };
                 label.KeyDown += (sender, e) =>
                 {
-                    if (e.Key == Key.Enter && !string.IsNullOrEmpty(label.Text) && !cwindow.cmanager.ExistsPictureName(name, label.Text))
+                    if (e.Key == Key.Enter && !string.IsNullOrEmpty(label.Text) && emanager.GetEpisode(label.Text) is null
+                       && MessageBox.Show("名前を変更する場合、参照は手動で再設定し直してください", "EmeralEngine", MessageBoxButton.OKCancel, MessageBoxImage.Warning) == MessageBoxResult.OK)
                     {
-                        cwindow.cmanager.MovePicture(name, Path.GetFileName(s), label.Text);
+                        emanager.Rename(ep.Name, label.Text);
                         label.ReleaseAllTouchCaptures();
                         Load();
                     }
@@ -116,12 +119,12 @@ namespace EmeralEngine.Resource.Character
                 grid.Children.Add(label);
                 grid.Children.Add(img);
                 panel.Children.Add(grid);
-                CharacterImagesGrid.RowDefinitions.Add(new RowDefinition()
+                MainGrid.RowDefinitions.Add(new RowDefinition()
                 {
                     Height = new GridLength(100)
                 });
                 Grid.SetRow(panel, row);
-                CharacterImagesGrid.Children.Add(panel);
+                MainGrid.Children.Add(panel);
                 var menu = new ContextMenu();
                 var item = new MenuItem()
                 {
@@ -138,7 +141,7 @@ namespace EmeralEngine.Resource.Character
                 };
                 item2.Click += (sender, e) =>
                 {
-                    File.Delete(s);
+                    Directory.Delete(ep.Path, true);
                     Load();
                 };
                 menu.Items.Add(item);
@@ -147,7 +150,7 @@ namespace EmeralEngine.Resource.Character
                 row++;
                 Task.Run(() =>
                 {
-                    var bmp = Utils.CreateBmp(s);
+                    var bmp = ep.GetThumbnail();
                     Dispatcher.Invoke(() =>
                     {
                         img.Source = bmp;
@@ -155,64 +158,21 @@ namespace EmeralEngine.Resource.Character
                 });
             }
         }
-        public void Select(CharacterWindow w)
-        {
-            IsSelectMode = true;
-        }
-
-        private void OnDrop(object sender, DragEventArgs e)
-        {
-            var files = e.Data.GetData(DataFormats.FileDrop) as string[];
-            if (files is not null)
-            {
-                foreach (var f in files)
-                {
-                    cwindow.cmanager.AddPicture(name, f);
-                }
-                Load();
-            }
-            e.Handled = true;
-        }
-
-        private void OnDragEnter(object sender, DragEventArgs e)
-        {
-            JudgeDrop(e);
-        }
-
-        private void OnDragOver(object sender, DragEventArgs e)
-        {
-            JudgeDrop(e);
-        }
-
-        private void JudgeDrop(DragEventArgs e)
-        {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop))
-            {
-                e.Effects = (e.Data.GetData(DataFormats.FileDrop) as string[])
-                    .All(Utils.IsImage) ? DragDropEffects.Copy : DragDropEffects.None;
-            }
-            else
-            {
-                e.Effects = DragDropEffects.None;
-            }
-            e.Handled = true;
-        }
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            var dlg = new OpenFileDialog()
+            var w = new NewEpisodeWindow(this);
+            w.ShowDialog();
+            if (w.New is not null)
             {
-                Multiselect = true
-            };
-            dlg.Filter = "画像ファイル|*.png;*.ping;*.jpg;*.jpeg;*.bmp;*.tiff";
-            if (dlg.ShowDialog() == true)
-            {
-                foreach (var f in dlg.FileNames)
-                {
-                    cwindow.cmanager.AddPicture(name, f);
-                }
                 Load();
             }
+        }
+
+        public void Select()
+        {
+            IsSelectMode = true;
+            ShowDialog();
         }
     }
 }

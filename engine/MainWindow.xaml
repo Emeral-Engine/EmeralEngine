@@ -264,6 +264,7 @@
                 <MenuItem Header="メッセージウィンドウデザイナー" Click="OpenMessageDesigner"/>
                 <MenuItem Header="タイトル画面デザイナー" Click="OpenTitleScreenDesigner"/>
                 <Separator/>
+                <MenuItem Header="エピソードマネージャー" Click="OpenEpisodeManager"/>
                 <MenuItem Header="リソースマネージャー" Click="OpenResourceManager"/>
                 <MenuItem Header="キャラクターマネージャー" Click="OpenCharacterManager"/>
             </MenuItem>

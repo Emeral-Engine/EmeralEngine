@@ -80,6 +80,8 @@
                     <LineBreak/>
                     %(n1)       : コンテンツ連番
                     <LineBreak/>
+                    %(epname)   : エピソード名
+                    <LineBreak/>
                     %(scenes)   : シーン情報
                 </TextBlock>
                 <GroupBox Grid.Row="2" Header="シーンの出力">

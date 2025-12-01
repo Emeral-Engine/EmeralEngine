@@ -17,14 +17,21 @@ namespace EmeralEngine.Story
                 Directory.CreateDirectory(baseDir);
             }
             episodes = new();
+            Load();
+        }
+
+        public void Load()
+        {
+            episodes.Clear();
             foreach (var e in GetEpisodes())
             {
-                episodes.Add(e.name, e);
+                episodes.Add(e.Name, e);
             }
         }
 
-        public EpisodeInfo GetEpisode(string name)
+        public EpisodeInfo? GetEpisode(string name)
         {
+            Load();
             return episodes.GetValueOrDefault(Path.GetFileName(name));
         }
         public List<EpisodeInfo> GetEpisodes()
@@ -33,14 +40,28 @@ namespace EmeralEngine.Story
                             .Select(e => new EpisodeInfo(e))
                             .ToList();
         }
-        public EpisodeInfo New()
+        public EpisodeInfo New(string name = "")
         {
-            var dir = Utils.GetUnusedDirName(Path.Combine(baseDir, "Episode"));
-            Directory.CreateDirectory(dir);
-            var info = new EpisodeInfo(dir);
-            episodes[Path.GetFileName(dir)] = info;
+            string path;
+            if (name == "")
+            {
+                path = Utils.GetUnusedDirName(Path.Combine(baseDir, "Episode"));
+            }
+            else
+            {
+                path = Path.Combine(baseDir, name);
+            }
+            Directory.CreateDirectory(path);
+            var info = new EpisodeInfo(path);
+            episodes[Path.GetFileName(path)] = info;
             return info;
         }
+
+        public void Rename(string old, string new_)
+        {
+            Directory.Move(Path.Combine(baseDir, old), Path.Combine(baseDir, new_));
+        }
+
         public void Dump()
         {
             foreach (var e in episodes.Values)
@@ -57,20 +78,19 @@ namespace EmeralEngine.Story
         }
     }
 
-    public class EpisodeInfo
+    public class EpisodeInfo : BaseInfo
     {
         public SceneManager smanager;
-        public string path;
-        public string name
+        public string Name
         {
-            get => Path.GetFileName(path)
+            get => System.IO.Path.GetFileName(Path)
                        .Replace(" ", "_")
                        .Replace("　", "_")
                        .Replace("\t", "_");
         }
         public EpisodeInfo(string path)
         {
-            this.path = path;
+            Path = path;
             smanager = new SceneManager(path);
         }
         public ImageSource? GetThumbnail()
@@ -79,9 +99,9 @@ namespace EmeralEngine.Story
         }
         public void Rename(string name)
         {
-            var dest = Path.Combine(path, Path.Combine(Path.GetDirectoryName(path), name));
-            File.Move(path, dest);
-            path = dest;
+            var dest = System.IO.Path.Combine(Path, System.IO.Path.Combine(System.IO.Path.GetDirectoryName(Path), name));
+            File.Move(Path, dest);
+            Path = dest;
         }
     }
 }

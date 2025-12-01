@@ -1,0 +1,19 @@
+﻿<Window x:Class="EmeralEngine.Story.EpisodeWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:EmeralEngine.Story"
+        mc:Ignorable="d"
+        Title="エピソード" Height="520" Width="470">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Button Content="新規" HorizontalAlignment="Right" Margin="0,5,30,0" Width="90" Height="50" FontSize="30" Click="Button_Click"/>
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <Grid Name="MainGrid"/>
+        </ScrollViewer>
+    </Grid>
+</Window>

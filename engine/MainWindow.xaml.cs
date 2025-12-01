@@ -43,6 +43,7 @@ namespace EmeralEngine
         public EpisodeManager emanager;
         private BackupManager bmanager;
         public Managers Managers;
+        private EpisodeWindow _EpisodeWindow;
         private CharacterWindow _CharacterWindow;
         private ScriptEditor _ScriptWindow;
         private SceneWindow _SceneWindow;
@@ -118,6 +119,7 @@ namespace EmeralEngine
             {
                 e.Cancel = AskSave();
             };
+            #if !DEBUG
             App.Current.DispatcherUnhandledException += (sender, e) => {
                 Dispatcher.Invoke(() =>
                 {
@@ -148,6 +150,7 @@ namespace EmeralEngine
                     ErrorNotifyWindow.Show(e.Exception.Message);
                 });
             };
+            #endif
             backup_timer = new DispatcherTimer()
             {
                 Interval = TimeSpan.FromMinutes(10)
@@ -228,8 +231,8 @@ namespace EmeralEngine
             }
             if (story.stories.Count == 0)
             {
-                CurrentContent = story.New(CurrentEpisode.path);
-                CurrentContent.Path = CurrentEpisode.path;
+                CurrentContent = story.New(CurrentEpisode.Path);
+                CurrentContent.Path = CurrentEpisode.Path;
                 pmanager.Project.Story.Add(CurrentContent);
                 pmanager.SaveProject();
             }
@@ -604,6 +607,21 @@ namespace EmeralEngine
                 _StoryEditor.Show();
             }
             else _StoryEditor.Show();
+        }
+
+        private void OpenEpisodeManager(object sender = null, RoutedEventArgs e = null)
+        {
+            if (!IsAvailable(_EpisodeWindow))
+            {
+                _EpisodeWindow = new(this);
+                _EpisodeWindow.Show();
+            }
+            else if (_EpisodeWindow.IsLoaded)
+            {
+                _EpisodeWindow.Activate();
+                _EpisodeWindow.Show();
+            }
+            else _EpisodeWindow.Show();
         }
 
         private void OpenResourceManager(object sender = null, RoutedEventArgs e = null)

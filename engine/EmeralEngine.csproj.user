@@ -42,7 +42,13 @@
     <Compile Update="Setting\SceneSettingPage.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Story\EpisodeWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="Story\NewContentWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Story\NewEpisodeWindow.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="Story\SelectEpisodeWindow.xaml.cs">

@@ -32,7 +32,7 @@ namespace EmeralEngine.Story
         private Border focusing_border;
         public ContentInfo now_content;
         private ContentInfo pre_info;
-        private EpisodeManager emanager;
+        public EpisodeManager emanager;
         private RenderTargetBitmap black_image
         {
             get
@@ -164,57 +164,15 @@ namespace EmeralEngine.Story
             {
                 Header = "エピソードを設定"
             };
-            var item0 = new MenuItem()
+            item1.Click += (sender, e) =>
             {
-                Header = "新規"
-            };
-            item0.Click += (sender, e) =>
-            {
-                var ep = emanager.New();
-                info.Path = ep.path;
-                SetThumbnail(img, info);
-                FocusContent(border, img, info);
-            };
-            item1.Items.Add(item0);
-            ctx.Opened += (sender, e) =>
-            {
-                item1.Items.Clear();
-                var item0 = new MenuItem()
+                var w = new EpisodeWindow(this);
+                w.Select();
+                if (w.Selection is not null)
                 {
-                    Header = "新規"
-                };
-                item0.Click += (sender, e) =>
-                {
-                    var ep = emanager.New();
-                    info.Path = ep.path;
+                    info.Path = w.Selection.Path;
                     SetThumbnail(img, info);
                     FocusContent(border, img, info);
-                };
-                item1.Items.Add(item0);
-                item1.Items.Add(new Separator());
-                foreach (var ep in emanager.episodes)
-                {
-                    var item = new MenuItem()
-                    {
-                        Header = Utils.CutString(ep.Key, 20)
-                    };
-                    item.Click += (sender, e) =>
-                    {
-                        info.Path = ep.Value.path;
-                        var t = ep.Value.GetThumbnail();
-                        if (t is null)
-                        {
-                            parent.ChangeBackgroundBlack(story: false);
-                        }
-                        else
-                        {
-                            parent.Bg.Source = t;
-                            parent.BgLabel.Content = Utils.CutString(System.IO.Path.GetFileName(ep.Value.smanager.scenes.First().Value.bg), 20);
-                        }
-                        SetThumbnail(img, info);
-                        FocusContent(border, img, info);
-                    };
-                    item1.Items.Add(item);
                 }
             };
             ctx.Items.Add(item1);

@@ -12,7 +12,7 @@ namespace EmeralEngine.Setting
     /// </summary>
     public partial class ExportPage : Page
     {
-        private static string[] HIGHLIGHTED_KWD = { "%(n1)", "%(n2)", "%(n3)", "%(n4)", "%(scenes)", "%(bg)", "%(bgm)", "%(scripts)", "%(fadein)", "%(fadeout)", "%(wait)", "%(pictures)", "%(speaker)", "%(script)", "%(picture)", "%(picturesn)"};
+        private static string[] HIGHLIGHTED_KWD = { "%(n1)", "%(n2)", "%(n3)", "%(n4)", "%(epname)", "%(scenes)", "%(bg)", "%(bgm)", "%(scripts)", "%(fadein)", "%(fadeout)", "%(wait)", "%(pictures)", "%(speaker)", "%(script)", "%(picture)", "%(picturesn)"};
         private static Regex HighLightPat = new Regex($"({(string.Join("|", HIGHLIGHTED_KWD.Select(Regex.Escape)))})");
         private static Regex LinePat = new Regex(@"\r\n$");
         private bool _IsHandling;

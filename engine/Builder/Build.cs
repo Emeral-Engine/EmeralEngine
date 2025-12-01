@@ -144,6 +144,7 @@ namespace EmeralEngine.Builder
                     }
                     var d = MainWindow.pmanager.Project.ExportSettings.ContentFormat;
                     d = Regex.Replace(d, @"(?<!\\)%\(n1\)", num.ToString());
+                    d = Regex.Replace(d, @"(?<!\\)%\(epname\)", episode.Name);
                     d = IndentedString(d, "scenes", scenes.ToString());
                     if (i+1 < story.StoryInfos.Length)
                     {

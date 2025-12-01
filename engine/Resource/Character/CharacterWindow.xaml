@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:EmeralEngine.Resource.Character"
         mc:Ignorable="d"
-        Title="キャラクター" Height="521" Width="472" AllowDrop="True"
+        Title="キャラクター" Height="520" Width="470" AllowDrop="True"
         ResizeMode="NoResize">
     <Frame x:Name="ScreenFrame"/>
 </Window>
