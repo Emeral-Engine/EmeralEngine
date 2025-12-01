@@ -64,7 +64,7 @@ namespace EmeralEngine.Story
 
         public void Dump()
         {
-            foreach (var e in episodes.Values)
+            foreach (var e in GetEpisodes())
             {
                 e.smanager.Dump();
             }

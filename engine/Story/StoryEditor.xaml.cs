@@ -171,6 +171,7 @@ namespace EmeralEngine.Story
                 if (w.Selection is not null)
                 {
                     info.Path = w.Selection.Path;
+                    info.Name = w.Selection.Name;
                     SetThumbnail(img, info);
                     FocusContent(border, img, info);
                 }
