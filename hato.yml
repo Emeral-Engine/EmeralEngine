@@ -1,0 +1,25 @@
+# https://github.com/midry3/hato
+
+default:
+  aliases:
+    - build
+    - b
+  actions:
+    - git submodule update --remote
+    - cd runtime && hato build "../Emeralengine-dist/gameruntime"
+    - rm "Emeralengine-dist/gameruntime/emeral.h" || true
+    - dotnet publish engine -c Release -r win-x64 -p:PublishReadyToRun=true -o "Emeralengine-dist"
+
+publish:
+  aliases:
+    - p
+  actions:
+    - hato build
+    - strip "Emeralengine-dist/gameruntime/emeral.dll"
+  
+clean:
+  aliases:
+    - c
+  actions:
+    - dotnet clean engine -c Release
+    - rm -r "Emeralengine-dist" || true
