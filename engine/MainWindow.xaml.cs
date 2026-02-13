@@ -205,7 +205,6 @@ namespace EmeralEngine
             pmanager.LoadProject(path);
             Title = $"{CAPTION} {pmanager.ProjectName} ロード中...";
             Refresh();
-            Debug.WriteLine(pmanager.Temp.path);
             backup_timer.Stop();
             CurrentScriptIndex = -1;
             mmanager = new();

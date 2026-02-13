@@ -1,5 +1,7 @@
 ﻿using EmeralEngine.Core;
+using System.Diagnostics;
 using System.IO;
+using System.Text.Json.Serialization;
 using System.Windows.Media;
 
 namespace EmeralEngine.Story
@@ -58,6 +60,7 @@ namespace EmeralEngine.Story
                 }
             }
         }
+        [JsonIgnore]
         public string FullPath
         {
             get => System.IO.Path.Combine(MainWindow.pmanager.Temp.path, _path);
