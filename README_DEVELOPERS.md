@@ -22,13 +22,13 @@ VisualStudioでデバッグ実行すると、そのままでは失敗します�
 
 # EmeralEngineのビルドについて
 ## 依存関係
-- .NET SDK 9
+- .NET SDK 10
 - Go
-- go-task
+- [hato](https://github.com/midry3/hato) (自作のタスクランナーです)
 
 ## コマンド
 ```sh
 $ git clone https://github.com/Emeral-Engine/EmeralEngine
 $ cd EmeralEngine
-$ task
+$ hato build
 ```

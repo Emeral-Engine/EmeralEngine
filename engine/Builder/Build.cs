@@ -1181,7 +1181,7 @@ namespace EmeralEngine.Builder
                 var isLastEpisode = content_counter == story_ref;
                 var premsw = "";
                 var pre_scene = new SceneInfo();
-                if (string.IsNullOrEmpty(t.FullPath))
+                if (string.IsNullOrEmpty(t.Path))
                 {
                     stories.AppendLine($$"""
                         public void Content{{content_counter}}() {
@@ -1192,7 +1192,7 @@ namespace EmeralEngine.Builder
                 else if (t.IsScenes())
                 {
                     var episode = emanager.GetEpisode(t.FullPath);
-                    if (!start_scene_flag && !episode.smanager.scenes.Values.Contains(start_scene))
+                    if (!start_scene_flag && !episode.smanager.scenes.Values.Any(s => s.Path == start_scene.Path))
                     {
                         content_counter--;
                         story_ref--;
@@ -1202,6 +1202,7 @@ namespace EmeralEngine.Builder
                     switch (pre_content.trans)
                     {
                         case TransitionTypes.NONE:
+      
                             stories.AppendLine($$"""
                             public async void Content{{content_counter}}() {
                                 MessageWindowCanvas.Visibility = Visibility.Hidden;
@@ -1260,7 +1261,7 @@ namespace EmeralEngine.Builder
                         {
 
                         }
-                        else if (s.Value == start_scene)
+                        else if (s.Value.Path == start_scene.Path)
                         {
                             start_scene_flag = true;
                         }
