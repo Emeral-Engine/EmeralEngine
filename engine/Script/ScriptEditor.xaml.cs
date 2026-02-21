@@ -1,6 +1,7 @@
 ﻿using EmeralEngine.Core;
 using EmeralEngine.Resource.Character;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
