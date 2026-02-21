@@ -101,6 +101,7 @@ namespace EmeralEngine.Project
 
         public void SaveProject(string dest)
         {
+            Debug.WriteLine(dest);
             SaveProjectFile(dest);
             var r = Path.Combine(dest, "Resources");
             var e = Path.Combine(dest, "Episodes");
@@ -476,7 +477,11 @@ namespace EmeralEngine.Project
             if (MAX_BACKUPS <= now_backups)
             {
                 dest = oldest_backup;
-                Directory.Delete(dest, true);
+                try
+                {
+                    Directory.Delete(dest, true);
+                }
+                catch { }
             }
             else
             {
@@ -484,9 +489,13 @@ namespace EmeralEngine.Project
                 dest = Path.Combine(baseDir, now_backups.ToString());
             }
             Directory.CreateDirectory(dest);
-            Managers.EpisodeManager.Dump();
-            Managers.ProjectManager.ApplyStory(Managers.StoryManager.StoryInfos);
-            Managers.ProjectManager.SaveProject(dest);
+            try
+            {
+                Managers.EpisodeManager.Dump();
+                Managers.ProjectManager.ApplyStory(Managers.StoryManager.StoryInfos);
+                Managers.ProjectManager.SaveProject(dest);
+            }
+            catch { }
         }
         public void BackupForBuild()
         {
