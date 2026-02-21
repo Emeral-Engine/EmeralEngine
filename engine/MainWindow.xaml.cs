@@ -422,7 +422,6 @@ namespace EmeralEngine
         public void ChangeBackgroundBlack(bool reload=true, bool story=true)
         {
             // 黒画面
-            Bg.Source = black_image;
             BgLabel.Content = "";
             Bg.Source = null;
             if (reload) ReLoad(script: false, story: story);
@@ -511,6 +510,7 @@ namespace EmeralEngine
             var bg = ResourceWindow.SelectImage(this);
             if (!string.IsNullOrEmpty(bg))
             {
+                Debug.WriteLine(bg);
                 CurrentScene.bg = bg;
                 if (pmanager.Project.SceneSettings.ChangeLatterBgWhenChanged)
                 {
@@ -731,6 +731,7 @@ namespace EmeralEngine
         }
         private void Save(bool dialog = true)
         {
+            Debug.WriteLine(emanager.GetHashCode());
             var d = "";
             if (IsCreated)
             {

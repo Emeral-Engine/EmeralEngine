@@ -1192,7 +1192,7 @@ namespace EmeralEngine.Builder
                 else if (t.IsScenes())
                 {
                     var episode = emanager.GetEpisode(t.FullPath);
-                    if (!start_scene_flag && !episode.smanager.scenes.Values.Any(s => s.Path == start_scene.Path))
+                    if (IsScript && !episode.smanager.scenes.Values.Any(s => s.Path == start_scene.Path))
                     {
                         content_counter--;
                         story_ref--;
@@ -1286,7 +1286,11 @@ namespace EmeralEngine.Builder
                                           """;
                             var charas = new StringBuilder();
                             charas.AppendLine("var charas = CharacterPictures.Children.Cast<UIElement>().ToArray();");
-                            if (0 < script.charas.Count)
+                            if (script.charas.Count == 0)
+                            {
+                                charas.AppendLine("RemoveCharas();");
+                            }
+                            else
                             {
                                 var per_x = MainWindow.pmanager.Project.Size[0] / (script.charas.Count * 2);
                                 var j = 1;
@@ -2034,7 +2038,23 @@ namespace EmeralEngine.Builder
                             };
                             c.BeginAnimation(UIElement.OpacityProperty, b);
                         }
-                    }      
+                    }
+
+                    private void RemoveCharas()
+                    {
+                        foreach (UIElement c in CharacterPictures.Children)
+                        {
+                            var b = new DoubleAnimation() {
+                                From = 1.0,
+                                To = 0.0,
+                                Duration = new Duration(TimeSpan.FromMilliseconds(200))
+                            };
+                            b.Completed += (sender, e) => {
+                                CharacterPictures.Children.Remove(c);
+                            };
+                            c.BeginAnimation(UIElement.OpacityProperty, b);
+                        }
+                    }
 
                     private async void PlayBgm(string bgm)
                     {

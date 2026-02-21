@@ -1,5 +1,6 @@
 ﻿using EmeralEngine.Core;
 using EmeralEngine.Script;
+using System.Diagnostics;
 using System.IO;
 using System.Windows.Media.Imaging;
 

@@ -1,5 +1,6 @@
 ﻿using EmeralEngine.Core;
 using EmeralEngine.Scene;
+using System.Diagnostics;
 using System.IO;
 using System.Windows.Media;
 
@@ -31,8 +32,7 @@ namespace EmeralEngine.Story
 
         public EpisodeInfo? GetEpisode(string name)
         {
-            Load();
-            return episodes.GetValueOrDefault(Path.GetFileName(name));
+            return new EpisodeInfo(Path.Combine(baseDir, name));
         }
         public List<EpisodeInfo> GetEpisodes()
         {
@@ -64,7 +64,7 @@ namespace EmeralEngine.Story
 
         public void Dump()
         {
-            foreach (var e in GetEpisodes())
+            foreach (var e in episodes.Values)
             {
                 e.smanager.Dump();
             }
