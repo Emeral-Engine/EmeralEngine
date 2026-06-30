@@ -706,17 +706,19 @@ namespace EmeralEngine
         private void OnRunButtonClicked(object sender, RoutedEventArgs e)
         {
             RunButton.IsEnabled = false;
+            //var w = new PreparingWindow(this);
+           // w.Show();
             var pname = pmanager.ProjectName;
             var r = references;
-            Task.Run(() =>
+            Task.Run(async () =>
             {
                 bmanager.Backup();
                 var compiler = new GameBuilder(pname, pmanager.ProjectFile, r, mmanager, story, emanager);
-                Dispatcher.BeginInvoke(() =>
+                await Dispatcher.BeginInvoke(async () =>
                 {
                     try
                     {
-                        var res = compiler.Run(CurrentScene);
+                        var res = await compiler.Run(CurrentScene);
                         if (res.ReturnValue is not null)
                         {
                             ErrorNotifyWindow.Show($"{res.ReturnValue}:\n{res.Exception.Message}");
@@ -731,7 +733,6 @@ namespace EmeralEngine
         }
         private void Save(bool dialog = true)
         {
-            Debug.WriteLine(emanager.GetHashCode());
             var d = "";
             if (IsCreated)
             {

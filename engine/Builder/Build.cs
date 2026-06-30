@@ -1131,7 +1131,7 @@ namespace EmeralEngine.Builder
             }
         }
 
-        public ScriptState<object> Run(SceneInfo start)
+        public async Task<ScriptState<object>> Run(SceneInfo start)
         {
             var src = GenerateScriptCode(start);
             File.WriteAllText(Path.Combine(MainWindow.pmanager.ActualProjectDir, "script.cs"), src);
@@ -1156,7 +1156,7 @@ namespace EmeralEngine.Builder
                                                                           "System.Runtime.InteropServices",
                                                                           "System.Windows.Interop"
                                                                           ));
-            return script.RunAsync().Result;
+            return await script.RunAsync();
         }
         private string GenerateStoryCode(SceneInfo? start_scene=null)
         {
