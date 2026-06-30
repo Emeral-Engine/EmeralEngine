@@ -202,14 +202,27 @@ namespace EmeralEngine
         public void LoadProject(string path)
         {
             CloseSubWindows();
+            ProjectLoadingWindow loading = null!;
+            loading = new ProjectLoadingWindow(this, () => LoadProjectCore(path, loading));
+            loading.Start();
+        }
+
+        private void LoadProjectCore(string path, ProjectLoadingWindow loading)
+        {
+            const int steps = 9;
+            loading.SetProgress("プロジェクトファイルを読み込み中...", 1, steps);
             pmanager.LoadProject(path);
             Title = $"{CAPTION} {pmanager.ProjectName} ロード中...";
             Refresh();
+
+            loading.SetProgress("エディタ情報を初期化中...", 2, steps);
             backup_timer.Stop();
             CurrentScriptIndex = -1;
             mmanager = new();
             story = new();
             emanager = new();
+
+            loading.SetProgress("管理データを準備中...", 3, steps);
             Managers = new()
             {
                 ProjectManager = pmanager,
@@ -220,6 +233,8 @@ namespace EmeralEngine
             bmanager = new(Managers);
             Managers.BackupManager = bmanager;
             Log = new(Managers);
+
+            loading.SetProgress("エピソードを読み込み中...", 4, steps);
             if (emanager.episodes.Count == 0)
             {
                 CurrentEpisode = emanager.New();
@@ -228,6 +243,8 @@ namespace EmeralEngine
             {
                 CurrentEpisode = emanager.episodes.Values.First();
             }
+
+            loading.SetProgress("ストーリーを読み込み中...", 5, steps);
             if (story.stories.Count == 0)
             {
                 CurrentContent = story.New(CurrentEpisode.Path);
@@ -240,21 +257,28 @@ namespace EmeralEngine
                 CurrentContent = story.stories.First().Value;
             }
             CurrentScene = CurrentEpisode.smanager.scenes.First().Value;
+
+            loading.SetProgress("プレビューを準備中...", 6, steps);
             if (0 < CurrentScene.bg.Length) ChangeBackground(pmanager.GetResource(CurrentScene.bg));
             else ChangeBackgroundBlack();
             BgLabel.Content = Utils.CutString(CurrentScene.bg, 8, lines: 2);
             BgmLabel.Content = CurrentScene.bgm;
+
+            loading.SetProgress("起動ウィンドウを開いています...", 7, steps);
             if (pmanager.Project.Startup.Story) OpenStoryEditor();
             if (pmanager.Project.Startup.Scene) OpenSceneEditor();
             if (pmanager.Project.Startup.Script) OpenScriptEditor();
             if (pmanager.Project.Startup.Resource) OpenResourceManager();
             if (pmanager.Project.Startup.Chara) OpenCharacterManager();
             if (pmanager.Project.Startup.Msw) OpenMessageDesigner();
+
+            loading.SetProgress("画面を更新中...", 8, steps);
             AdjustPreviewSize();
             LoadPreview();
             Title = $"{CAPTION} {pmanager.ProjectName}";
             Activate();
             backup_timer.Start();
+            loading.SetProgress("読み込み完了", 9, steps);
         }
 
         private void AdjustPreviewSize()
@@ -703,35 +727,42 @@ namespace EmeralEngine
             return w is not null && w.IsLoaded && w.IsVisible;
         }
 
-        private void OnRunButtonClicked(object sender, RoutedEventArgs e)
+        private async void OnRunButtonClicked(object sender, RoutedEventArgs e)
         {
             RunButton.IsEnabled = false;
             var pname = pmanager.ProjectName;
             var r = references;
-            Task.Run(() =>
+            GameBuilder compiler = null!;
+            try
             {
-                bmanager.Backup();
-                var compiler = new GameBuilder(pname, pmanager.ProjectFile, r, mmanager, story, emanager);
-                Dispatcher.BeginInvoke(() =>
+                ProjectLoadingWindow loading = null!;
+                loading = new ProjectLoadingWindow(this, "スクリプト実行準備中", "スクリプトを実行する準備中...", async () =>
                 {
-                    try
-                    {
-                        var res = compiler.Run(CurrentScene);
-                        if (res.ReturnValue is not null)
-                        {
-                            ErrorNotifyWindow.Show($"{res.ReturnValue}:\n{res.Exception.Message}");
-                        }
-                    }catch (Exception e)
-                    {
-                        ErrorNotifyWindow.Show(e.Message);
-                    }
-                    RunButton.IsEnabled = true;
+                    const int steps = 3;
+                    loading.SetProgress("バックアップを作成中...", 1, steps);
+                    await Task.Run(bmanager.Backup);
+                    loading.SetProgress("実行データを準備中...", 2, steps);
+                    compiler = new GameBuilder(pname, pmanager.ProjectFile, r, mmanager, story, emanager);
+                    loading.SetProgress("スクリプトを起動中...", 3, steps);
                 });
-            });
+                loading.Start();
+                var res = await compiler.Run(CurrentScene);
+                if (res.ReturnValue is not null)
+                {
+                    ErrorNotifyWindow.Show($"{res.ReturnValue}:\n{res.Exception.Message}");
+                }
+            }
+            catch (Exception ex)
+            {
+                ErrorNotifyWindow.Show(ex.Message);
+            }
+            finally
+            {
+                RunButton.IsEnabled = true;
+            }
         }
         private void Save(bool dialog = true)
         {
-            Debug.WriteLine(emanager.GetHashCode());
             var d = "";
             if (IsCreated)
             {
