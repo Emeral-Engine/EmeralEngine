@@ -9,14 +9,25 @@ namespace EmeralEngine.Project
     /// </summary>
     public partial class ProjectLoadingWindow : Window
     {
-        private readonly Action loadAction;
+        private readonly Func<Task> loadAction;
         private bool IsFinished;
         private ExceptionDispatchInfo? exception;
 
         public ProjectLoadingWindow(Window owner, Action action)
+            : this(owner, "プロジェクトの読み込み中", "プロジェクトを読み込み中...", () =>
+            {
+                action();
+                return Task.CompletedTask;
+            })
+        {
+        }
+
+        public ProjectLoadingWindow(Window owner, string title, string description, Func<Task> action)
         {
             InitializeComponent();
             Owner = owner;
+            Title = title;
+            Description.Content = description;
             loadAction = action;
             Closing += (sender, e) =>
             {
@@ -42,11 +53,11 @@ namespace EmeralEngine.Project
 
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
-            Dispatcher.BeginInvoke(() =>
+            Dispatcher.BeginInvoke(async () =>
             {
                 try
                 {
-                    loadAction();
+                    await loadAction();
                 }
                 catch (Exception ex)
                 {
